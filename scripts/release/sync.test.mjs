@@ -143,7 +143,7 @@ test("defaultVerify includes command stdout when verification fails", async () =
   );
 });
 
-test("publish installs Playwright Chromium before synchronizing develop", async () => {
+test("the sync job installs Playwright Chromium before synchronizing develop", async () => {
   const yaml = await readFile(new URL("../../.github/workflows/release.yml", import.meta.url), "utf8");
   assert.match(
     yaml,
@@ -168,5 +168,13 @@ test("recovery skips promotion when the GitHub release is already stable", async
 
 test("recovery leaves an already published immutable image tag in place", async () => {
   const yaml = await readFile(new URL("../../.github/workflows/release.yml", import.meta.url), "utf8");
-  assert.match(yaml, /already published; leaving the immutable digest in place/);
+  assert.match(yaml, /already published; aliasing the published digest/);
+});
+
+test("candidate lookup does not persist the GitHub token in Docker credentials", async () => {
+  const yaml = await readFile(new URL("../../.github/workflows/release.yml", import.meta.url), "utf8");
+  const resolveJob = yaml.slice(yaml.indexOf("  resolve:"), yaml.indexOf("\n  docker:"));
+  assert.doesNotMatch(resolveJob, /docker\/login-action/);
+  assert.match(resolveJob, /https:\/\/ghcr\.io\/token/);
+  assert.match(resolveJob, /Docker-Content-Digest/i);
 });

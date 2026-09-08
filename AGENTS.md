@@ -40,8 +40,9 @@ whose diff is only the version bump. Candidate artifacts refresh on every push t
 and on every release-branch push.
 
 Merge the generated release PR with a merge commit; **Release** starts automatically, publishes the
-GitHub release, GHCR aliases, Chrome Web Store submission and production site after one approval,
-then merges `main` directly into `develop` with the dedicated sync App. A hotfix is the same flow
+GitHub release, GHCR aliases, Chrome Web Store submission and production site after approval, then a
+separate `sync` job — approved on `production` in its own right — merges `main` directly into
+`develop` with the dedicated sync App. A hotfix is the same flow
 with `release/patch` on a PR branched from `main`. Use manual **Release** dispatch only for idempotent
 recovery. Do not create or move tags by hand.
 

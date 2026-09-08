@@ -63,7 +63,7 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
           persist-credentials: false
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
         with:
           version: 11.26.0
       - uses: actions/setup-node@v7
@@ -106,6 +106,41 @@ jobs:
       image_tag: candidate-${{ inputs.version }}
       artifact_prefix: candidate-docker-${{ inputs.version }}
       push: true
+
+  # Provenance is emitted where the bits are produced, not where they are promoted: the stable
+  # release retags this exact image digest and republishes these exact asset bytes, so one
+  # attestation covers both the candidate and the release. Keeping it out of build-extension.yml
+  # and build-docker.yml matters — those are also called by pr-validation.yml, and a reusable
+  # workflow's permission ceiling is validated in the caller even when the job is skipped, which
+  # would force `id-token: write` onto pull-request validation.
+  attest:
+    needs: [extension, docker]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: candidate-extension-${{ inputs.version }}
+          path: release-assets
+      - name: Attest the signed extension artifacts
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: release-assets/lurkloot-*
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Attest the candidate image
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-name: ghcr.io/${{ github.repository_owner }}/lurkloot-cli
+          subject-digest: ${{ needs.docker.outputs.image_digest }}
+          push-to-registry: true
 
   publish:
     needs: [verify, extension, docker]
@@ -194,7 +229,7 @@ jobs:
 
   gate:
     if: always()
-    needs: [verify, extension, docker, publish, site, status]
+    needs: [verify, extension, docker, attest, publish, site, status]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -215,12 +250,13 @@ jobs:
           VERIFY: ${{ needs.verify.result }}
           EXTENSION: ${{ needs.extension.result }}
           DOCKER: ${{ needs.docker.result }}
+          ATTEST: ${{ needs.attest.result }}
           PUBLISH: ${{ needs.publish.result }}
           SITE: ${{ needs.site.result }}
           STATUS: ${{ needs.status.result }}
         run: |
           state=success
-          for result in "$VERIFY" "$EXTENSION" "$DOCKER" "$PUBLISH" "$SITE" "$STATUS"; do
+          for result in "$VERIFY" "$EXTENSION" "$DOCKER" "$ATTEST" "$PUBLISH" "$SITE" "$STATUS"; do
             test "$result" = success || state=failure
           done
           node scripts/release/cli.mjs candidate-checks \
