@@ -742,6 +742,12 @@ describe("runLoop heartbeat driver", () => {
       await vi.advanceTimersByTimeAsync(60_000);
       await vi.waitFor(() => expect(twitch.refreshCampaigns).toHaveBeenCalledTimes(2));
       await vi.waitFor(() => expect(watcher.tick).toHaveBeenCalledTimes(7));
+      await vi.waitFor(async () => {
+        const state = JSON.parse(await readFile(statePath, "utf8")) as SchedulerState;
+        expect(Date.parse(state.sessions.twitch.lastHeartbeatAt ?? "")).toBeGreaterThanOrEqual(
+          HEARTBEAT_TEST_START.getTime() + 7 * 60_000,
+        );
+      });
     } finally {
       blockedDiscovery.resolve([HEARTBEAT_TEST_CAMPAIGN]);
       await vi.waitFor(async () => {

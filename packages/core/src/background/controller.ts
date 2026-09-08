@@ -2407,11 +2407,13 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
           }
           selections[selectionPlatform] = prepared.result;
         }
+        // Snapshot revision is the publication gate. Heartbeat and playback
+        // health bump selectionGeneration without replacing discovery; dropping
+        // the tick for those would discard lastCheckedAt from current inventory.
         const selectionsAreCurrent = (): boolean => schedulerPlatforms.every((selectionPlatform) => {
           const prepared = preparedSelections[selectionPlatform];
           const snapshot = discoveryLanes[selectionPlatform].current().snapshot;
-          return !prepared || (prepared.generation === selectionGeneration[selectionPlatform]
-            && prepared.snapshotRevision === snapshot?.revision);
+          return !prepared || prepared.snapshotRevision === snapshot?.revision;
         });
         const staleSelection = new Error("Snapshot selection lifecycle changed before publication");
         const assertSelectionsCurrent = (): void => {
@@ -2533,8 +2535,7 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
           () => schedulerPlatforms.every((selectionPlatform) => {
             const prepared = preparedSelections[selectionPlatform];
             const snapshot = discoveryLanes[selectionPlatform].current().snapshot;
-            return !prepared || (prepared.generation === selectionGeneration[selectionPlatform]
-              && prepared.snapshotRevision === snapshot?.revision);
+            return !prepared || prepared.snapshotRevision === snapshot?.revision;
           }),
           onPersisted,
         );
