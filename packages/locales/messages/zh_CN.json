@@ -813,7 +813,7 @@
     "message": "不只是掉宝。"
   },
   "screenshotExtrasSubcopy": {
-    "message": "频道点数和 Kick 每日挑战奖励也会自动领取。没有掉宝可挂机时，自动观看备用观看列表中的频道。"
+    "message": "频道点数、Kick 每日挑战和两分钟掉落也会自动领取。没有掉宝可挂机时，自动观看备用观看列表中的频道。"
   },
   "screenshotExtrasPointsName": {
     "message": "频道点数"
@@ -832,6 +832,12 @@
   },
   "screenshotExtrasWatchlistMeta": {
     "message": "掉宝活动间隙，自动观看选定的主播"
+  },
+  "screenshotExtrasFlashName": {
+    "message": "两分钟掉落"
+  },
+  "screenshotExtrasFlashMeta": {
+    "message": "Kick · 一出现就跟上"
   },
   "screenshotEasyEyebrow": {
     "message": "上手很简单"
@@ -880,6 +886,33 @@
   },
   "screenshotUpdatedSubcopy": {
     "message": "持续跟进 Twitch 和 Kick 的变化，欢迎提出建议和参与改进。"
+  },
+  "screenshotUpdatedBrowsersTitle": {
+    "message": "基于 Chromium 的浏览器"
+  },
+  "screenshotUpdatedBrowsersSub": {
+    "message": "Chrome Web Store 上架。同一扩展。"
+  },
+  "screenshotUpdatedHeadlessTitle": {
+    "message": "CLI"
+  },
+  "screenshotUpdatedHeadlessSub": {
+    "message": "无界面。同一引擎。"
+  },
+  "screenshotUpdatedDockerTitle": {
+    "message": "Docker"
+  },
+  "screenshotUpdatedDockerSub": {
+    "message": "同一引擎。在容器中运行。"
+  },
+  "screenshotUpdatedLicense": {
+    "message": "Apache-2.0"
+  },
+  "screenshotUpdatedRating": {
+    "message": "4.9"
+  },
+  "screenshotUpdatedUsers": {
+    "message": "1,000+ 用户"
   },
   "autoClaimReady": {
     "message": "自动领取就绪"

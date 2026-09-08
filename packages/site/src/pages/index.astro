@@ -15,9 +15,10 @@ import Privacy from "../components/Privacy.astro";
 import Faq from "../components/Faq.astro";
 import Cta from "../components/Cta.astro";
 import Footer from "../components/Footer.astro";
+import { faqItems } from "../faq";
 ---
 
-<Base>
+<Base faq={faqItems}>
   <main>
     <Hero />
     <Manifesto />

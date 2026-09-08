@@ -813,7 +813,7 @@
     "message": "Più dei drop."
   },
   "screenshotExtrasSubcopy": {
-    "message": "Punti canale e sfide Kick, riscattati anche per te. Una lista di attesa quando non resta nulla da farmare."
+    "message": "Punti canale, sfide Kick e drop da 2 minuti, riscattati anche per te. Una lista di attesa quando non resta nulla da farmare."
   },
   "screenshotExtrasPointsName": {
     "message": "Punti canale"
@@ -832,6 +832,12 @@
   },
   "screenshotExtrasWatchlistMeta": {
     "message": "Guarda i tuoi streamer tra una campagna e l'altra"
+  },
+  "screenshotExtrasFlashName": {
+    "message": "Drop da 2 minuti"
+  },
+  "screenshotExtrasFlashMeta": {
+    "message": "Kick · appena arrivano"
   },
   "screenshotEasyEyebrow": {
     "message": "Facile da usare"
@@ -880,6 +886,33 @@
   },
   "screenshotUpdatedSubcopy": {
     "message": "Rilasci frequenti quando Twitch e Kick cambiano — e aperto a idee e miglioramenti."
+  },
+  "screenshotUpdatedBrowsersTitle": {
+    "message": "Browser basati su Chromium"
+  },
+  "screenshotUpdatedBrowsersSub": {
+    "message": "Scheda Chrome Web Store. La stessa estensione."
+  },
+  "screenshotUpdatedHeadlessTitle": {
+    "message": "CLI"
+  },
+  "screenshotUpdatedHeadlessSub": {
+    "message": "Senza interfaccia. Lo stesso motore."
+  },
+  "screenshotUpdatedDockerTitle": {
+    "message": "Docker"
+  },
+  "screenshotUpdatedDockerSub": {
+    "message": "Lo stesso motore. In un container."
+  },
+  "screenshotUpdatedLicense": {
+    "message": "Apache-2.0"
+  },
+  "screenshotUpdatedRating": {
+    "message": "4.9"
+  },
+  "screenshotUpdatedUsers": {
+    "message": "oltre 1.000 utenti"
   },
   "autoClaimReady": {
     "message": "Auto-riscatto pronto"

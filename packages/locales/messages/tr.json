@@ -813,7 +813,7 @@
     "message": "Sadece drop değil."
   },
   "screenshotExtrasSubcopy": {
-    "message": "Kanal puanları ve Kick görevleri de senin için teslim. Kasacak bir şey kalmayınca idle izleme listesi."
+    "message": "Kanal puanları, Kick görevleri ve 2 dakikalık droplar da senin için teslim. Kasacak bir şey kalmayınca idle izleme listesi."
   },
   "screenshotExtrasPointsName": {
     "message": "Kanal puanları"
@@ -832,6 +832,12 @@
   },
   "screenshotExtrasWatchlistMeta": {
     "message": "Kampanyalar arasında yayıncılarını izler"
+  },
+  "screenshotExtrasFlashName": {
+    "message": "2 dakikalık droplar"
+  },
+  "screenshotExtrasFlashMeta": {
+    "message": "Kick · çıkar çıkmaz"
   },
   "screenshotEasyEyebrow": {
     "message": "Kullanması kolay"
@@ -880,6 +886,33 @@
   },
   "screenshotUpdatedSubcopy": {
     "message": "Twitch ve Kick değişince sık sürümler — fikirlere ve iyileştirmelere açık."
+  },
+  "screenshotUpdatedBrowsersTitle": {
+    "message": "Chromium tabanlı tarayıcılar"
+  },
+  "screenshotUpdatedBrowsersSub": {
+    "message": "Chrome Web Store kaydı. Aynı eklenti."
+  },
+  "screenshotUpdatedHeadlessTitle": {
+    "message": "CLI"
+  },
+  "screenshotUpdatedHeadlessSub": {
+    "message": "Arayüzsüz. Aynı motor."
+  },
+  "screenshotUpdatedDockerTitle": {
+    "message": "Docker"
+  },
+  "screenshotUpdatedDockerSub": {
+    "message": "Aynı motor. Konteynerde."
+  },
+  "screenshotUpdatedLicense": {
+    "message": "Apache-2.0"
+  },
+  "screenshotUpdatedRating": {
+    "message": "4.9"
+  },
+  "screenshotUpdatedUsers": {
+    "message": "1.000+ kullanıcı"
   },
   "autoClaimReady": {
     "message": "Otomatik alma aktif"

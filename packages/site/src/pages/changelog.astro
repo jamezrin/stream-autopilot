@@ -1,9 +1,8 @@
 ---
 import Base from "../layouts/Base.astro";
+import SubNav from "../components/SubNav.astro";
 import Footer from "../components/Footer.astro";
-import { LINKS } from "../consts";
 import { changelog, type ChangeKind } from "../changelog";
-import logo from "../assets/logo-ring.svg";
 
 const dateFmt = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
@@ -23,17 +22,7 @@ const kindLabel: Record<ChangeKind, string> = {
   title="Changelog — Lurkloot"
   description="What's new in Lurkloot — release notes for every version of the Twitch and Kick drops farming extension."
 >
-  <header class="legalnav">
-    <div class="wrap legalnav__inner">
-      <a class="legalnav__brand" href="/">
-        <img src={logo.src} width="28" height="28" alt="" />
-        <span>Lurkloot</span>
-      </a>
-      <a class="btn btn--primary legalnav__cta" href={LINKS.chrome} target="_blank" rel="noopener">
-        Add to browser
-      </a>
-    </div>
-  </header>
+  <SubNav />
 
   <main class="legal">
     <div class="wrap legal__wrap">
@@ -71,32 +60,6 @@ const kindLabel: Record<ChangeKind, string> = {
 </Base>
 
 <style>
-  .legalnav {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    border-bottom: 1px solid var(--line);
-    background: rgba(6, 6, 9, 0.8);
-    backdrop-filter: blur(12px);
-  }
-  .legalnav__inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 64px;
-    gap: 1.5rem;
-  }
-  .legalnav__brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55rem;
-    font-family: var(--font-display);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-  }
-  .legalnav__brand img { border-radius: 8px; }
-  .legalnav__cta { padding: 0.55em 1.05em; font-size: 0.88rem; }
-
   .legal {
     padding: clamp(3rem, 8vw, 6rem) 0 clamp(4rem, 8vw, 6rem);
   }

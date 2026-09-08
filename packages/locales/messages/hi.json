@@ -813,7 +813,7 @@
     "message": "सिर्फ़ drops नहीं।"
   },
   "screenshotExtrasSubcopy": {
-    "message": "चैनल पॉइंट्स और Kick चैलेंज भी तुम्हारे लिए क्लेम। जब फार्म करने को कुछ न हो, idle watchlist।"
+    "message": "चैनल पॉइंट्स, Kick चैलेंज और 2-मिनट ड्रॉप्स भी तुम्हारे लिए क्लेम। जब फार्म करने को कुछ न हो, idle watchlist।"
   },
   "screenshotExtrasPointsName": {
     "message": "चैनल पॉइंट्स"
@@ -832,6 +832,12 @@
   },
   "screenshotExtrasWatchlistMeta": {
     "message": "कैंपेन के बीच तुम्हारे स्ट्रीमर देखे जाते हैं"
+  },
+  "screenshotExtrasFlashName": {
+    "message": "2-मिनट ड्रॉप्स"
+  },
+  "screenshotExtrasFlashMeta": {
+    "message": "Kick · जैसे ही आएं"
   },
   "screenshotEasyEyebrow": {
     "message": "आसान"
@@ -880,6 +886,33 @@
   },
   "screenshotUpdatedSubcopy": {
     "message": "Twitch और Kick बदलें तो रिलीज़ आती रहें — और सुझाव खुले हैं।"
+  },
+  "screenshotUpdatedBrowsersTitle": {
+    "message": "Chromium-आधारित ब्राउज़र"
+  },
+  "screenshotUpdatedBrowsersSub": {
+    "message": "Chrome Web Store लिस्टिंग। वही एक्सटेंशन।"
+  },
+  "screenshotUpdatedHeadlessTitle": {
+    "message": "CLI"
+  },
+  "screenshotUpdatedHeadlessSub": {
+    "message": "हेडलेस। वही इंजन।"
+  },
+  "screenshotUpdatedDockerTitle": {
+    "message": "Docker"
+  },
+  "screenshotUpdatedDockerSub": {
+    "message": "वही इंजन। कंटेनर में।"
+  },
+  "screenshotUpdatedLicense": {
+    "message": "Apache-2.0"
+  },
+  "screenshotUpdatedRating": {
+    "message": "4.9"
+  },
+  "screenshotUpdatedUsers": {
+    "message": "1,000+ उपयोगकर्ता"
   },
   "autoClaimReady": {
     "message": "ऑटो-क्लेम तैयार"

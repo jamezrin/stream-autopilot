@@ -813,7 +813,7 @@
     "message": "More than drops."
   },
   "screenshotExtrasSubcopy": {
-    "message": "Channel points and Kick challenges, also claimed for you. An idle watchlist when nothing is left to farm."
+    "message": "Channel points, Kick challenges, and 2-minute drops — also claimed for you. An idle watchlist when nothing is left to farm."
   },
   "screenshotExtrasPointsName": {
     "message": "Channel points"
@@ -832,6 +832,12 @@
   },
   "screenshotExtrasWatchlistMeta": {
     "message": "Watches your streamers between campaigns"
+  },
+  "screenshotExtrasFlashName": {
+    "message": "2-minute drops"
+  },
+  "screenshotExtrasFlashMeta": {
+    "message": "Kick · picked up as they land"
   },
   "screenshotEasyEyebrow": {
     "message": "Easy to use"
@@ -880,6 +886,33 @@
   },
   "screenshotUpdatedSubcopy": {
     "message": "Frequent releases as Twitch and Kick change — and open to ideas and improvements."
+  },
+  "screenshotUpdatedBrowsersTitle": {
+    "message": "Chromium-based browsers"
+  },
+  "screenshotUpdatedBrowsersSub": {
+    "message": "Chrome Web Store listing. Same extension."
+  },
+  "screenshotUpdatedHeadlessTitle": {
+    "message": "CLI"
+  },
+  "screenshotUpdatedHeadlessSub": {
+    "message": "Headless. Same engine."
+  },
+  "screenshotUpdatedDockerTitle": {
+    "message": "Docker"
+  },
+  "screenshotUpdatedDockerSub": {
+    "message": "Same engine. In a container."
+  },
+  "screenshotUpdatedLicense": {
+    "message": "Apache-2.0"
+  },
+  "screenshotUpdatedRating": {
+    "message": "4.9"
+  },
+  "screenshotUpdatedUsers": {
+    "message": "1,000+ users"
   },
   "autoClaimReady": {
     "message": "Auto-claim ready"

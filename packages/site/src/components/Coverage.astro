@@ -3,21 +3,39 @@
 // and the proof (revolving 3D wall of box art). Merges the old Platforms and
 // Games sections, which repeated each other's copy.
 import { Image } from "astro:assets";
+import { LINKS } from "../consts";
 
+// The section's claim is "two platforms, every campaign". Two mirrored cards
+// said the opposite — that the platforms are interchangeable — and buried the
+// one interesting fact: Twitch and Kick reach the same result by completely
+// different machinery. So it renders as one pipeline in two columns. The row
+// labels are what never changes; the cells are what each platform does. Copy
+// is sourced from the adapters, matching the two landing pages.
 const platforms = [
+  { key: "twitch", name: "Twitch", href: LINKS.twitchFarmer, link: "How to farm Twitch Drops automatically" },
+  { key: "kick", name: "Kick", href: LINKS.kickFarmer, link: "How to farm Kick Drops automatically" },
+];
+
+const stages = [
   {
-    key: "twitch",
-    name: "Twitch",
-    blurb:
-      "It finds the Twitch drops you can earn, keeps you on a channel that's actually dropping them, and claims every reward for you — channel points included.",
-    points: ["Finds every drop you can earn", "Always on a dropping channel", "Claims drops + channel points"],
+    label: "Finds campaigns",
+    twitch: "Cross-checks live campaigns against your inventory, so it never spends hours re-earning a drop you already own.",
+    kick: "Subscribes to Kick's realtime campaign channel and picks up a new campaign seconds after it opens.",
   },
   {
-    key: "kick",
-    name: "Kick",
-    blurb:
-      "Full Kick drops support, right in your browser. It follows live campaigns, picks the right channel for the reward you want, and claims it the moment it unlocks — daily challenge cards included.",
-    points: ["Follows live Kick campaigns", "Picks the right channel for you", "Claims drops + daily challenges"],
+    label: "Picks a channel",
+    twitch: "Only channels actually enrolled in the campaign — and the ones you already follow when several qualify.",
+    kick: "Any channel live in the campaign's category, again leaning on your follows when it's a toss-up.",
+  },
+  {
+    label: "Keeps watching",
+    twitch: "Sends the player's own minute-watched signal, so no video tab is open and nothing is decoded.",
+    kick: "Holds Kick's viewer session from the background, and falls back to a muted tab if Kick turns it down.",
+  },
+  {
+    label: "Claims rewards",
+    twitch: "Every tier the moment it completes, plus channel points on the channel it is farming.",
+    kick: "Drops as they complete, plus the daily challenge cards people most often forget.",
   },
 ];
 
@@ -73,29 +91,38 @@ const RING_RADIUS = Math.round((games.length * 196) / (2 * Math.PI));
     <div class="cov__head">
       <p class="eyebrow reveal">Coverage</p>
       <h2 class="reveal-slow">Two platforms.<br />Every drop campaign.</h2>
-      <p class="reveal">
-        Wherever a campaign runs, it's already on it — watching a channel that
-        <b>actually counts</b> toward your drop. No hunting, no guesswork.
-      </p>
+      <p class="reveal">Wherever a campaign runs, it's already on it — watching a channel that actually counts toward your drop. The two platforms get there differently.</p>
     </div>
 
-    <div class="cov__grid">
-      {platforms.map((p) => (
-        <div class="reveal">
-        <article class={`cov__card cov__card--${p.key}`} data-tilt="" data-tilt-max="5">
-          <div class="cov__top">
-            <span class={`cov__badge cov__badge--${p.key}`}>{p.name[0]}</span>
-            <h3>{p.name}</h3>
-            <span class="cov__status"><span class="dot"></span> supported</span>
-          </div>
-          <p>{p.blurb}</p>
-          <ul>
-            {p.points.map((pt) => <li>{pt}</li>)}
-          </ul>
-        </article>
-        </div>
-      ))}
-    </div>
+    <table class="cov__matrix reveal">
+      <thead>
+        <tr>
+          <th scope="col"></th>
+          {platforms.map((p) => (
+            <th scope="col" class={`cov__col cov__col--${p.key}`}>{p.name}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {stages.map((stage) => (
+          <tr>
+            <th scope="row">{stage.label}</th>
+            <td data-platform="Twitch">{stage.twitch}</td>
+            <td data-platform="Kick">{stage.kick}</td>
+          </tr>
+        ))}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td class="cov__foot-spacer"></td>
+          {platforms.map((p) => (
+            <td class={`cov__foot cov__foot--${p.key}`}>
+              <a href={p.href}>{p.link}</a>
+            </td>
+          ))}
+        </tr>
+      </tfoot>
+    </table>
   </div>
 
   <div class="wrap">
@@ -160,87 +187,141 @@ const RING_RADIUS = Math.round((games.length * 196) / (2 * Math.PI));
   }
   .cov__head b { color: var(--text); font-weight: 600; }
 
-  /* ---------- platform cards ---------- */
-  .cov__grid {
-    display: grid;
-    gap: 1.2rem;
-    margin-top: clamp(2.5rem, 6vw, 4rem);
+  /* ---------- platform comparison ---------- */
+  /* A real table: this is 2 platforms x 4 stages of genuinely tabular data, and
+     the row/column headers are what makes it readable to a screen reader and
+     worth indexing. Hairline rules only — no cell borders, no card chrome. */
+  .cov__matrix {
+    --tw: var(--purple-soft);
+    --kk: var(--lime);
+    width: 100%;
+    margin-top: clamp(2.5rem, 6vw, 4.5rem);
+    border-collapse: collapse;
+    text-align: left;
   }
-  @media (min-width: 760px) {
-    .cov__grid { grid-template-columns: 1fr 1fr; }
+  .cov__matrix th,
+  .cov__matrix td {
+    vertical-align: top;
+    padding: 1.5rem 1.6rem;
   }
-  .cov__card {
-    height: 100%;
-    border: 1px solid var(--line-strong);
-    border-radius: var(--radius);
-    padding: clamp(1.8rem, 3vw, 2.6rem);
-    transition: transform 0.4s var(--ease), border-color 0.4s var(--ease);
+  /* One hairline across the full width anchors the header row, matching the
+     rules between body rows. An accent rule per column was tried and removed:
+     the two segments met with no gap, so they read as a single line that
+     changed colour for no reason, and at 2px they fought the 1px rules below. */
+  .cov__matrix thead tr { border-top: 1px solid var(--line-strong); }
+  .cov__matrix thead th {
+    padding-top: 1.3rem;
+    padding-bottom: 1.1rem;
   }
-  .cov__card--twitch {
-    background: radial-gradient(120% 130% at 0% 0%, rgba(145, 71, 255, 0.22), transparent 55%), var(--ink-0);
-  }
-  .cov__card--twitch:hover { border-color: rgba(145, 71, 255, 0.55); }
-  .cov__card--kick {
-    background: radial-gradient(120% 130% at 100% 0%, rgba(83, 252, 24, 0.16), transparent 55%), var(--ink-0);
-  }
-  .cov__card--kick:hover { border-color: rgba(83, 252, 24, 0.5); }
-
-  .cov__top {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    margin-bottom: 1.2rem;
-  }
-  .cov__badge {
-    width: 46px;
-    height: 46px;
-    border-radius: 13px;
-    display: grid;
-    place-content: center;
+  /* The platform name carries its own colour instead — the same coding the
+     stacked mobile layout uses, and it lands on the word it identifies. */
+  .cov__col {
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 1.4rem;
+    font-size: clamp(1.3rem, 2.2vw, 1.75rem);
+    letter-spacing: -0.025em;
+    color: var(--c);
+    width: 38%;
   }
-  .cov__badge--twitch { background: linear-gradient(135deg, #a06bff, #7c3aed); color: #fff; }
-  .cov__badge--kick { background: linear-gradient(135deg, #7bfd49, #3fbf12); color: #07140a; }
-  .cov__top h3 {
-    flex: 1;
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 1.7rem;
-    letter-spacing: -0.02em;
-  }
-  .cov__status {
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    color: var(--muted);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45em;
-  }
-  .cov__card > p {
-    color: var(--muted);
-    font-size: 1.02rem;
-  }
-  .cov__card ul {
-    list-style: none;
-    padding: 0;
-    margin: 1.3rem 0 0;
-    display: grid;
-    gap: 0.5rem;
-  }
-  .cov__card li {
-    position: relative;
-    padding-left: 1.5rem;
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
+  .cov__col--twitch { --c: var(--tw); }
+  .cov__col--kick { --c: var(--kk); }
+  .cov__matrix tbody tr { border-top: 1px solid var(--line); }
+  .cov__matrix tbody th {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 0.95rem;
     color: var(--text);
+    padding-left: 0;
+    width: 24%;
   }
-  .cov__card li::before {
-    content: "→";
-    position: absolute;
-    left: 0;
-    color: var(--purple-soft);
+  .cov__matrix tbody td {
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+  /* Tinting the whole column on hover keeps the two readable as units without
+     giving each cell its own hover state. */
+  @media (hover: hover) and (min-width: 760px) {
+    .cov__matrix tbody td { transition: background 0.3s var(--ease), color 0.3s var(--ease); }
+    .cov__matrix:has(tbody td:nth-child(2):hover) tbody td:nth-child(2),
+    .cov__matrix:has(tfoot .cov__foot--twitch:hover) tbody td:nth-child(2) {
+      background: rgba(145, 71, 255, 0.07);
+      color: var(--text);
+    }
+    .cov__matrix:has(tbody td:nth-child(3):hover) tbody td:nth-child(3),
+    .cov__matrix:has(tfoot .cov__foot--kick:hover) tbody td:nth-child(3) {
+      background: rgba(83, 252, 24, 0.06);
+      color: var(--text);
+    }
+  }
+  /* The rule runs the table's full width like every other one; a rule that
+     began at the first column read as an accident rather than a choice. */
+  .cov__matrix tfoot tr { border-top: 1px solid var(--line); }
+  .cov__matrix tfoot td { padding-bottom: 0; }
+  .cov__foot--twitch { --c: var(--tw); }
+  .cov__foot--kick { --c: var(--kk); }
+  .cov__foot a {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--c);
+    border-bottom: 1px solid color-mix(in oklch, var(--c) 35%, transparent);
+    padding-bottom: 2px;
+    transition: border-color 0.25s var(--ease);
+  }
+  .cov__foot a:hover { border-bottom-color: var(--c); }
+
+  /* Below the two-column threshold the table restacks by row: each stage keeps
+     its label, then names each platform before its answer, so the comparison
+     survives instead of becoming two disconnected lists. */
+  @media (max-width: 759px) {
+    .cov__matrix,
+    .cov__matrix tbody,
+    .cov__matrix tfoot,
+    .cov__matrix tr,
+    .cov__matrix td {
+      display: block;
+    }
+    .cov__matrix thead { display: none; }
+    .cov__matrix tbody th {
+      display: block;
+      width: auto;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.2rem;
+      letter-spacing: -0.02em;
+      padding: 1.6rem 0 0.9rem;
+    }
+    .cov__matrix tbody td {
+      padding: 0 0 1rem;
+      position: relative;
+      padding-left: 1.1rem;
+    }
+    .cov__matrix tbody td::before {
+      content: attr(data-platform);
+      display: block;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--c);
+      margin-bottom: 0.25rem;
+    }
+    .cov__matrix tbody td[data-platform="Twitch"] { --c: var(--tw); }
+    .cov__matrix tbody td[data-platform="Kick"] { --c: var(--kk); }
+    .cov__matrix tbody td::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.3em;
+      bottom: 1.4rem;
+      width: 2px;
+      border-radius: 2px;
+      background: var(--c);
+      opacity: 0.55;
+    }
+    .cov__foot-spacer { display: none; }
+    /* Qualified with tfoot: bare .cov__foot (0,1,0) loses to the shared
+       `.cov__matrix td` padding rule (0,1,1) and the links keep an indent the
+       stage headings above them do not have. */
+    .cov__matrix tfoot td { padding: 1.2rem 0 0; }
   }
 
   /* ---------- games lede ---------- */

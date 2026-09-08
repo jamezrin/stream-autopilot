@@ -52,7 +52,7 @@ export function IdleWatchlistPanel({ platform, streamers, expanded, adding, onEx
   }
 
   return (
-    <section className="space-y-1.5">
+    <section id="idle-watchlist" className="space-y-1.5">
       <SectionHeader
         label={t("idleWatchlistTab")}
         count={`${streamers.length}/20`}

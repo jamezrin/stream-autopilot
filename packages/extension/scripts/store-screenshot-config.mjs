@@ -1,7 +1,7 @@
 export const STORE_SCREENSHOT_VARIANTS = Object.freeze([
   Object.freeze({ id: "drops", file: "01-drops", popup: true }),
-  Object.freeze({ id: "extras", file: "02-extras", popup: false }),
-  Object.freeze({ id: "easy", file: "03-easy", popup: false }),
+  Object.freeze({ id: "extras", file: "02-extras", popup: true }),
+  Object.freeze({ id: "easy", file: "03-easy", popup: true }),
   Object.freeze({ id: "settings", file: "04-settings", popup: true }),
   Object.freeze({ id: "updated", file: "05-updated", popup: false }),
 ]);
