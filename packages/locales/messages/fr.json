@@ -500,6 +500,10 @@
   "failuresSuffix": {
     "message": "échecs"
   },
+  "kickPageContextRecoverySuccessesTitle": { "message": "Récupération de la page de secours Kick" },
+  "kickPageContextRecoverySuccessesDescription": { "message": "Ferme une page de secours Kick ouverte par l’extension après ce nombre de cycles d’actualisation réussis." },
+  "kickPageContextRecoverySuccessesDisabledReason": { "message": "Activez Kick pour modifier ce réglage." },
+  "cyclesSuffix": { "message": "cycles réussis" },
   "autoCloseTabsTitle": {
     "message": "Fermer automatiquement les onglets de farm"
   },

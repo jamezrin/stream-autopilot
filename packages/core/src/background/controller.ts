@@ -327,6 +327,12 @@ export interface BackgroundControllerDeps<S extends EngineSettings = EngineSetti
   // Omitted in headless/test runs, where the scheduler forgets contexts from
   // state only (see runSchedulerTick / StopPageContextTabs).
   stopPageContextTabs?: StopPageContextTabs;
+  reconcilePageContextRecovery?(
+    platform: Platform,
+    observation: import("../platforms/adapter").KickPageContextCycleObservation,
+    settings: S,
+    emit: EventEmitter,
+  ): Promise<void>;
   selectWatchTarget?: typeof selectWatchTargetFromSnapshot;
   // Delay used by the bounded post-claim handoff. Injected so tests can drive
   // the loop deterministically instead of racing real timers. Resolves early
@@ -789,6 +795,7 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
   const selectionRuns: Partial<Record<Platform, Promise<CommittedSelection>>> = {};
   const pendingSelections: Partial<Record<Platform, SelectionInput>> = {};
   const selectionGeneration: Record<Platform, number> = { twitch: 0, kick: 0 };
+  const reconciledPageContextSnapshotRevision: Partial<Record<Platform, number>> = {};
   let installedTwitchIntegrity: TwitchIntegrity | undefined;
   let persistedIntegrityToken: string | undefined;
   // A missing rejectedToken means there was no usable bundle when the refresh
@@ -2321,6 +2328,8 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
     await refreshDiscovery(discoveryPlatforms, selectionBypassesBackoff(trigger), tickAdapters);
     signal.throwIfAborted();
     const preparedSelections: Partial<Record<Platform, CommittedSelection>> = {};
+    const pageContextObservations: Partial<Record<Platform, import("../platforms/adapter").KickPageContextCycleObservation>> = {};
+    const pageContextObservationRevisions: Partial<Record<Platform, number>> = {};
     await Promise.all(discoveryPlatforms.map(async (selectionPlatform) => {
       const snapshot = discoveryLanes[selectionPlatform].current().snapshot;
       if (!snapshot) return;
@@ -2474,6 +2483,14 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
         for (const schedulerPlatform of schedulerPlatforms) tickAdapters[schedulerPlatform]?.drain(claimObservingEmit);
         signal.throwIfAborted();
         assertSelectionsCurrent();
+        for (const schedulerPlatform of schedulerPlatforms) {
+          const observation = adapters[schedulerPlatform].consumePageContextCycleObservation?.();
+          const prepared = preparedSelections[schedulerPlatform];
+          if (observation && prepared) {
+            pageContextObservations[schedulerPlatform] = observation;
+            pageContextObservationRevisions[schedulerPlatform] = prepared.snapshotRevision;
+          }
+        }
         nextState = result.state;
         if (settings.criticalFailurePromptEnabled) {
           // Page-context tabs are created deep inside tabs.ts, which has no access
@@ -2539,6 +2556,27 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
           onPersisted,
         );
         if (!persisted) return;
+        for (const schedulerPlatform of schedulerPlatforms) {
+          const observation = pageContextObservations[schedulerPlatform];
+          const snapshotRevision = pageContextObservationRevisions[schedulerPlatform];
+          if (snapshotRevision === undefined || !observation || !deps.reconcilePageContextRecovery
+            || reconciledPageContextSnapshotRevision[schedulerPlatform] === snapshotRevision) continue;
+          await withEventCollector(async (recoveryEmit, recoveryEvents) => {
+            try {
+              await deps.reconcilePageContextRecovery!(schedulerPlatform, observation, settings, recoveryEmit);
+              reconciledPageContextSnapshotRevision[schedulerPlatform] = snapshotRevision;
+              await persistPlatformState(schedulerPlatform, nextState);
+            } catch (error) {
+              recoveryEmit({
+                category: "diagnostic",
+                level: "debug",
+                platform: schedulerPlatform,
+                message: `Page-context recovery reconciliation failed: ${error instanceof Error ? error.message : String(error)}`,
+              });
+            }
+            await reportBestEffort(correlateTickDiagnostics(recoveryEvents, tickContext));
+          });
+        }
         waitingClaimRewardIds[platform].clear();
         for (const rewardId of nextWaitingClaimRewardIds[platform]) {
           waitingClaimRewardIds[platform].add(rewardId);

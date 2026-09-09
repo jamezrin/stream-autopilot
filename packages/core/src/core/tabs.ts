@@ -2,7 +2,7 @@ import type { AdFocusMode, ChannelCandidate, ManagedPageContextTab, ManagedWatch
 import type { EventEmitter, PageContextCloseReason, PageContextOpenReason } from "@lurkloot/shared/events";
 import type { LogLevel } from "@lurkloot/shared/logging";
 import type { TwitchIntegrity } from "./twitchIntegrity";
-import type { PreparedWatchTab, WatchTabOptions } from "../platforms/adapter";
+import type { KickPageContextCycleObservation, PreparedWatchTab, WatchTabOptions } from "../platforms/adapter";
 import { SafeFetchError, safeFetchFailure, type SafeFetchFailure } from "./fetchError";
 import { isTimestampStale, PLAYBACK_TELEMETRY_MAX_AGE_MS } from "./timestamps";
 
@@ -105,8 +105,6 @@ const PLAYBACK_PRIME_RESTORE_DELAY_MS = 1500;
 // coaxed along.
 const PLAYBACK_PRIME_MAX_ATTEMPTS = 3;
 const PLAYBACK_PRIME_BACKOFF_MS = 5 * 60_000;
-const PAGE_CONTEXT_RECOVERY_SUCCESSES = 3;
-const PAGE_CONTEXT_RECOVERY_MIN_MS = 10 * 60_000;
 
 export async function openPinnedMutedTabWithBrowser(
   browserApi: BrowserTabApi,
@@ -1704,15 +1702,30 @@ export function recordManagedPageContextFallback(
   diagnostic(emit, "debug", `Retained managed page context on ${new URL(context.origin).host} because background access is still rejected`, platform);
 }
 
-export async function recordManagedPageContextBackgroundSuccessWithBrowser(
+export async function reconcileManagedPageContextRecoveryWithBrowser(
   browserApi: BrowserTabApi,
   platform: Platform,
-  host: string,
+  observation: KickPageContextCycleObservation,
+  requiredSuccesses: number,
   emit: EventEmitter = ignoreEvent,
-  now: number = Date.now(),
 ): Promise<void> {
   const context = retainedPageContextTabs.get(platform);
-  if (!context?.lastFallbackAt || context.fallbackHost !== host) return;
+  if (!context) return;
+
+  if (observation.fallbackHosts.length > 0) {
+    const fallbackHost = observation.fallbackHosts[0]!;
+    retainedPageContextTabs.set(platform, {
+      ...context,
+      lastFallbackAt: new Date().toISOString(),
+      fallbackHost,
+      backgroundSuccesses: 0,
+    });
+    retainedPageContextRevision += 1;
+    diagnostic(emit, "debug", `Retained managed page context on ${new URL(context.origin).host} because this scheduler cycle still required page fallback`, platform);
+    return;
+  }
+
+  if (!context.fallbackHost || !observation.backgroundHosts.includes(context.fallbackHost)) return;
 
   const updated: ManagedPageContextTab = {
     ...context,
@@ -1720,18 +1733,30 @@ export async function recordManagedPageContextBackgroundSuccessWithBrowser(
   };
   retainedPageContextTabs.set(platform, updated);
   retainedPageContextRevision += 1;
-  const fallbackAt = Date.parse(context.lastFallbackAt);
-  const recovered = updated.backgroundSuccesses! >= PAGE_CONTEXT_RECOVERY_SUCCESSES
-    && !Number.isNaN(fallbackAt)
-    && now - fallbackAt >= PAGE_CONTEXT_RECOVERY_MIN_MS
+  const threshold = Math.min(10, Math.max(1, Math.round(requiredSuccesses)));
+  const recovered = updated.backgroundSuccesses! >= threshold
     && !pageContextTabs.has(context.origin);
   if (!recovered) {
     diagnostic(emit, "debug", `Retained managed page context on ${new URL(context.origin).host} while background recovery is being confirmed`, platform);
     return;
   }
 
+  let retainedTabMatches = false;
+  try {
+    const tab = await browserApi.tabs.get(context.tabId);
+    retainedTabMatches = tab?.id === context.tabId
+      && typeof tab.url === "string"
+      && new URL(tab.url).origin === context.origin;
+  } catch {
+    // A missing tab is handled like an id that now belongs to another page:
+    // forget stale ownership and never risk closing an unrelated user tab.
+  }
   retainedPageContextTabs.delete(platform);
   retainedPageContextRevision += 1;
+  if (!retainedTabMatches) {
+    diagnostic(emit, "debug", `Forgot managed page context on ${new URL(context.origin).host} because the retained tab was already gone or changed`, platform);
+    return;
+  }
   const remove = browserApi.tabs.remove;
   if (!remove) {
     diagnostic(emit, "debug", `Forgot managed page context on ${new URL(context.origin).host} because tab removal is unavailable`, platform);

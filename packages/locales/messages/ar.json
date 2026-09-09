@@ -500,6 +500,10 @@
   "failuresSuffix": {
     "message": "حالات فشل"
   },
+  "kickPageContextRecoverySuccessesTitle": { "message": "استرداد صفحة Kick الاحتياطية" },
+  "kickPageContextRecoverySuccessesDescription": { "message": "أغلق صفحة Kick الاحتياطية التي فتحها الامتداد بعد هذا العدد من دورات التحديث الناجحة." },
+  "kickPageContextRecoverySuccessesDisabledReason": { "message": "فعّل Kick لتغيير هذا الإعداد." },
+  "cyclesSuffix": { "message": "دورات" },
   "autoCloseTabsTitle": {
     "message": "إغلاق تبويبات الفارم تلقائيًا"
   },

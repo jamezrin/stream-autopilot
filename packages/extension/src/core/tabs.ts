@@ -9,8 +9,7 @@ import {
   fetchKickInBackgroundWith,
   fetchTwitchInBackgroundWith,
   openPinnedMutedTabWithBrowser,
-  recordManagedPageContextBackgroundSuccessWithBrowser,
-  recordManagedPageContextFallback as recordManagedPageContextFallbackInRegistry,
+  reconcileManagedPageContextRecoveryWithBrowser,
   stopManagedPageContextTabsWithBrowser,
   stopWatchTabWithBrowser,
   TWITCH_PAGE_CONTEXT_URL,
@@ -20,7 +19,7 @@ import {
   type SchedulerManagedPageContexts,
   type TwitchIntegrityRequest,
 } from "@lurkloot/core/tabs";
-import type { PreparedWatchTab, WatchTabOptions } from "@lurkloot/core/adapter";
+import type { KickPageContextCycleObservation, PreparedWatchTab, WatchTabOptions } from "@lurkloot/core/adapter";
 
 // Browser-backed wrappers binding the pure `*WithBrowser` engine functions in
 // @lurkloot/core/tabs to the extension's live wxt/browser tabs/cookies APIs.
@@ -58,12 +57,19 @@ export function fetchJsonInPage<T>(originUrl: string, url: string, init?: Reques
   return fetchJsonInPageWithBrowser<T>(browser as BrowserTabApi, originUrl, url, init, options);
 }
 
-export function recordManagedPageContextBackgroundSuccess(host: string, emit?: EventEmitter): Promise<void> {
-  return recordManagedPageContextBackgroundSuccessWithBrowser(browser as BrowserTabApi, "kick", host, emit);
-}
-
-export function recordManagedPageContextFallback(host: string, emit?: EventEmitter): void {
-  recordManagedPageContextFallbackInRegistry("kick", host, emit);
+export function reconcileManagedPageContextRecovery(
+  platform: Platform,
+  observation: KickPageContextCycleObservation,
+  requiredSuccesses: number,
+  emit?: EventEmitter,
+): Promise<void> {
+  return reconcileManagedPageContextRecoveryWithBrowser(
+    browser as BrowserTabApi,
+    platform,
+    observation,
+    requiredSuccesses,
+    emit,
+  );
 }
 
 export function stopManagedPageContextTabs(

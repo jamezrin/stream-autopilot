@@ -389,6 +389,9 @@ export interface EngineSettings {
 // applyAdFocus, not read from settings by the engine; popup UI state (i18n, rate
 // nudge) is pure host state.
 export interface ExtensionSettings extends EngineSettings {
+  // Number of committed Kick scheduler cycles using direct background fetches
+  // required before an extension-owned fallback page is closed.
+  kickPageContextRecoverySuccesses: number;
   muteFarmingTabs: boolean;
   keepFarmingVideosUnmuted: boolean;
   autoCloseFinishedDrops: boolean;

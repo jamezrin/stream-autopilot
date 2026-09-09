@@ -142,6 +142,7 @@ describe("settings registry", () => {
         "general.farmingTabs.adFocus",
         "general.advanced.pollInterval",
         "general.advanced.tablessFallbackFailureLimit",
+        "general.advanced.kickPageContextRecoverySuccesses",
         "general.advanced.postClaimHandoff",
         "general.advanced.postClaimHandoffInterval",
         "general.advanced.postClaimHandoffMax",

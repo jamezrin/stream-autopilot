@@ -991,6 +991,43 @@ describe("KickAdapter", () => {
 });
 
 describe("createKickFetcher (background-first, tab fallback)", () => {
+  it("coalesces every request outcome into one consume-once cycle observation", async () => {
+    const fetcher = createKickFetcher({
+      background: async () => ({ ok: true }),
+      pageFetch: async () => ({ ok: true }),
+    });
+
+    await Promise.all(Array.from({ length: 40 }, (_, index) => fetcher.fetchJson(
+      index % 2 === 0 ? "https://kick.com/api/test" : "https://web.kick.com/api/test",
+    )));
+
+    expect(fetcher.consumePageContextCycleObservation()).toEqual({
+      backgroundHosts: ["kick.com", "web.kick.com"],
+      fallbackHosts: [],
+    });
+    expect(fetcher.consumePageContextCycleObservation()).toBeUndefined();
+  });
+
+  it("records fallback evidence alongside successes so reconciliation can give fallback precedence", async () => {
+    let calls = 0;
+    const fetcher = createKickFetcher({
+      background: async () => {
+        calls += 1;
+        if (calls === 2) throw new KickWafBlockedError("blocked");
+        return { ok: true };
+      },
+      pageFetch: async () => ({ ok: true }),
+    });
+
+    await fetcher.fetchJson("https://kick.com/api/first");
+    await fetcher.fetchJson("https://kick.com/api/second");
+
+    expect(fetcher.consumePageContextCycleObservation()).toEqual({
+      backgroundHosts: ["kick.com"],
+      fallbackHosts: ["kick.com"],
+    });
+  });
+
   it("uses the service-worker result and never touches the page tab when the background fetch succeeds", async () => {
     const background = vi.fn(async () => ({ data: "from-sw" }));
     const pageFetch = vi.fn(async () => ({ data: "from-tab" }));

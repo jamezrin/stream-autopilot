@@ -3,7 +3,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { parseHTML } from "linkedom";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_SETTINGS } from "@lurkloot/shared/settings";
+import { DEFAULT_SETTINGS, mergeSettings } from "@lurkloot/shared/settings";
 import { I18nContext, PopupRuntimeContext } from "../../popup-ui/src/context";
 import { SettingsView } from "../../popup-ui/src/settings";
 import type { PopupAdapter } from "../../popup-ui/src/types";
@@ -79,6 +79,10 @@ const labels: Record<string, string> = {
   tablessFallbackFailureLimitDescription: "Open a video tab after this many consecutive failed tabless watch signals.",
   tablessFallbackFailureLimitDisabledReason: "Enable tabless low-resource mode to change this setting.",
   failuresSuffix: "failures",
+  kickPageContextRecoverySuccessesTitle: "Kick fallback-page recovery",
+  kickPageContextRecoverySuccessesDescription: "Close an extension-opened Kick fallback page after this many successful refresh cycles.",
+  kickPageContextRecoverySuccessesDisabledReason: "Enable Kick to change this setting.",
+  cyclesSuffix: "cycles",
   postClaimHandoffTitle: "Fast reward handoff",
   postClaimHandoffDescription: "After claiming a drop, briefly check for the next reward.",
   postClaimHandoffIntervalTitle: "Handoff check interval",
@@ -201,6 +205,33 @@ describe("deadline feasibility setting", () => {
     const { container } = mountSettings({ ...DEFAULT_SETTINGS, tablessMode: false });
     const input = container.querySelector(
       'input[aria-label="Tabless fallback threshold"]',
+    ) as HTMLInputElement;
+    expect(input.disabled).toBe(true);
+  });
+
+  it("renders and saves the Kick fallback-page recovery threshold", () => {
+    const { container, onSettingsChange } = mountSettings();
+    const input = container.querySelector(
+      'input[aria-label="Kick fallback-page recovery"]',
+    ) as HTMLInputElement;
+    expect(input.value).toBe("3");
+    expect(input.getAttribute("min")).toBe("1");
+    expect(input.getAttribute("max")).toBe("10");
+
+    act(() => setNumberInput(input, "6"));
+    expect(onSettingsChange).toHaveBeenCalledWith(
+      { kickPageContextRecoverySuccesses: 6 },
+      { tickAfterSave: true },
+    );
+  });
+
+  it("disables the Kick fallback-page recovery threshold when Kick is off", () => {
+    const settings = mergeSettings({
+      platform: { kick: { enabled: false } },
+    } as never);
+    const { container } = mountSettings(settings);
+    const input = container.querySelector(
+      'input[aria-label="Kick fallback-page recovery"]',
     ) as HTMLInputElement;
     expect(input.disabled).toBe(true);
   });

@@ -243,6 +243,7 @@ function harness(
     ) => Promise<boolean>;
     cancelTwitchIntegrityAcquisition?: (reason?: unknown) => void;
     selectWatchTarget?: BackgroundControllerDeps<ExtensionSettings>["selectWatchTarget"];
+    reconcilePageContextRecovery?: BackgroundControllerDeps<ExtensionSettings>["reconcilePageContextRecovery"];
     initialState?: SchedulerState;
   } = {},
 ) {
@@ -294,6 +295,9 @@ function harness(
     })),
     reportEvents: vi.fn(overrides.reportEvents ?? reportEvents),
     stopPageContextTabs: vi.fn(overrides.stopPageContextTabs ?? forgetManagedPageContextTabs),
+    ...(overrides.reconcilePageContextRecovery
+      ? { reconcilePageContextRecovery: vi.fn(overrides.reconcilePageContextRecovery) }
+      : {}),
     ...(overrides.selectWatchTarget ? { selectWatchTarget: vi.fn(overrides.selectWatchTarget) } : {}),
     wait: overrides.wait,
     ...(overrides.checkCredentialAvailability
@@ -7380,6 +7384,41 @@ describe("background controller", () => {
       backgroundSuccesses: 0,
       lastFallbackAt: "2026-07-21T12:00:00.000Z",
     });
+  });
+
+  it("reconciles one Kick route observation only after the scheduler cycle persists", async () => {
+    const order: string[] = [];
+    const env = harness(farming(DEFAULT_SETTINGS), {
+      saveState: async () => { order.push("persist"); },
+      reconcilePageContextRecovery: async (_platform, observation, settings) => {
+        order.push("reconcile");
+        expect(observation).toEqual({ backgroundHosts: ["kick.com"], fallbackHosts: [] });
+        expect(settings.kickPageContextRecoverySuccesses).toBe(3);
+      },
+    });
+    env.kick.consumePageContextCycleObservation = vi.fn()
+      .mockReturnValueOnce({ backgroundHosts: ["kick.com"], fallbackHosts: [] })
+      .mockReturnValue(undefined);
+
+    await env.controller.tick(["kick"]);
+
+    expect(order[0]).toBe("persist");
+    expect(order).toContain("reconcile");
+    expect(env.deps.reconcilePageContextRecovery).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not reconcile Kick route evidence when discovery fails", async () => {
+    const reconcile = vi.fn(async () => undefined);
+    const env = harness(farming(DEFAULT_SETTINGS), { reconcilePageContextRecovery: reconcile });
+    env.kick.refreshCampaigns = vi.fn(async () => { throw new Error("discovery failed"); });
+    env.kick.consumePageContextCycleObservation = vi.fn(() => ({
+      backgroundHosts: ["kick.com"],
+      fallbackHosts: [],
+    }));
+
+    await env.controller.tick(["kick"]);
+
+    expect(reconcile).not.toHaveBeenCalled();
   });
 
   it("does not hydrate an old persisted page context over a newer registry update", async () => {

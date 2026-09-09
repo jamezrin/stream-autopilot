@@ -315,6 +315,27 @@ export function buildSettingsRegistry(ctx: SettingsRegistryContext): SettingsSec
             ),
           },
           {
+            id: "general.advanced.kickPageContextRecoverySuccesses",
+            titleKey: "kickPageContextRecoverySuccessesTitle",
+            descriptionKey: "kickPageContextRecoverySuccessesDescription",
+            render: () => (
+              <NumberSettingRow
+                title={t("kickPageContextRecoverySuccessesTitle")}
+                description={t("kickPageContextRecoverySuccessesDescription")}
+                value={settings.kickPageContextRecoverySuccesses}
+                min={1}
+                max={10}
+                suffix={t("cyclesSuffix")}
+                disabled={!settings.platform.kick.enabled}
+                disabledReason={t("kickPageContextRecoverySuccessesDisabledReason")}
+                onChange={(value) => void onSettingsChange(
+                  { kickPageContextRecoverySuccesses: value },
+                  { tickAfterSave: true },
+                )}
+              />
+            ),
+          },
+          {
             id: "general.advanced.postClaimHandoff",
             titleKey: "postClaimHandoffTitle",
             descriptionKey: "postClaimHandoffDescription",
