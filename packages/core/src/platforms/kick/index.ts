@@ -149,6 +149,7 @@ export function createKickFetcher(deps: {
   const routeState = deps.routeState ?? new KickRouteState();
   const counts = new KickRouteCounts();
   let activeRequests = 0;
+  let pendingFlush: EventEmitter | undefined;
   const notifyLifecycle = async (
     callback: ((host: string, emit: EventEmitter) => Promise<void> | void) | undefined,
     host: string,
@@ -163,6 +164,7 @@ export function createKickFetcher(deps: {
   return {
     flushRouteDiagnostics(emit) {
       if (activeRequests === 0) counts.flush(emit);
+      else pendingFlush = emit;
     },
     fetchJson: async <T,>(url: string, init?: RequestInit, emit: EventEmitter = ignoreEvent): Promise<T> => {
       init?.signal?.throwIfAborted();
@@ -194,6 +196,11 @@ export function createKickFetcher(deps: {
         return result as T;
       } finally {
         activeRequests -= 1;
+        if (activeRequests === 0 && pendingFlush) {
+          const emitSummary = pendingFlush;
+          pendingFlush = undefined;
+          counts.flush(emitSummary);
+        }
       }
     },
   };

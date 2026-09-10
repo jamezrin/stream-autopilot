@@ -3990,6 +3990,108 @@ describe("background controller", () => {
     expect(waitingEvents).toHaveLength(1);
   });
 
+  describe("route evidence independent of state publication", () => {
+    function routeEnv(onBackgroundSuccess?: (host: string, emit: EventEmitter) => Promise<void> | void) {
+      const env = harness({ ...DEFAULT_SETTINGS, preferKnownChannels: false, platform: {
+        ...DEFAULT_SETTINGS.platform,
+        kick: { ...DEFAULT_SETTINGS.platform.kick, enabled: true },
+      } }, { authProbeTimeoutMs: 25 });
+      const discoveryState = new KickDiscoveryState();
+      env.deps.createAdapter.mockImplementation((platform, emit, settings) => ({
+        adapter: platform === "kick" ? kickAdapter(createKickFetcher({
+          background: async (url) => {
+            if (url.endsWith("/user")) return { id: 42 };
+            throw new KickWafBlockedError("blocked");
+          },
+          pageFetch: async () => ({ data: [] }),
+          routeState: discoveryState.routeDiagnostics,
+          onBackgroundSuccess,
+          onPageFallback: (_host, operationEmit) => operationEmit({ category: "activity", code: "page_context_opened", level: "info", platform: "kick", data: { host: "kick.com", reason: "background_rejected" } }),
+        }), undefined, undefined, emit, { discoveryState }) : env.twitch,
+        ...resolveCompatibility(settings.compatibility, { host: "extension", twitchIdentity: "web" }),
+      }));
+      return env;
+    }
+
+    it.each(["abort after discovery drain", "stale publication rejection"])("keeps route evidence through %s without publishing discarded activity", async (mode) => {
+      const env = routeEnv();
+      let interrupted = false;
+      env.deps.applyAdFocus.mockImplementation(async () => {
+        if (mode === "abort after discovery drain") {
+          interrupted = true;
+          env.controller.shutdown();
+        } else {
+          env.deps.loadState.mockImplementationOnce(async () => {
+            interrupted = true;
+            env.controller.shutdown();
+            return env.state;
+          });
+        }
+      });
+      await env.controller.tick(["kick"]);
+      expect(interrupted).toBe(true);
+      expect(env.state.sessions.kick.lastCheckedAt).toBeUndefined();
+      const diagnostics = allDiagnostics(env);
+      expect(diagnostics.filter((event) => event.code === "kick_fetch_route" && event.message.includes("using page tab"))).toHaveLength(1);
+      expect(diagnostics.some((event) => event.code === "kick_fetch_summary" && event.data?.["web.kick.com.page"] === 2)).toBe(true);
+      expect(env.reportEvents.mock.calls.flatMap(([events]) => events).filter((event) => event.category === "activity" && event.code === "page_context_opened")).toEqual([]);
+    });
+
+    it.each(["abort", "stale generation"])("keeps auth route evidence after %s", async (mode) => {
+      const started = deferred<void>();
+      const finish = deferred<void>();
+      const env = routeEnv(async () => { started.resolve(); await finish.promise; });
+      const checking = mode === "abort" ? env.controller.tick(["kick"]) : env.controller.checkAuthHealth("kick");
+      await started.promise;
+      if (mode === "abort") env.controller.shutdown();
+      else await env.controller.invalidateAuthHealth("kick");
+      finish.resolve();
+      await checking;
+      await env.controller.settleBackgroundWork();
+      expect(env.state.authHealth.kick.status).not.toBe("healthy");
+      expect(allDiagnostics(env).filter((event) => event.code === "kick_fetch_route")).toHaveLength(1);
+      expect(allDiagnostics(env).filter((event) => event.code === "kick_fetch_summary").map((event) => event.data)).toEqual([{ "kick.com.background": 1 }]);
+      if (mode === "stale generation") {
+        await env.controller.checkAuthHealth("kick");
+        expect(env.state.authHealth.kick.status).toBe("healthy");
+        expect(allDiagnostics(env).filter((event) => event.code === "kick_fetch_route")).toHaveLength(1);
+      }
+      env.controller.shutdown();
+    });
+
+    it.each([[false, false], [false, true], [true, false], [true, true]])("reports a late auth completion once after the deadline (tick=%s, lifecycle failure=%s)", async (tickProbe, lifecycleFailure) => {
+      vi.useFakeTimers();
+      const started = deferred<void>();
+      const finish = deferred<void>();
+      const env = routeEnv(async (_host, emit) => {
+        started.resolve();
+        await finish.promise;
+        emit({ category: "activity", code: "page_context_closed", level: "info", platform: "kick", data: { host: "kick.com", reason: "background_recovered" } });
+        if (lifecycleFailure) throw new Error("secret late lifecycle error");
+      });
+      const checking = tickProbe ? env.controller.tick(["kick"]) : env.controller.checkAuthHealth("kick");
+      await started.promise;
+      await vi.advanceTimersByTimeAsync(25);
+      await checking;
+      expect(env.state.authHealth.kick.reasonCode).toBe("network_unavailable");
+      const writes = env.deps.saveState.mock.calls.length;
+      expect(allDiagnostics(env).filter((event) => event.code === "kick_fetch_summary")).toHaveLength(0);
+      finish.resolve();
+      await vi.advanceTimersByTimeAsync(0);
+      await env.controller.settleBackgroundWork();
+      const diagnostics = allDiagnostics(env);
+      expect(diagnostics.filter((event) => event.code === "kick_fetch_route")).toHaveLength(1);
+      expect(diagnostics.filter((event) => event.code === "kick_fetch_summary").map((event) => event.data)).toEqual([{ "kick.com.background": 1 }]);
+      expect(diagnostics.filter((event) => event.code === "kick_fetch_lifecycle_failed")).toHaveLength(lifecycleFailure ? 1 : 0);
+      if (tickProbe) expect(diagnostics.filter((event) => event.code?.startsWith("kick_fetch_")).every((event) => event.platformTickId === 1)).toBe(true);
+      expect(env.deps.saveState).toHaveBeenCalledTimes(writes);
+      expect(env.reportEvents.mock.calls.flatMap(([events]) => events).filter((event) => event.category === "activity" && event.code === "page_context_closed")).toEqual([]);
+      expect(JSON.stringify(diagnostics.filter((event) => event.code?.startsWith("kick_fetch_")))).not.toContain("secret");
+      env.controller.shutdown();
+      vi.useRealTimers();
+    });
+  });
+
   it("preserves route transition and lifecycle failure evidence when scheduler publication fails", async () => {
     const env = harness({
       ...DEFAULT_SETTINGS,

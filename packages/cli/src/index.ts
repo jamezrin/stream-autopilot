@@ -4,6 +4,7 @@ import { dirname, join, resolve } from "node:path";
 import yargs, { type Argv, type ArgumentsCamelCase, type CommandModule } from "yargs";
 import { hideBin } from "yargs/helpers";
 import type { DropCampaign, Platform } from "@lurkloot/shared/models";
+import type { EngineEvent } from "@lurkloot/shared/events";
 import { KickWafBlockedError } from "@lurkloot/core/tabs";
 import { assertExportOutputPath, loadConfig, saveConfigSettings, TRANSPORTS, type CliConfig, type Transport } from "./config";
 import { buildCliSettingsExportPayload, parseCliSettingsImportPayload } from "./settings";
@@ -15,6 +16,8 @@ import { importCredentials } from "./auth/importCredentials";
 import { twitchDeviceLogin } from "./auth/twitchDeviceFlow";
 import { kickDeviceLogin } from "./auth/kickDeviceFlow";
 import { createLogger } from "./logger";
+import { reportCliEvents } from "./events";
+import { toEngineSettings } from "./settings";
 import type { LogLevel } from "@lurkloot/shared/logging";
 
 // Global options carried by every command (yargs makes them inheritable), so the
@@ -126,7 +129,15 @@ const discoverCommand: CommandModule = {
           logger.info("disabled in config — skipping", platform);
           continue;
         }
-        await discoverPlatform(platform, handle.adapters[platform], logger);
+        const events: EngineEvent[] = [];
+        const emit = (event: EngineEvent) => events.push(event);
+        const { adapter } = handle.createAdapter(platform, emit, toEngineSettings(config.settings));
+        try {
+          await discoverPlatform(platform, adapter, logger);
+        } finally {
+          adapter.flushRouteDiagnostics?.(emit);
+          await reportCliEvents(events, logger);
+        }
       }
     } finally {
       await handle.dispose();

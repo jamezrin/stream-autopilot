@@ -307,8 +307,15 @@ numeric counts and an English message usable in exports and CLI debug logs.
 No URL path, query value, arbitrary host, header, credential, or payload is kept.
 The last announced route lives in host-owned `KickDiscoveryState`, so adapter
 reconstruction does not repeat it; restarting the runtime begins a new history.
-Counters are fetcher-local and refuse to flush while a request or lifecycle
-callback is active. They never consume page-context recovery observations:
+Counters are fetcher-local; a flush requested while a request or lifecycle
+callback is active defers one summary until all active work settles. They never
+consume page-context recovery observations:
 successful HTTP counts also describe failed scheduler operations and must not be
-interpreted as committed recovery cycles. Transport evidence survives scheduler
-rollback, while activity-event mirroring and publication rules remain unchanged.
+interpreted as committed recovery cycles. The controller reports these transport
+diagnostics independently of auth-generation and scheduler-publication gates,
+including late completions after an auth deadline. Closed operational collectors
+and tick handles discard late activity; diagnostic reporting promises are tracked
+and settled without waiting for unfinished network work. Activity-event mirroring
+and operational publication rules remain unchanged. CLI `discover --log debug`
+also constructs its adapters with an emitter and flushes/reports its discovery
+diagnostics before disposing the transport.

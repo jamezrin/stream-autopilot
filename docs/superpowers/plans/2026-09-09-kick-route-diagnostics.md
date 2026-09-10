@@ -72,3 +72,38 @@ category search and manual claim handlers also flush before reporting.
   #500 runtime behavior has not been tested on this branch.
 - PR #490's publication guards are untouched. No locale, permission, activity
   mirror, network-policy, or release changes are part of this implementation.
+
+## Review follow-up (2026-09-10)
+
+The review identified two discarded-evidence paths: route events were still
+gated by operational publication, and an auth deadline could abandon a flush
+while its lifecycle callback remained active. CLI `discover` also constructed
+its adapters without an emitter.
+
+- [x] Reproduce scheduler abort after drain, stale publication rejection, auth
+  abort, stale auth generation, and late lifecycle completion/failure with real
+  Kick fetchers in controller tests. Six initial regressions failed as expected.
+- [x] Report only the three safe transport diagnostic codes independently of
+  operational collectors, retaining tick correlation. Close collectors/handles
+  to discard late activity. Track reporting promises without awaiting unfinished
+  HTTP/lifecycle work or changing auth deadlines.
+- [x] Defer an active flush until the last request/lifecycle callback settles;
+  reset the pending flush before emitting to prevent duplicate summaries.
+- [x] Add a failing built-CLI command regression, then construct CLI discovery
+  adapters with their operation emitter and flush/report before disposal.
+- [x] Extend late-completion coverage to both standalone auth and tick-owned
+  adapters, and verify a later valid generation does not reannounce the route.
+- [x] Run fresh focused tests and `pnpm verify`, self-review, and commit.
+
+Review verification: the five focused extension files passed 643 tests; CLI
+command and transport suites passed 50 tests. Fresh `pnpm verify` exited 0,
+including 1,884 extension tests in 84 files, 195 CLI tests in 12 files, 10 site
+tests, 17 CWS tests, 78 release tests, all workspace typechecks, the site build,
+and both browser builds. Self-review confirmed that late transport reporting
+retains tick correlation without retaining an operational collector, summaries
+are emitted only once after active work drains, and discarded activities are not
+published. `git diff --check` passed.
+
+Overlap re-audit: `origin/develop` remains `3c4e3ac6`; #500 remains `c8737826`.
+The open PR set and the previously recorded independent scope decisions are
+unchanged. No branch integration or recovery-observation consumption is added.
