@@ -6728,6 +6728,30 @@ describe("background controller", () => {
     }));
   });
 
+  it("persists discovery lastCheckedAt when a heartbeat commits during publication", async () => {
+    const { env, watcher } = await establishedTablessEnv("twitch");
+    const firstCheckedAt = env.state.sessions.twitch.lastCheckedAt;
+    expect(firstCheckedAt).toBeDefined();
+    const focusStarted = deferred<void>();
+    const allowFocus = deferred<void>();
+    env.deps.applyAdFocus.mockImplementation(async () => {
+      focusStarted.resolve();
+      await allowFocus.promise;
+    });
+    watcher.tick.mockClear();
+
+    const discovery = env.controller.tick(["twitch"]);
+    await focusStarted.promise;
+    await env.controller.runWatchHeartbeat();
+    allowFocus.resolve();
+    await discovery;
+
+    expect(env.state.sessions.twitch.lastHeartbeatOk).toBe(true);
+    expect(Date.parse(env.state.sessions.twitch.lastCheckedAt ?? "")).toBeGreaterThan(
+      Date.parse(firstCheckedAt ?? ""),
+    );
+  });
+
   it("coalesces concurrent snapshot selection requests to one pending evaluation", async () => {
     const selectionStarted = deferred<void>();
     const allowSelection = deferred<void>();
