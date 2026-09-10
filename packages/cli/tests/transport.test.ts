@@ -3,6 +3,9 @@ import { createTransport } from "../src/transport";
 import { tablessWatchPort, withHeartbeatTimeout } from "../src/transport/common";
 import { DEFAULT_ENGINE_SETTINGS } from "@lurkloot/shared/settings";
 import type { DropCampaign, DropReward } from "@lurkloot/shared/models";
+import type { DiagnosticEvent, EngineEvent } from "@lurkloot/shared/events";
+import { reportCliEvents } from "../src/events";
+import { createLogger } from "../src/logger";
 
 const ENABLED = { twitch: true, kick: true };
 
@@ -60,6 +63,34 @@ function retainedTwitchCampaignDetails(): unknown {
 }
 
 describe("createTransport", () => {
+  it("keeps route counts useful in CLI debug output across fresh adapters", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response('{"id":42}', { status: 200, headers: { "content-type": "application/json" } })));
+    const events: EngineEvent[] = [];
+    const emit = (event: EngineEvent) => events.push(event);
+    const handle = await createTransport("http", {}, "/tmp/auth", ENABLED);
+    try {
+      for (let tick = 0; tick < 3; tick += 1) {
+        const { adapter } = handle.createAdapter("kick", emit, DEFAULT_ENGINE_SETTINGS);
+        for (let request = 0; request < 10; request += 1) await adapter.checkAuthHealth();
+        adapter.flushRouteDiagnostics?.(emit);
+      }
+      const summaries = events.filter((event) => event.category === "diagnostic" && event.code === "kick_fetch_summary") as DiagnosticEvent[];
+      expect(summaries.map((event) => event.data)).toEqual(Array(3).fill({ "kick.com.background": 10 }));
+      expect(events.filter((event) => event.level === "info")).toHaveLength(1);
+      const output: string[] = [];
+      const write = vi.spyOn(process.stderr, "write").mockImplementation((line) => { output.push(String(line)); return true; });
+      try {
+        await reportCliEvents(events, createLogger("debug"));
+      } finally {
+        write.mockRestore();
+      }
+      expect(output.filter((line) => line.includes("DEBUG [kick]") && line.includes("kick.com.background=10"))).toHaveLength(3);
+      expect(output.join("\n")).not.toContain("service worker");
+    } finally {
+      await handle.dispose();
+    }
+  });
+
   it("builds a disposable http transport with both adapters", async () => {
     const handle = await createTransport("http", {}, "/tmp/auth", ENABLED);
     expect(handle.adapters.twitch.platform).toBe("twitch");

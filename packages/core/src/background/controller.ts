@@ -536,6 +536,7 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
       },
       drain(emit) {
         for (const event of pendingEvents.splice(0)) emit(event);
+        adapter?.flushRouteDiagnostics?.(emit);
       },
     };
   }
@@ -547,10 +548,14 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
   }
 
   function clearOperationalEvents(events: EngineEvent[]): void {
-    const compatibilityEvents = events.filter((event) =>
+    // Transport evidence describes HTTP work that actually happened, even when
+    // scheduler publication rolls back. It is not a claim of a committed cycle.
+    const retainedEvents = events.filter((event) =>
       event.category === "diagnostic"
-      && (event.compatibilityProfile !== undefined || event.compatibilityCapability !== undefined));
-    events.splice(0, events.length, ...compatibilityEvents);
+      && (event.compatibilityProfile !== undefined || event.compatibilityCapability !== undefined
+        || event.code === "kick_fetch_route" || event.code === "kick_fetch_summary"
+        || event.code === "kick_fetch_lifecycle_failed"));
+    events.splice(0, events.length, ...retainedEvents);
   }
 
   // Persistent tabless watchers, one per platform, kept alive across discovery
@@ -856,6 +861,7 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
             );
           } finally {
             tickAdapter?.drain(emit);
+            if (!tickAdapter) adapter.flushRouteDiagnostics?.(emit);
             discoveryEvents[platform].push(...events);
           }
         });
@@ -1857,6 +1863,7 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
             : unavailableAfterAdapterSetup();
         } finally {
           tickAdapters?.[platform]?.drain(emit);
+          if (!tickAdapters?.[platform]) adapter?.flushRouteDiagnostics?.(emit);
         }
         return { health, events, setupFailure };
       });
@@ -2675,6 +2682,7 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
       } catch (error) {
         // The tick was rolled back, so any partial claim set is not actionable.
         for (const key of Object.keys(claimedRewards) as Platform[]) delete claimedRewards[key];
+        for (const schedulerPlatform of schedulerPlatforms) tickAdapters[schedulerPlatform]?.drain(emit);
         clearOperationalEvents(events);
         try {
           if (signal.aborted) return;
@@ -4357,7 +4365,13 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
 
       let stateWithCampaigns: SchedulerState;
       try {
-        const claimed = await createAdapters(settings, emit)[message.platform].claimReward(campaign, reward);
+        const adapter = createAdapters(settings, emit)[message.platform];
+        let claimed: boolean;
+        try {
+          claimed = await adapter.claimReward(campaign, reward);
+        } finally {
+          adapter.flushRouteDiagnostics?.(emit);
+        }
         claimedManually = claimed;
         const nextCampaigns = campaigns.map((item) => {
           if (item.id !== campaign.id) return item;
@@ -4559,8 +4573,10 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
       return withEventCollector(async (emit, events) => {
         const settings = await deps.loadSettings();
         let categories: CategorySearchResult["categories"] = [];
+        let adapter: PlatformAdapter | undefined;
         try {
-          categories = await createAdapters(settings, emit)[message.platform].searchCategories?.(message.query) ?? [];
+          adapter = createAdapters(settings, emit)[message.platform];
+          categories = await adapter.searchCategories?.(message.query) ?? [];
         } catch (error) {
           emit({
             category: "diagnostic",
@@ -4568,6 +4584,8 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
             message: `Category search failed: ${error instanceof Error ? error.message : String(error)}`,
             platform: message.platform,
           });
+        } finally {
+          adapter?.flushRouteDiagnostics?.(emit);
         }
         await reportBestEffort(events);
         return { categories };
