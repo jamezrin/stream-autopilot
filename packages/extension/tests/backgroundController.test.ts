@@ -18,6 +18,7 @@ import { applySettingsPatch, DEFAULT_SETTINGS, isFarmingActive } from "@lurkloot
 import { DEFAULT_STATE } from "../src/core/storage";
 import type { PageFetcher, PlatformAdapter } from "@lurkloot/core/adapter";
 import { createKickFetcher, KickClaimState, KickDiscoveryState } from "@lurkloot/core/kick";
+import { KickWatcher } from "@lurkloot/core/kick/watch";
 import { TwitchDiscoveryState } from "@lurkloot/core/twitch";
 import { kickAdapter, twitchAdapter } from "./helpers/adapters";
 import type { TablessWatchController } from "@lurkloot/core/tablessWatch";
@@ -7231,6 +7232,47 @@ describe("background controller", () => {
       "higher",
       "current",
     ]);
+  });
+
+  it("correlates watcher startup route transitions and summary with the current scheduler tick", async () => {
+    const env = harness({
+      ...DEFAULT_SETTINGS,
+      tablessMode: true,
+      platform: {
+        twitch: { ...DEFAULT_SETTINGS.platform.twitch, enabled: false },
+        kick: { ...DEFAULT_SETTINGS.platform.kick, enabled: true },
+      },
+    });
+    const watcher = new KickWatcher({
+      fetcher: createKickFetcher({
+        background: async (url) => {
+          if (url === "https://kick.com/api/v2/channels/kick-creator") {
+            return { id: 42, livestream: { id: 84, is_live: true } };
+          }
+          if (url === "https://websockets.kick.com/viewer/v1/token") return { data: { token: "viewer-token" } };
+          throw new Error("Unexpected watcher request");
+        },
+      }),
+      createWebSocket: () => ({ readyState: 0, send() {}, close() {}, addEventListener() {} }),
+    });
+    env.kick.supportsTabless = true;
+    env.kick.createTablessWatcher = () => watcher;
+    try {
+      await env.controller.tick(["twitch"]);
+      await env.controller.tick(["kick"]);
+
+      expect(env.state.sessions.kick.watchMode).toBe("tabless");
+      const routes = allDiagnostics(env).filter((event) => event.code === "kick_fetch_route");
+      const summaries = allDiagnostics(env).filter((event) => event.code === "kick_fetch_summary");
+      expect(routes).toHaveLength(2);
+      expect(summaries.map((event) => event.data)).toEqual([{ "kick.com.background": 1, "websockets.kick.com.background": 1 }]);
+      for (const event of [...routes, ...summaries]) {
+        expect(event).toMatchObject({ platformTickId: 1, globalTickId: 2 });
+      }
+    } finally {
+      await watcher.stop();
+      env.controller.shutdown();
+    }
   });
 
   it("completes a due initial heartbeat while discovery-signal start is blocked after publication", async () => {

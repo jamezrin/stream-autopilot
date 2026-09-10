@@ -107,3 +107,14 @@ published. `git diff --check` passed.
 Overlap re-audit: `origin/develop` remains `3c4e3ac6`; #500 remains `c8737826`.
 The open PR set and the previously recorded independent scope decisions are
 unchanged. No branch integration or recovery-observation consumption is added.
+
+Final correlation follow-up: a real Kick watcher startup regression first failed
+because immediate route reporting bypassed the collector's later tick-ID
+decoration. The scheduler collector now passes its current tick context to that
+reporting boundary; standalone and auth collectors are unchanged. The regression
+asserts both startup host transitions and the drained summary carry distinct
+global/platform tick IDs (2/1). All 398 tests in the three focused controller,
+route, and watcher suites passed. Fresh `pnpm verify` exited 0 with 1,885 extension
+tests, 195 CLI tests, 10 site tests, 17 CWS tests, 78 release tests, all typechecks,
+and the site/Chromium/Firefox builds. Self-review and `git diff --check` passed;
+the summary/recovery observation separation is unchanged.

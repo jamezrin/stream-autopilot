@@ -546,10 +546,13 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
     };
   }
 
-  async function withEventCollector<T>(operation: (emit: EventEmitter, events: EngineEvent[]) => Promise<T>): Promise<T> {
+  async function withEventCollector<T>(
+    operation: (emit: EventEmitter, events: EngineEvent[]) => Promise<T>,
+    tickContext?: TickDiagnosticContext,
+  ): Promise<T> {
     const events: EngineEvent[] = [];
     let collect: EventEmitter | undefined = (event) => events.push(event);
-    const emit = withActivityDiagnostics(routeDiagnosticEmitter((event) => collect?.(event)));
+    const emit = withActivityDiagnostics(routeDiagnosticEmitter((event) => collect?.(event), tickContext));
     try {
       return await operation(emit, events);
     } finally {
@@ -2769,7 +2772,7 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
         await Promise.all(publicationLeases.map(([leasePlatform, lease]) =>
           releaseHeartbeatPublicationLease(leasePlatform, lease)));
       }
-    }), schedulerPlatforms);
+    }, tickContext), schedulerPlatforms);
     return claimedRewards;
   }
 
