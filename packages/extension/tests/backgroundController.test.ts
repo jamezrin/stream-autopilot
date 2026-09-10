@@ -7234,6 +7234,72 @@ describe("background controller", () => {
     ]);
   });
 
+  describe("platform-local route reporting", () => {
+    it.each([
+      ["auth", "discovery"],
+      ["tick", "discovery"],
+      ["auth", "heartbeat"],
+      ["tick", "heartbeat"],
+    ] as const)("does not let a stalled Kick %s summary block Twitch %s", async (kickOperation, twitchOperation) => {
+      const summaryStarted = deferred<void>();
+      const releaseSummary = deferred<void>();
+      const env = harness(farming({ ...DEFAULT_SETTINGS, tablessMode: true }), {
+        reportEvents: async (events) => {
+          if (events.some((event) => event.platform === "kick" && event.category === "diagnostic" && event.code === "kick_fetch_summary")) {
+            summaryStarted.resolve();
+            await releaseSummary.promise;
+          }
+        },
+      });
+      let providerRequests = 0;
+      const watcher = fakeTablessWatcher(async () => {
+        providerRequests += 1;
+        return { ok: true, live: true };
+      });
+      env.twitch.supportsTabless = true;
+      env.twitch.createTablessWatcher = () => watcher;
+      env.deps.createAdapter.mockImplementation((platform, emit, settings) => ({
+        adapter: platform === "kick" ? kickAdapter(createKickFetcher({
+          background: async (url) => url.endsWith("/user") ? { id: 42 } : { data: [] },
+        }), undefined, undefined, emit) : env.twitch,
+        ...resolveCompatibility(settings.compatibility, { host: "extension", twitchIdentity: "web" }),
+      }));
+      if (twitchOperation === "heartbeat") {
+        await env.controller.tick(["twitch"]);
+        advanceToNextHeartbeatDue();
+      }
+      let kickCompleted = false;
+      const kickWork = (kickOperation === "auth"
+        ? env.controller.checkAuthHealth("kick")
+        : env.controller.tick(["kick"])).then(() => { kickCompleted = true; });
+      await summaryStarted.promise;
+      let twitchCompleted = false;
+      const twitchWork = (twitchOperation === "discovery"
+        ? env.controller.tick(["twitch"])
+        : env.controller.runWatchHeartbeat()).then(() => { twitchCompleted = true; });
+      let reportsSettled = false;
+      const settling = env.controller.settleBackgroundWork().then(() => { reportsSettled = true; });
+      try {
+        await drainMicrotasks();
+        if (twitchOperation === "discovery") {
+          expect(env.state.campaigns.twitch.map((item) => item.id)).toEqual(["twitch-campaign"]);
+          expect(env.state.sessions.twitch.watchMode).toBe("tabless");
+        } else {
+          expect(providerRequests).toBe(1);
+          expect(env.state.sessions.twitch.lastHeartbeatOk).toBe(true);
+        }
+        expect(twitchCompleted).toBe(true);
+        expect(kickCompleted).toBe(false);
+        expect(reportsSettled).toBe(false);
+      } finally {
+        releaseSummary.resolve();
+        await Promise.all([kickWork, twitchWork, settling]);
+        await env.controller.settleBackgroundWork();
+        env.controller.shutdown();
+      }
+    });
+  });
+
   it("correlates watcher startup route transitions and summary with the current scheduler tick", async () => {
     const env = harness({
       ...DEFAULT_SETTINGS,

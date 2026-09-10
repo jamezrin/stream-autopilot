@@ -345,6 +345,8 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
     ? crypto.randomUUID()
     : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
   const controllerRunLabel = controllerRunId.slice(0, 8);
+  // Explicit controller cleanup observes every report, but normal operation
+  // completion waits only on its own collector/adapter handle's reports.
   const pendingRouteReports = new Set<Promise<void>>();
   let controllerRunAnnouncement: Promise<void> | undefined;
   const platformMutations: Record<Platform, Promise<unknown>> = {
@@ -510,10 +512,12 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
     adapter(settings: S, emit: EventEmitter, reportCompatibility?: boolean): PlatformAdapter;
     drain(emit: EventEmitter): void;
     close(): void;
+    settleRouteReports(): Promise<void>;
   }
 
   function createTickAdapterHandle(platform: Platform, tickContext: TickDiagnosticContext): TickAdapterHandle {
     let pendingEvents: EngineEvent[] | undefined = [];
+    const routeReports = new Set<Promise<void>>();
     let adapter: PlatformAdapter | undefined;
     let construction: ReturnType<BackgroundControllerDeps<S>["createAdapter"]> | undefined;
     let compatibilityReported = false;
@@ -524,7 +528,7 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
         const nextFingerprint = JSON.stringify(settings);
         if (!adapter || settingsFingerprint !== nextFingerprint) {
           this.drain(emit);
-          construction = deps.createAdapter(platform, routeDiagnosticEmitter((event) => pendingEvents?.push(event), tickContext), settings);
+          construction = deps.createAdapter(platform, routeDiagnosticEmitter((event) => pendingEvents?.push(event), routeReports, tickContext), settings);
           adapter = construction.adapter;
           settingsFingerprint = nextFingerprint;
           compatibilityReported = false;
@@ -538,10 +542,13 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
       },
       drain(emit) {
         for (const event of pendingEvents?.splice(0) ?? []) emit(event);
-        adapter?.flushRouteDiagnostics?.(routeDiagnosticEmitter(emit, tickContext));
+        adapter?.flushRouteDiagnostics?.(routeDiagnosticEmitter(emit, routeReports, tickContext));
       },
       close() {
         pendingEvents = undefined;
+      },
+      async settleRouteReports() {
+        await Promise.allSettled([...routeReports]);
       },
     };
   }
@@ -551,19 +558,24 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
     tickContext?: TickDiagnosticContext,
   ): Promise<T> {
     const events: EngineEvent[] = [];
+    const routeReports = new Set<Promise<void>>();
     let collect: EventEmitter | undefined = (event) => events.push(event);
-    const emit = withActivityDiagnostics(routeDiagnosticEmitter((event) => collect?.(event), tickContext));
+    const emit = withActivityDiagnostics(routeDiagnosticEmitter((event) => collect?.(event), routeReports, tickContext));
     try {
       return await operation(emit, events);
     } finally {
       // A timed-out auth request can finish later. Only its safe transport
       // diagnostics still have a destination; discard late operational events.
       collect = undefined;
-      await Promise.allSettled([...pendingRouteReports]);
+      await Promise.allSettled([...routeReports]);
     }
   }
 
-  function routeDiagnosticEmitter(emit: EventEmitter, tickContext?: TickDiagnosticContext): EventEmitter {
+  function routeDiagnosticEmitter(
+    emit: EventEmitter,
+    routeReports: Set<Promise<void>>,
+    tickContext?: TickDiagnosticContext,
+  ): EventEmitter {
     return (event) => {
       if (event.category !== "diagnostic" || event.platform !== "kick"
         || (event.code !== "kick_fetch_route" && event.code !== "kick_fetch_summary"
@@ -578,8 +590,13 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
         emittedAt: event.emittedAt ?? new Date().toISOString(),
         ...tickContext,
       }]);
+      routeReports.add(report);
       pendingRouteReports.add(report);
-      void report.then(() => pendingRouteReports.delete(report), () => pendingRouteReports.delete(report));
+      const settled = () => {
+        routeReports.delete(report);
+        pendingRouteReports.delete(report);
+      };
+      void report.then(settled, settled);
     };
   }
 
@@ -2469,7 +2486,7 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
         platform,
         tickContext,
       );
-      await Promise.allSettled([...pendingRouteReports]);
+      await Promise.all(Object.values(tickAdapters).map((adapter) => adapter.settleRouteReports()));
     }
   }
 

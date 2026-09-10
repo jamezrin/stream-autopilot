@@ -314,8 +314,11 @@ successful HTTP counts also describe failed scheduler operations and must not be
 interpreted as committed recovery cycles. The controller reports these transport
 diagnostics independently of auth-generation and scheduler-publication gates,
 including late completions after an auth deadline. Closed operational collectors
-and tick handles discard late activity; diagnostic reporting promises are tracked
-and settled without waiting for unfinished network work. Activity-event mirroring
+and tick handles discard late activity. Each collector or tick adapter handle
+settles only its own diagnostic reporting promises, so a stalled Kick report
+cannot block Twitch discovery or heartbeat transmission. A controller-wide
+registry is drained only by explicit background-work settling. These report sets
+track emitted diagnostics, not unfinished transport requests. Activity-event mirroring
 and operational publication rules remain unchanged. CLI `discover --log debug`
 also constructs its adapters with an emitter and flushes/reports its discovery
 diagnostics before disposing the transport.

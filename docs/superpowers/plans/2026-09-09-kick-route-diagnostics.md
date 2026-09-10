@@ -118,3 +118,16 @@ route, and watcher suites passed. Fresh `pnpm verify` exited 0 with 1,885 extens
 tests, 195 CLI tests, 10 site tests, 17 CWS tests, 78 release tests, all typechecks,
 and the site/Chromium/Firefox builds. Self-review and `git diff --check` passed;
 the summary/recovery observation separation is unchanged.
+
+Cross-platform reporting follow-up: four deterministic regressions first failed
+with a stalled Kick summary preventing Twitch discovery or a due heartbeat's
+provider call, for both standalone-auth and tick-owned Kick summaries. Collectors
+and tick adapter handles now own separate report sets; only explicit
+`settleBackgroundWork()` drains the controller-wide registry. The regressions
+verify Twitch finishes while Kick's owning operation and explicit report
+settling remain pending until the summary is released. All 648 tests in five
+focused suites passed, including late auth completion, discarded activity, and
+tick-correlation regressions. Fresh `pnpm verify` exited 0: 1,889 extension tests,
+195 CLI tests, 10 site tests, 17 CWS tests, 78 release tests, all typechecks, and
+the site/Chromium/Firefox builds. Self-review and `git diff --check` passed.
+No PR #500 changes or recovery-observation consumption are included.
