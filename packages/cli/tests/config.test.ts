@@ -267,6 +267,28 @@ describe("loadConfig", () => {
 });
 
 describe("CLI config warning integration", () => {
+  it("reports Kick route transitions and one summary from discover --log debug", () => {
+    const dir = mkdtempSync(join(tmpdir(), "lurkloot-discover-routes-"));
+    try {
+      const configPath = join(dir, "config.json");
+      writeFileSync(configPath, JSON.stringify({ transport: "http", settings: {
+        platform: { twitch: { enabled: false }, kick: { enabled: true } },
+      } }));
+      const fakeNetwork = "globalThis.fetch = async (url) => { if (!['https://web.kick.com/api/v1/drops/campaigns', 'https://web.kick.com/api/v1/drops/progress'].includes(String(url))) throw new Error('Unexpected request'); return new Response(JSON.stringify({data: []}), {status: 200, headers: {'content-type': 'application/json'}}); };";
+      const result = spawnSync(process.execPath, ["--import", `data:text/javascript,${encodeURIComponent(fakeNetwork)}`, CLI_PATH, "discover", "--log", "debug", "--config", configPath], {
+        cwd: CLI_PACKAGE_DIR,
+        encoding: "utf8",
+        env: { ...process.env, SA_KICK_SESSION_TOKEN: undefined, SA_TWITCH_AUTH_TOKEN: undefined, SA_TWITCH_DEVICE_ID: undefined },
+      });
+      expect(result.status, result.stderr).toBe(0);
+      expect(result.stderr).toContain("discovered 0 campaign(s)");
+      expect(result.stderr.match(/INFO \[kick\] Kick fetch web\.kick\.com/g) ?? []).toHaveLength(1);
+      expect(result.stderr.match(/DEBUG \[kick\] Kick fetch success summary: web\.kick\.com\.background=2/g) ?? []).toHaveLength(1);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it.each([
     ["validate-config", ["validate-config"]],
     ["discover", ["discover"]],

@@ -115,6 +115,7 @@ function createExtensionAdapter(platform: Platform, emit: EventEmitter, settings
     )
     : new KickAdapter(
       createKickFetcher({
+        routeState: kickDiscoveryState.routeDiagnostics,
         background: (url, init) => fetchKickInBackground<unknown>(url, init),
         pageFetch: (url, init) => fetchJsonInPage<unknown>(KICK_PAGE_CONTEXT_URL, url, init, {
           retainPageContext: { platform: "kick" },

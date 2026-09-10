@@ -16,6 +16,7 @@ import type { KickClaimCapability } from "./claim/types";
 import { safeHttpsUrl } from "./claim/types";
 import { KickClaimState } from "./claim/v2";
 import { isSafeFetchError } from "../../core/fetchError";
+import { KickRouteCounts, KickRouteState, safeKickRouteHost } from "./routeDiagnostics";
 
 export { createKickClaimCapability } from "./claim/factory";
 export type { KickClaimCapability, KickClaimOutcome } from "./claim/types";
@@ -28,12 +29,12 @@ const FOLLOWED_CHANNELS_CACHE_TTL_MS = 5 * 60_000;
 // Cross-tick cache for listFollowedChannels. A field on KickAdapter itself would
 // not do: every host reconstructs KickAdapter fresh each scheduler tick (see
 // TwitchDiscoveryState for the same constraint on the Twitch side), so only
-// state injected from outside the adapter survives to the next tick. Only one
-// field today, but this is the deliberate injection point for any future
-// cross-tick Kick state (mirroring TwitchDiscoveryState) — resist collapsing it
-// back into a bare StaleWhileRevalidateCache passed around directly.
+// state injected from outside the adapter survives to the next tick.
+// The route announcement state also shares this lifetime so unchanged routes
+// are not announced again when the next tick constructs an adapter.
 export class KickDiscoveryState {
   readonly followedChannels = new StaleWhileRevalidateCache<string[]>(FOLLOWED_CHANNELS_CACHE_TTL_MS);
+  readonly routeDiagnostics = new KickRouteState();
 }
 
 export interface KickAdapterOptions {
@@ -134,24 +135,21 @@ interface KickChallengeClaimResponse {
   data?: { challenge_id?: string; winner?: { id?: string; rarity?: string } } | null;
 }
 
-// Default Kick fetcher. Spike: try the service worker first (fully tabless) and
-// fall back to a retained kick.com page-context tab if Kick's WAF rejects the
-// extension origin. The outcome is logged once per host (then debug) so a
-// real-Chrome run shows exactly which calls are tabless-capable. The fallback
-// makes this risk-free: farming behaves as before regardless of the result.
+// Try the background transport first, then the host's optional page fallback.
+// Only route transitions emit per-request events; successful requests are
+// counted until the caller flushes the drained logical operation.
 export function createKickFetcher(deps: {
   background: (url: string, init?: RequestInit) => Promise<unknown>;
-  pageFetch: (url: string, init?: RequestInit) => Promise<unknown>;
+  pageFetch?: (url: string, init?: RequestInit) => Promise<unknown>;
   onBackgroundSuccess?: (host: string, emit: EventEmitter) => Promise<void> | void;
   onPageFallback?: (host: string, emit: EventEmitter) => Promise<void> | void;
+  routeState?: KickRouteState;
 }): PageFetcher {
   const { background, pageFetch, onBackgroundSuccess, onPageFallback } = deps;
-  const announced = new Map<string, "background" | "fallback">();
-  const report = (emit: EventEmitter, host: string, outcome: "background" | "fallback", detail: string): void => {
-    const repeat = announced.get(host) === outcome;
-    announced.set(host, outcome);
-    diagnostic(emit, repeat ? "debug" : "info", `Kick fetch ${host} ${detail}`, "kick");
-  };
+  const routeState = deps.routeState ?? new KickRouteState();
+  const counts = new KickRouteCounts();
+  let activeRequests = 0;
+  let pendingFlush: EventEmitter | undefined;
   const notifyLifecycle = async (
     callback: ((host: string, emit: EventEmitter) => Promise<void> | void) | undefined,
     host: string,
@@ -160,41 +158,52 @@ export function createKickFetcher(deps: {
     try {
       await callback?.(host, emit);
     } catch {
-      diagnostic(emit, "debug", `Kick page-context lifecycle update failed for ${host}`, "kick");
+      emit({ category: "diagnostic", platform: "kick", level: "debug", code: "kick_fetch_lifecycle_failed", message: `Kick page-context lifecycle update failed for ${host}` });
     }
   };
   return {
+    flushRouteDiagnostics(emit) {
+      if (activeRequests === 0) counts.flush(emit);
+      else pendingFlush = emit;
+    },
     fetchJson: async <T,>(url: string, init?: RequestInit, emit: EventEmitter = ignoreEvent): Promise<T> => {
       init?.signal?.throwIfAborted();
-      const host = safeHost(url);
-      let result: unknown;
+      const host = safeKickRouteHost(url);
+      activeRequests += 1;
       try {
-        result = await background(url, init);
-      } catch (error) {
-        init?.signal?.throwIfAborted();
-        // Rate limiting applies to the request, not its execution context.
-        if (isSafeFetchError(error) && error.failure.status === 429) throw error;
-        report(emit, host, "fallback", error instanceof KickWafBlockedError
-          ? "→ WAF-blocked from service worker, using page tab"
-          : "→ service worker error, using page tab");
-        await notifyLifecycle(onPageFallback, host, emit);
-        init?.signal?.throwIfAborted();
-        result = await pageFetch(url, init);
+        let result: unknown;
+        try {
+          result = await background(url, init);
+        } catch (error) {
+          init?.signal?.throwIfAborted();
+          // Rate limiting applies to the request, not its execution context.
+          // CLI transports have no page fallback and retain their original error.
+          if (!pageFetch || (isSafeFetchError(error) && error.failure.status === 429)) throw error;
+          init?.signal?.throwIfAborted();
+          result = await pageFetch(url, init);
+          routeState.report(emit, host, "page", error instanceof KickWafBlockedError
+            ? "→ WAF-blocked from service worker, using page tab"
+            : "→ service worker error, using page tab");
+          counts.record(host, "page");
+          await notifyLifecycle(onPageFallback, host, emit);
+          return result as T;
+        }
+        routeState.report(emit, host, "background", pageFetch
+          ? "→ service worker OK (tabless-capable)"
+          : "→ background transport OK (tabless-capable)");
+        counts.record(host, "background");
+        await notifyLifecycle(onBackgroundSuccess, host, emit);
         return result as T;
+      } finally {
+        activeRequests -= 1;
+        if (activeRequests === 0 && pendingFlush) {
+          const emitSummary = pendingFlush;
+          pendingFlush = undefined;
+          counts.flush(emitSummary);
+        }
       }
-      report(emit, host, "background", "→ service worker OK (tabless-capable)");
-      await notifyLifecycle(onBackgroundSuccess, host, emit);
-      return result as T;
     },
   };
-}
-
-function safeHost(url: string): string {
-  try {
-    return new URL(url).host;
-  } catch {
-    return "unknown-host";
-  }
 }
 
 // Parses the `categories[]` array from Kick's `/api/search` response. Each entry
@@ -230,6 +239,10 @@ export class KickAdapter implements PlatformAdapter {
   private readonly claimCapability: KickClaimCapability;
   private readonly discoveryState: KickDiscoveryState;
   readonly createDiscoverySignalController?: () => DiscoverySignalController;
+
+  flushRouteDiagnostics(emit: EventEmitter): void {
+    this.fetcher.flushRouteDiagnostics?.(emit);
+  }
 
   async checkAuthHealth(signal?: AbortSignal): Promise<PlatformAuthHealth> {
     const checkedAt = new Date().toISOString();

@@ -3,7 +3,7 @@ import type { EventEmitter } from "@lurkloot/shared/events";
 import { DEFAULT_ENGINE_SETTINGS } from "@lurkloot/shared/settings";
 import type { PageFetcher, PlatformAdapter, WatchTabPort } from "@lurkloot/core/adapter";
 import type { WebSocketFactory } from "@lurkloot/core/webSocket";
-import { KickAdapter, KickClaimState, KickDiscoveryState } from "@lurkloot/core/kick";
+import { createKickFetcher, KickAdapter, KickClaimState, KickDiscoveryState } from "@lurkloot/core/kick";
 import { TwitchAdapter, TwitchDiscoveryState } from "@lurkloot/core/twitch";
 import type { TwitchHeartbeatFetchText, TwitchHeartbeatPost } from "@lurkloot/core/twitch/heartbeat";
 import { resolveCompatibility, type CompatibilityResolution } from "@lurkloot/core";
@@ -74,6 +74,7 @@ export function createCliAdapters(
     const identity = twitchClientIdentity(creds);
     const twitchIdentity = identity.userAgent ? "android" : "web";
     const resolution = resolveCompatibility(settings.compatibility, { host: "cli", twitchIdentity });
+    const kickFetcher = platform === "kick" ? deps.kickFetcher() : undefined;
     const adapter = platform === "twitch"
       ? new TwitchAdapter(
         deps.twitchFetcher(),
@@ -90,7 +91,10 @@ export function createCliAdapters(
         emit,
       )
       : new KickAdapter(
-        deps.kickFetcher(),
+        createKickFetcher({
+          background: (url, init) => kickFetcher!.fetchJson(url, init, emit),
+          routeState: kickDiscoveryState.routeDiagnostics,
+        }),
         tablessWatchPort,
         deps.kickWebSocketFactory?.(),
         { compatibility: resolution.compatibility.kick, claimState: kickClaimState, discoveryState: kickDiscoveryState },

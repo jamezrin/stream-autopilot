@@ -345,6 +345,9 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
     ? crypto.randomUUID()
     : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
   const controllerRunLabel = controllerRunId.slice(0, 8);
+  // Explicit controller cleanup observes every report, but normal operation
+  // completion waits only on its own collector/adapter handle's reports.
+  const pendingRouteReports = new Set<Promise<void>>();
   let controllerRunAnnouncement: Promise<void> | undefined;
   const platformMutations: Record<Platform, Promise<unknown>> = {
     twitch: Promise.resolve(),
@@ -508,10 +511,13 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
     readonly platform: Platform;
     adapter(settings: S, emit: EventEmitter, reportCompatibility?: boolean): PlatformAdapter;
     drain(emit: EventEmitter): void;
+    close(): void;
+    settleRouteReports(): Promise<void>;
   }
 
-  function createTickAdapterHandle(platform: Platform): TickAdapterHandle {
-    const pendingEvents: EngineEvent[] = [];
+  function createTickAdapterHandle(platform: Platform, tickContext: TickDiagnosticContext): TickAdapterHandle {
+    let pendingEvents: EngineEvent[] | undefined = [];
+    const routeReports = new Set<Promise<void>>();
     let adapter: PlatformAdapter | undefined;
     let construction: ReturnType<BackgroundControllerDeps<S>["createAdapter"]> | undefined;
     let compatibilityReported = false;
@@ -522,35 +528,85 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
         const nextFingerprint = JSON.stringify(settings);
         if (!adapter || settingsFingerprint !== nextFingerprint) {
           this.drain(emit);
-          construction = deps.createAdapter(platform, (event) => pendingEvents.push(event), settings);
+          construction = deps.createAdapter(platform, routeDiagnosticEmitter((event) => pendingEvents?.push(event), routeReports, tickContext), settings);
           adapter = construction.adapter;
           settingsFingerprint = nextFingerprint;
           compatibilityReported = false;
         }
         if (reportCompatibility && !compatibilityReported && construction) {
-          reportAdapterCompatibility(construction, settings, (event) => pendingEvents.push(event), [platform]);
+          reportAdapterCompatibility(construction, settings, (event) => pendingEvents?.push(event), [platform]);
           compatibilityReported = true;
         }
         this.drain(emit);
         return adapter;
       },
       drain(emit) {
-        for (const event of pendingEvents.splice(0)) emit(event);
+        for (const event of pendingEvents?.splice(0) ?? []) emit(event);
+        adapter?.flushRouteDiagnostics?.(routeDiagnosticEmitter(emit, routeReports, tickContext));
+      },
+      close() {
+        pendingEvents = undefined;
+      },
+      async settleRouteReports() {
+        await Promise.allSettled([...routeReports]);
       },
     };
   }
 
-  async function withEventCollector<T>(operation: (emit: EventEmitter, events: EngineEvent[]) => Promise<T>): Promise<T> {
+  async function withEventCollector<T>(
+    operation: (emit: EventEmitter, events: EngineEvent[]) => Promise<T>,
+    tickContext?: TickDiagnosticContext,
+  ): Promise<T> {
     const events: EngineEvent[] = [];
-    const emit = withActivityDiagnostics((event) => events.push(event));
-    return operation(emit, events);
+    const routeReports = new Set<Promise<void>>();
+    let collect: EventEmitter | undefined = (event) => events.push(event);
+    const emit = withActivityDiagnostics(routeDiagnosticEmitter((event) => collect?.(event), routeReports, tickContext));
+    try {
+      return await operation(emit, events);
+    } finally {
+      // A timed-out auth request can finish later. Only its safe transport
+      // diagnostics still have a destination; discard late operational events.
+      collect = undefined;
+      await Promise.allSettled([...routeReports]);
+    }
+  }
+
+  function routeDiagnosticEmitter(
+    emit: EventEmitter,
+    routeReports: Set<Promise<void>>,
+    tickContext?: TickDiagnosticContext,
+  ): EventEmitter {
+    return (event) => {
+      if (event.category !== "diagnostic" || event.platform !== "kick"
+        || (event.code !== "kick_fetch_route" && event.code !== "kick_fetch_summary"
+          && event.code !== "kick_fetch_lifecycle_failed")) {
+        emit(event);
+        return;
+      }
+      // These describe transport work, not accepted auth/scheduler state. Report
+      // them once even if their operation is aborted, superseded, or times out.
+      const report = reportBestEffort([{
+        ...event,
+        emittedAt: event.emittedAt ?? new Date().toISOString(),
+        ...tickContext,
+      }]);
+      routeReports.add(report);
+      pendingRouteReports.add(report);
+      const settled = () => {
+        routeReports.delete(report);
+        pendingRouteReports.delete(report);
+      };
+      void report.then(settled, settled);
+    };
   }
 
   function clearOperationalEvents(events: EngineEvent[]): void {
-    const compatibilityEvents = events.filter((event) =>
+    // Route diagnostics bypass the operational collector in
+    // routeDiagnosticEmitter, so only compatibility evidence can remain here.
+    const retainedEvents = events.filter((event) =>
       event.category === "diagnostic"
       && (event.compatibilityProfile !== undefined || event.compatibilityCapability !== undefined));
-    events.splice(0, events.length, ...compatibilityEvents);
+    events.splice(0, events.length, ...retainedEvents);
   }
 
   // Persistent tabless watchers, one per platform, kept alive across discovery
@@ -856,6 +912,7 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
             );
           } finally {
             tickAdapter?.drain(emit);
+            if (!tickAdapter) adapter.flushRouteDiagnostics?.(emit);
             discoveryEvents[platform].push(...events);
           }
         });
@@ -1857,6 +1914,7 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
             : unavailableAfterAdapterSetup();
         } finally {
           tickAdapters?.[platform]?.drain(emit);
+          if (!tickAdapters?.[platform]) adapter?.flushRouteDiagnostics?.(emit);
         }
         return { health, events, setupFailure };
       });
@@ -2402,6 +2460,7 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
       globalTickId: ++globalTickSequence,
       platformTickId: ++platformTickSequence[platform],
     };
+    const tickAdapters = { [platform]: createTickAdapterHandle(platform, tickContext) };
     const tickStartedAt = Date.now();
     diagnosticEvent(
       "debug",
@@ -2410,12 +2469,13 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
       tickContext,
     );
     try {
-      const claimed = await runTick(tickContext, [platform], abort.signal, trigger, onPersisted);
+      const claimed = await runTick(tickContext, [platform], abort.signal, trigger, tickAdapters, onPersisted);
       return [platform, claimed[platform] ?? []];
     } catch (error) {
       if (abort.signal.aborted) return [platform, []];
       throw error;
     } finally {
+      for (const adapter of Object.values(tickAdapters)) adapter.close();
       activeTicks.delete(abort);
       activePlatformTicks[platform] -= 1;
       diagnosticEvent(
@@ -2424,6 +2484,7 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
         platform,
         tickContext,
       );
+      await Promise.all(Object.values(tickAdapters).map((adapter) => adapter.settleRouteReports()));
     }
   }
 
@@ -2432,13 +2493,12 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
     platforms: Platform[] | undefined,
     signal: AbortSignal,
     trigger: TickTrigger,
+    tickAdapters: Partial<Record<Platform, TickAdapterHandle>>,
     onPersisted?: (state: SchedulerState) => void,
   ): Promise<ClaimedRewards> {
     const claimedRewards: ClaimedRewards = {};
     const settings = await deps.loadSettings();
     const requestedPlatforms = platforms ?? PLATFORMS;
-    const tickAdapters = Object.fromEntries(requestedPlatforms.map((platform) =>
-      [platform, createTickAdapterHandle(platform)])) as Partial<Record<Platform, TickAdapterHandle>>;
     const excludedPlatforms = new Set<Platform>();
     if (isFarmingActive(settings)) {
       if (requestedPlatforms.includes("twitch")) {
@@ -2675,6 +2735,7 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
       } catch (error) {
         // The tick was rolled back, so any partial claim set is not actionable.
         for (const key of Object.keys(claimedRewards) as Platform[]) delete claimedRewards[key];
+        for (const schedulerPlatform of schedulerPlatforms) tickAdapters[schedulerPlatform]?.drain(emit);
         clearOperationalEvents(events);
         try {
           if (signal.aborted) return;
@@ -2726,7 +2787,7 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
         await Promise.all(publicationLeases.map(([leasePlatform, lease]) =>
           releaseHeartbeatPublicationLease(leasePlatform, lease)));
       }
-    }), schedulerPlatforms);
+    }, tickContext), schedulerPlatforms);
     return claimedRewards;
   }
 
@@ -4089,7 +4150,8 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
     let pending = backgroundWork;
     for (;;) {
       await pending;
-      if (backgroundWork === pending) return;
+      await Promise.allSettled([...pendingRouteReports]);
+      if (backgroundWork === pending && pendingRouteReports.size === 0) return;
       pending = backgroundWork;
     }
   }
@@ -4357,7 +4419,13 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
 
       let stateWithCampaigns: SchedulerState;
       try {
-        const claimed = await createAdapters(settings, emit)[message.platform].claimReward(campaign, reward);
+        const adapter = createAdapters(settings, emit)[message.platform];
+        let claimed: boolean;
+        try {
+          claimed = await adapter.claimReward(campaign, reward);
+        } finally {
+          adapter.flushRouteDiagnostics?.(emit);
+        }
         claimedManually = claimed;
         const nextCampaigns = campaigns.map((item) => {
           if (item.id !== campaign.id) return item;
@@ -4559,8 +4627,10 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
       return withEventCollector(async (emit, events) => {
         const settings = await deps.loadSettings();
         let categories: CategorySearchResult["categories"] = [];
+        let adapter: PlatformAdapter | undefined;
         try {
-          categories = await createAdapters(settings, emit)[message.platform].searchCategories?.(message.query) ?? [];
+          adapter = createAdapters(settings, emit)[message.platform];
+          categories = await adapter.searchCategories?.(message.query) ?? [];
         } catch (error) {
           emit({
             category: "diagnostic",
@@ -4568,6 +4638,8 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
             message: `Category search failed: ${error instanceof Error ? error.message : String(error)}`,
             platform: message.platform,
           });
+        } finally {
+          adapter?.flushRouteDiagnostics?.(emit);
         }
         await reportBestEffort(events);
         return { categories };

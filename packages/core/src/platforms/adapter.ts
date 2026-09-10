@@ -76,6 +76,9 @@ export interface ClaimedChallenge {
 
 export interface PlatformAdapter {
   platform: Platform;
+  // Call after a logical operation drains. Independent from consume-once
+  // page-context recovery observations; does not declare a cycle successful.
+  flushRouteDiagnostics?(emit: EventEmitter): void;
   readonly compatibility?: ResolvedCompatibility[Platform];
   checkAuthHealth(signal?: AbortSignal): Promise<PlatformAuthHealth>;
   refreshCampaigns(session?: WatchSession, options?: AdapterOperationOptions): Promise<DropCampaign[]>;
@@ -124,6 +127,7 @@ export interface PlatformAdapter {
 }
 
 export interface PageFetcher {
+  flushRouteDiagnostics?(emit: EventEmitter): void;
   fetchJson<T>(url: string, init?: RequestInit, emit?: EventEmitter): Promise<T>;
 }
 

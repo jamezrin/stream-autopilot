@@ -71,6 +71,9 @@ export class KickWatcher implements TablessWatchController {
   }
 
   drainEvents() {
+    // A watcher outlives its creating adapter/tick. Reconnect and target-refresh
+    // counts belong to its own drained heartbeat operation.
+    this.fetcher.flushRouteDiagnostics?.(this.diagnostics.emit);
     return this.diagnostics.drain();
   }
 

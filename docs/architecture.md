@@ -297,3 +297,28 @@ The extension stores activity in a bounded IndexedDB database owned by the backg
 The popup shows one category at a time. The activity/diagnostics switch selects a view rather than interleaving both, since the mirror means a merged list would state everything twice.
 
 The CLI has no activity store. Its output is already English, so it logs mirrored diagnostics at `debug` — their ids and reason codes stay available under `--log debug` without repeating each activity line at its own level. It formats each activity variant directly, passes diagnostic messages through, and routes each batch in its original order through the existing `--log`-filtered stderr logger. Retention belongs to Docker, systemd, Loki, or another external collector; `state.json` never contains new event data, and legacy event fields disappear after the state is loaded and saved.
+
+Kick fetch diagnostics keep individual initial-route, fallback, recovery, and
+lifecycle-update-failure evidence. Unchanged successes use fixed counters for
+`kick.com`, `web.kick.com`, `websockets.kick.com`, and one unknown-host bucket,
+split into background/page routes. Drained auth, discovery, scheduler, manual
+action, and watcher operations flush a `kick_fetch_summary` diagnostic with
+numeric counts and an English message usable in exports and CLI debug logs.
+No URL path, query value, arbitrary host, header, credential, or payload is kept.
+The last announced route lives in host-owned `KickDiscoveryState`, so adapter
+reconstruction does not repeat it; restarting the runtime begins a new history.
+Counters are fetcher-local; a flush requested while a request or lifecycle
+callback is active defers one summary until all active work settles. They never
+consume page-context recovery observations:
+successful HTTP counts also describe failed scheduler operations and must not be
+interpreted as committed recovery cycles. The controller reports these transport
+diagnostics independently of auth-generation and scheduler-publication gates,
+including late completions after an auth deadline. Closed operational collectors
+and tick handles discard late activity. Each collector or tick adapter handle
+settles only its own diagnostic reporting promises, so a stalled Kick report
+cannot block Twitch discovery or heartbeat transmission. A controller-wide
+registry is drained only by explicit background-work settling. These report sets
+track emitted diagnostics, not unfinished transport requests. Activity-event mirroring
+and operational publication rules remain unchanged. CLI `discover --log debug`
+also constructs its adapters with an emitter and flushes/reports its discovery
+diagnostics before disposing the transport.

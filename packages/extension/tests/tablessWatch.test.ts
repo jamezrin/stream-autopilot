@@ -170,8 +170,9 @@ describe("kick viewer watcher", () => {
     await watcher?.tick({});
 
     const reconnectEvents = watcher?.drainEvents() ?? [];
-    const refreshFetches = reconnectEvents.filter((event) => event.message.includes("Kick fetch kick.com"));
+    const refreshFetches = reconnectEvents.filter((event) => event.code === "kick_fetch_summary");
     expect(refreshFetches).toHaveLength(1);
+    expect(refreshFetches[0].data).toEqual({ "kick.com.background": 1, "websockets.kick.com.background": 1 });
     expect(reconnectEvents).toContainEqual(expect.objectContaining({ message: "Kick viewer connection closed for creator" }));
     expect(creationEvents.filter((event) => event.message.includes("Kick fetch kick.com"))).toEqual([]);
     await watcher?.stop();
