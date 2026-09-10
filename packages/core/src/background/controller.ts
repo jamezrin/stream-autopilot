@@ -601,13 +601,11 @@ export function createBackgroundController<S extends EngineSettings = EngineSett
   }
 
   function clearOperationalEvents(events: EngineEvent[]): void {
-    // Transport evidence describes HTTP work that actually happened, even when
-    // scheduler publication rolls back. It is not a claim of a committed cycle.
+    // Route diagnostics bypass the operational collector in
+    // routeDiagnosticEmitter, so only compatibility evidence can remain here.
     const retainedEvents = events.filter((event) =>
       event.category === "diagnostic"
-      && (event.compatibilityProfile !== undefined || event.compatibilityCapability !== undefined
-        || event.code === "kick_fetch_route" || event.code === "kick_fetch_summary"
-        || event.code === "kick_fetch_lifecycle_failed"));
+      && (event.compatibilityProfile !== undefined || event.compatibilityCapability !== undefined));
     events.splice(0, events.length, ...retainedEvents);
   }
 

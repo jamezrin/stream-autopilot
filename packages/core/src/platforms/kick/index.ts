@@ -179,13 +179,13 @@ export function createKickFetcher(deps: {
           // Rate limiting applies to the request, not its execution context.
           // CLI transports have no page fallback and retain their original error.
           if (!pageFetch || (isSafeFetchError(error) && error.failure.status === 429)) throw error;
+          init?.signal?.throwIfAborted();
+          result = await pageFetch(url, init);
           routeState.report(emit, host, "page", error instanceof KickWafBlockedError
             ? "→ WAF-blocked from service worker, using page tab"
             : "→ service worker error, using page tab");
-          await notifyLifecycle(onPageFallback, host, emit);
-          init?.signal?.throwIfAborted();
-          result = await pageFetch(url, init);
           counts.record(host, "page");
+          await notifyLifecycle(onPageFallback, host, emit);
           return result as T;
         }
         routeState.report(emit, host, "background", pageFetch

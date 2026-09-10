@@ -1072,7 +1072,7 @@ describe("createKickFetcher (background-first, tab fallback)", () => {
     expect(onPageFallback).not.toHaveBeenCalled();
   });
 
-  it("records fallback before page execution even when the page request fails", async () => {
+  it("does not record a fallback when page execution fails", async () => {
     const order: string[] = [];
     const fetcher = createKickFetcher({
       background: async () => { throw new KickWafBlockedError("blocked"); },
@@ -1085,7 +1085,7 @@ describe("createKickFetcher (background-first, tab fallback)", () => {
 
     await expect(fetcher.fetchJson("https://web.kick.com/api/v1/drops/campaigns"))
       .rejects.toThrow("page unavailable");
-    expect(order).toEqual(["fallback", "page"]);
+    expect(order).toEqual(["page"]);
   });
 
   it("keeps fallback diagnostics free of request details and raw errors", async () => {

@@ -80,9 +80,31 @@ describe("Kick route diagnostics", () => {
     await expect(fetcher.fetchJson("https://kick.com/private", undefined, emit)).rejects.toThrow("secret page");
     fetcher.flushRouteDiagnostics?.(emit);
     const output = diagnostics(events);
-    expect(output.filter((event) => event.message.includes("lifecycle update failed"))).toHaveLength(2);
+    expect(output.filter((event) => event.message.includes("lifecycle update failed"))).toHaveLength(1);
     expect(output.find((event) => event.code === "kick_fetch_summary")?.data).toEqual({ "kick.com.page": 1 });
     expect(JSON.stringify(output)).not.toContain("secret");
+  });
+
+  it("does not announce recovery after a page route failed before succeeding", async () => {
+    const events: EngineEvent[] = [];
+    let backgroundFails = true;
+    const fetcher = createKickFetcher({
+      background: async () => {
+        if (backgroundFails) throw new Error("background unavailable");
+        return {};
+      },
+      pageFetch: async () => { throw new Error("page unavailable"); },
+      routeState: new KickDiscoveryState().routeDiagnostics,
+    });
+
+    await expect(fetcher.fetchJson("https://kick.com/private", undefined, (event) => events.push(event)))
+      .rejects.toThrow("page unavailable");
+    backgroundFails = false;
+    await fetcher.fetchJson("https://kick.com/private", undefined, (event) => events.push(event));
+
+    const transitions = diagnostics(events).filter((event) => event.code === "kick_fetch_route");
+    expect(transitions).toHaveLength(1);
+    expect(transitions[0]?.message).not.toContain("recovered");
   });
 
   it("does not flush a partial observation while any fetch or lifecycle callback is active", async () => {
