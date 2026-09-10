@@ -5,7 +5,7 @@ import { CHROME_WEB_STORE_REVIEW_URL } from "./constants";
 import { useT } from "./context";
 import { cn } from "./primitives";
 
-export { shouldShowRateNudge } from "./rateNudge.logic";
+export { shouldShowGithubStarNudge, shouldShowRateNudge } from "./rateNudge.logic";
 
 export function RateNudge({ onRate, onDismiss }: { onRate(): void; onDismiss(): void }): React.ReactElement {
   const t = useT();

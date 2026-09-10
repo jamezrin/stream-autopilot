@@ -102,6 +102,7 @@ export const DEFAULT_STATE: SchedulerState = {
   },
   managedWatchTabs: {},
   managedPageContextTabs: {},
+  campaignSearchBackoffs: {},
   campaigns: {
     twitch: [],
     kick: [],

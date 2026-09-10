@@ -14,7 +14,7 @@ interface ActivityEventReporterDeps {
 }
 
 interface RuntimeMessageSender {
-  tab?: { id?: number };
+  tab?: { id?: number; url?: string };
 }
 
 interface RuntimeMessageDispatcherDeps {
@@ -60,6 +60,7 @@ export function createRuntimeMessageDispatcher(deps: RuntimeMessageDispatcherDep
   return (message: RuntimeMessage, sender?: RuntimeMessageSender): Promise<unknown> => {
     if (message.type === "exportCliCredentials") return deps.exportCliCredentials();
     if (message.type === "resetExtension") return deps.resetExtension();
+    if (message.type === "getTabId") return Promise.resolve(sender?.tab?.id);
     if (message.type === "getActivity" || message.type === "exportDiagnostics" || message.type === "clearActivity") {
       return deps.handleActivityMessage(message);
     }

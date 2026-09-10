@@ -7,6 +7,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./rateNudge": "./src/rateNudge.logic.ts",
+    "./popupNoticeSlot": "./src/popupNoticeSlot.ts",
     "./styles.css": "./src/styles.css"
   },
   "scripts": {

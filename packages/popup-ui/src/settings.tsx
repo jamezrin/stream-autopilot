@@ -30,7 +30,6 @@ export function SettingsView({ suggestions, onSearchCategories, settings, onSett
 }) {
   const t = useT();
   const [query, setQuery] = useState("");
-  const [platform, setPlatform] = useState<Platform>("twitch");
   const [exportArmed, setExportArmed] = useState(false);
   const [exportingSettings, setExportingSettings] = useState(false);
   const [exportSettingsFailed, setExportSettingsFailed] = useState(false);
@@ -128,9 +127,9 @@ export function SettingsView({ suggestions, onSearchCategories, settings, onSett
   ].join(" ").toLocaleLowerCase();
   const showActions = hasActions && (!searching || actionSearchText.includes(query.trim().toLocaleLowerCase()));
   const generalSection = visible.find((section) => section.id === "general");
-  const platformSection = visible.find((section) => section.id === platform);
-  const compatibilityGroup = platformSection?.groups.find((group) => group.id.endsWith(".compatibility"));
-  const platformContentGroups = platformSection?.groups.filter((group) => group !== compatibilityGroup) ?? [];
+  const platformSections = (Object.keys(PLATFORMS) as Platform[])
+    .map((id) => visible.find((section) => section.id === id))
+    .filter((section): section is NonNullable<typeof section> => Boolean(section));
 
   function renderGroupContent(group: typeof sections[number]["groups"][number], includeDescription = true): React.ReactNode {
     return (
@@ -157,8 +156,6 @@ export function SettingsView({ suggestions, onSearchCategories, settings, onSett
                 key={`${section.id}.rows`}
                 id={`${section.id}.rows`}
                 title={PLATFORMS[section.id as Platform].label}
-                icon={section.icon}
-                iconNode={section.iconNode}
               >
                 <div className="divide-y divide-zinc-100 dark:divide-zinc-800/70">
                   {section.rows.map((row) => <React.Fragment key={row.id}>{row.render()}</React.Fragment>)}
@@ -170,8 +167,6 @@ export function SettingsView({ suggestions, onSearchCategories, settings, onSett
                 <SettingsSection
                   id={group.id}
                   title={section.id === "general" ? t(group.titleKey) : `${PLATFORMS[section.id as Platform].label} · ${t(group.titleKey)}`}
-                  icon={section.id === "general" ? undefined : section.icon}
-                  iconNode={section.id === "general" ? undefined : section.iconNode}
                 >
                   {renderGroupContent(group, false)}
                 </SettingsSection>
@@ -189,60 +184,31 @@ export function SettingsView({ suggestions, onSearchCategories, settings, onSett
             </div>
           ) : null)}
 
-          <SettingsSection id="platform-specific" title={t("settingsPlatformSettingsTitle")} description={t("platformSettingsDescription")}>
-            <div role="tablist" aria-label={t("settingsPlatformSettingsTitle")} className="grid grid-cols-2 gap-2">
-              {(Object.keys(PLATFORMS) as Platform[]).map((id) => {
-                const selected = platform === id;
-                const definition = PLATFORMS[id];
-                const label = definition.label;
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    role="tab"
-                    aria-label={label}
-                    aria-selected={selected}
-                    aria-controls="platform-settings-panel"
-                    onClick={() => setPlatform(id)}
-                    className={selected
-                      ? "relative flex items-center justify-center gap-1.5 overflow-hidden rounded-xl border bg-white px-2 py-2 text-[11px] font-bold shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] dark:bg-zinc-900"
-                      : "flex items-center justify-center gap-1.5 rounded-xl border border-transparent px-2 py-2 text-[11px] font-semibold text-zinc-400 outline-none transition-colors hover:bg-zinc-100 hover:text-zinc-700 focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] dark:text-zinc-500 dark:hover:bg-zinc-900 dark:hover:text-zinc-200"}
-                    style={selected ? { backgroundColor: `${definition.color}18`, borderColor: `${definition.color}80`, color: definition.color } : undefined}
-                  >
-                    <span className="text-[10px] font-black" style={{ color: definition.color }}>{definition.mark}</span>
-                    {label}
-                    {selected ? <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-full" style={{ backgroundColor: definition.color }} /> : null}
-                  </button>
-                );
-              })}
-            </div>
-            {platformSection ? (
-              <section id="platform-settings-panel" aria-label={PLATFORMS[platform].label} className="space-y-3">
-                {platformSection.rows.length > 0 ? (
-                  <div className="divide-y divide-zinc-100 dark:divide-zinc-800/70">
-                    {platformSection.rows.map((row) => <React.Fragment key={row.id}>{row.render()}</React.Fragment>)}
-                  </div>
-                ) : null}
-                {platformContentGroups.map((group) => (
-                  <div key={group.id} id={`settings-group-${group.id}`}>
-                    <SettingsGroup title={t(group.titleKey)} description={group.description} badge={group.badge}>
-                      {group.entries.map((entry) => <React.Fragment key={entry.id}>{entry.render()}</React.Fragment>)}
-                    </SettingsGroup>
-                  </div>
-                ))}
-              </section>
-            ) : null}
-          </SettingsSection>
+          {platformSections.map((section) => (
+            <SettingsSection
+              key={section.id}
+              id={section.id}
+              title={PLATFORMS[section.id as Platform].label}
+              description={section.description}
+            >
+              {section.rows.length > 0 ? (
+                <div className="divide-y divide-zinc-100 dark:divide-zinc-800/70">
+                  {section.rows.map((row) => <React.Fragment key={row.id}>{row.render()}</React.Fragment>)}
+                </div>
+              ) : null}
+              {section.groups.map((group) => (
+                <div key={group.id} id={`settings-group-${group.id}`}>
+                  <SettingsGroup title={t(group.titleKey)} description={group.description} badge={group.badge}>
+                    {group.entries.map((entry) => <React.Fragment key={entry.id}>{entry.render()}</React.Fragment>)}
+                  </SettingsGroup>
+                </div>
+              ))}
+            </SettingsSection>
+          ))}
 
           {generalSection?.groups.find((group) => group.id === "general.advanced") ? (
             <SettingsSection id="general.advanced" title={t("settingsGroupAdvanced")} description={generalSection.groups.find((group) => group.id === "general.advanced")!.description}>
               {renderGroupContent(generalSection.groups.find((group) => group.id === "general.advanced")!, false)}
-            </SettingsSection>
-          ) : null}
-
-          {compatibilityGroup ? (
-            <SettingsSection id={compatibilityGroup.id} title={t(compatibilityGroup.titleKey)} description={compatibilityGroup.description}>
-              {renderGroupContent(compatibilityGroup, false)}
             </SettingsSection>
           ) : null}
         </div>

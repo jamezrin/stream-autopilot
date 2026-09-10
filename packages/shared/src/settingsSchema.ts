@@ -6,7 +6,7 @@
 // See docs/architecture.md ("Settings Migrations") before adding one.
 
 // Incremented for every semantic settings-shape migration.
-export const CURRENT_SETTINGS_SCHEMA_VERSION = 4;
+export const CURRENT_SETTINGS_SCHEMA_VERSION = 5;
 
 // Reserved metadata stored alongside the settings properties. It is stripped
 // before any runtime EngineSettings/ExtensionSettings/CliSettings value is
@@ -69,6 +69,7 @@ const MIGRATIONS: SettingsMigration[] = [
   { to: 2, migrate: migrateToV2 },
   { to: 3, migrate: migrateToV3 },
   { to: 4, migrate: migrateToV4 },
+  { to: 5, migrate: migrateToV5 },
 ];
 
 // Migration 1 consolidates every legacy shape that predates the registry: the
@@ -204,6 +205,35 @@ function migrateToV4(raw: Record<string, unknown>, diagnose: Diagnose): Record<s
       path: "running",
       message: `running was removed; automation was switched off, so ${disabled.join(" and ")} kept the disabled state they were shown with`,
     });
+  }
+  return raw;
+}
+
+// Replaces the per-platform `farmAllCategories` boolean with the three-value
+// `categoryMode`. Not a rename: the key and the value shape both change, so
+// renameProperty cannot express it.
+//
+// `false` was the only value that ever meant "restrict to the list", because
+// normalization read the boolean as booleanOr(value, true) — absent, null, or a
+// wrong-typed value already meant farm-all. So `=== false` maps to "include"
+// and everything else maps to "all", which reproduces every existing profile's
+// farming behaviour exactly. `categories` is not touched: order and metadata
+// carry over untouched, so a later switch to exclude and back restores the same
+// include priority ordering.
+function migrateToV5(raw: Record<string, unknown>, diagnose: Diagnose): Record<string, unknown> {
+  for (const platform of ["twitch", "kick"] as const) {
+    const block = platformBlock(raw, platform);
+    if (!block || !Object.hasOwn(block, "farmAllCategories")) continue;
+    const legacy = block.farmAllCategories;
+    delete block.farmAllCategories;
+    diagnose({
+      code: "deprecated_property",
+      path: `platform.${platform}.farmAllCategories`,
+      replacement: `platform.${platform}.categoryMode`,
+      message: `platform.${platform}.farmAllCategories is deprecated; use platform.${platform}.categoryMode`,
+    });
+    // A current key always wins, matching renameProperty's convention.
+    if (!Object.hasOwn(block, "categoryMode")) block.categoryMode = legacy === false ? "include" : "all";
   }
   return raw;
 }

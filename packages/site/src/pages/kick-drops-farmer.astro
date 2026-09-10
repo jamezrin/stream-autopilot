@@ -1,0 +1,279 @@
+---
+// Kick-intent landing page. Shares the `.lp-*` shell with the Twitch page and
+// nothing else: Kick's mechanics (realtime campaign push, viewer socket,
+// gamification challenge cards, the Cloudflare fingerprint constraint on the
+// headless path) are different enough to deserve their own copy, and writing
+// them as a paraphrase of the Twitch page would make the two pages compete for
+// the same results. Section order is deliberately not the Twitch page's.
+import Base from "../layouts/Base.astro";
+import SubNav from "../components/SubNav.astro";
+import BrowserPills from "../components/BrowserPills.astro";
+import Faq from "../components/Faq.astro";
+import Footer from "../components/Footer.astro";
+import { DOCKER_IMAGE, LINKS } from "../consts";
+import { kickFaqItems } from "../faq";
+
+const sections = [
+  { href: "#discovery", label: "Campaign discovery" },
+  { href: "#afk", label: "AFK farming" },
+  { href: "#headless", label: "Headless" },
+  { href: "#faq", label: "FAQ" },
+];
+
+const steps = [
+  {
+    title: "Sign in to Kick as usual",
+    body: "Install the extension and log in to kick.com normally. Lurkloot uses that session directly — it never asks for your Kick password and never copies your cookies anywhere.",
+  },
+  {
+    title: "Turn Kick on in the popup",
+    body: "Each platform has its own switch, so you can farm Kick alone, Twitch alone, or both at once with separate campaign priorities and excluded channels.",
+  },
+  {
+    title: "Walk away",
+    body: "It picks a live channel in the campaign's category, holds the watch session, and claims drops and daily challenge cards as their goals are met.",
+  },
+];
+---
+
+<Base
+  title="Farm Kick Drops Automatically — Free Kick Drops Farmer | Lurkloot"
+  description="Lurkloot is a free, open-source Kick Drops farmer. It picks up new Kick campaigns in realtime, holds the watch session for you without a video tab, and auto-claims Kick drops and daily challenge cards — in your browser or headless in Docker."
+  faq={kickFaqItems}
+  breadcrumbs={[
+    { name: "Lurkloot", href: "/" },
+    { name: "Kick Drops farmer", href: LINKS.kickFarmer },
+  ]}
+>
+  <SubNav links={sections} />
+
+  <main class="lp lp--kick">
+    <section class="lp-hero">
+      <div class="wrap">
+        <p class="eyebrow">Kick Drops</p>
+        <h1>Farm Kick Drops Automatically</h1>
+        <p class="lp-hero__lede">
+          Lurkloot is a free, open-source Kick Drops farmer. It hears about new campaigns the
+          moment they start, holds a watch session on a channel that counts, and claims your
+          drops and daily challenge cards without you opening Kick at all.
+        </p>
+        <div class="lp-hero__cta">
+          <a class="btn btn--primary btn--lg" href={LINKS.chrome} target="_blank" rel="noopener">
+            Add to your browser — free
+          </a>
+          <a class="btn btn--ghost btn--lg" href="#headless">Run it headless</a>
+        </div>
+        <div class="lp-hero__meta">
+          <span class="pill"><span class="dot"></span> No password, no cookie export</span>
+          <span class="pill">Open source</span>
+          <span class="pill">Realtime campaign signals</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="what" class="lp-sec">
+      <div class="wrap">
+        <p class="eyebrow">What it does</p>
+        <h2>A Kick Drops farmer built around how Kick actually runs campaigns</h2>
+        <p>
+          Kick drops are less predictable than Twitch's. Campaigns turn up with little
+          warning, some windows are short, and the reward you want may only be dropping on a
+          handful of channels that happen to be live right now. A polling loop that checks
+          every few minutes finds out too late.
+        </p>
+        <ul class="lp-list">
+          <li>Tracks live Kick campaigns and which channels in the category are streaming.</li>
+          <li>Opens a watch session on a channel that advances the drop you have not earned.</li>
+          <li>Claims Kick drops and gamification challenge cards as their goals complete.</li>
+          <li>Prefers channels you already follow when the choice is otherwise a coin flip.</li>
+          <li>Keeps a Kick-only Idle Watchlist for the hours when no campaign is farmable.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="discovery" class="lp-sec">
+      <div class="wrap">
+        <p class="eyebrow">Kick-specific</p>
+        <h2>It hears a campaign start, instead of waiting to find it</h2>
+        <p>
+          Kick broadcasts campaign events on a realtime channel, and Lurkloot subscribes to
+          it for every category you farm. When a campaign opens, the extension is pushed a
+          signal within seconds and starts farming on the next tick rather than on the next
+          poll.
+        </p>
+        <p>
+          That is what makes short flash-drop windows worth chasing at all. Polling alone
+          still works — the socket is an accelerator, not a dependency, and it reconnects
+          with backoff if Kick drops it — but a campaign that only runs for part of an
+          evening is the case where the difference actually shows up in your inventory.
+        </p>
+      </div>
+    </section>
+
+    <section id="how" class="lp-sec">
+      <div class="wrap">
+        <p class="eyebrow">Setup</p>
+        <h2>How to farm Kick Drops automatically</h2>
+        <ol class="lp-steps">
+          {steps.map((step) => (
+            <li>
+              <h3>{step.title}</h3>
+              <p>{step.body}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    <section id="afk" class="lp-sec">
+      <div class="wrap">
+        <p class="eyebrow">AFK</p>
+        <h2>Farm Kick Drops while AFK</h2>
+        <p>
+          Lurkloot opens Kick's viewer connection straight from the extension's background
+          worker, so the watch timer advances with no player, no video decoding and no tab
+          taking up space in your window.
+        </p>
+        <p>
+          Worth stating plainly, because it is a real difference from the Twitch side: that
+          connection is opened by the extension rather than by kick.com, and Kick can refuse
+          it on that basis. When it does, Lurkloot sees the watch go unhealthy and falls back
+          to a pinned, muted kick.com tab within a tick or two. You keep farming either way —
+          it just is not tabless in that session.
+        </p>
+      </div>
+    </section>
+
+    <section id="claim" class="lp-sec">
+      <div class="wrap">
+        <p class="eyebrow">Rewards</p>
+        <h2>Automatic Kick Drops claiming — and the daily challenges</h2>
+        <div class="lp-grid">
+          <article class="lp-card">
+            <h3>Drops claimed on completion</h3>
+            <p>
+              As soon as a Kick drop's watch requirement is satisfied, it is claimed. No
+              window to catch, and nothing sitting unclaimed because you were asleep when
+              the timer finished.
+            </p>
+          </article>
+          <article class="lp-card">
+            <h3>Daily challenge cards</h3>
+            <p>
+              Kick's daily gamification challenges are opened the moment their goal is
+              reached. This is the reward people most often lose to simply forgetting, and
+              it is the one a farmer is best placed to pick up for free.
+            </p>
+          </article>
+          <article class="lp-card">
+            <h3>Separate from Twitch</h3>
+            <p>
+              Kick claiming has its own toggle. Farm both platforms with different rules, or
+              leave Kick collecting quietly while Twitch is switched off entirely.
+            </p>
+          </article>
+          <article class="lp-card">
+            <h3>Priorities and exclusions</h3>
+            <p>
+              Order Kick campaigns by hand or by strategy, exclude channels you would rather
+              not appear on, and pick which categories are in scope.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="browsers" class="lp-sec">
+      <div class="wrap">
+        <p class="eyebrow">Browsers</p>
+        <h2>A Kick Drops extension for every Chromium browser</h2>
+        <p>
+          Install it once from the Chrome Web Store and it runs in Chrome, Edge, Brave, Opera
+          and Vivaldi; Firefox builds live on GitHub Releases. Twitch and Kick are managed
+          from the same popup, so you are not running two tools that fight over your tabs.
+        </p>
+        <div class="lp-browsers">
+          <BrowserPills />
+        </div>
+      </div>
+    </section>
+
+    <section id="headless" class="lp-sec">
+      <div class="wrap">
+        <p class="eyebrow">Headless</p>
+        <h2>Headless Kick Drops farming in Docker</h2>
+        <p>
+          Kick farms headlessly too, and the interesting part is how. Kick sits behind
+          Cloudflare protection that inspects the TLS and HTTP/2 fingerprint of every
+          request, so an ordinary server-side HTTP client is rejected outright before it
+          reaches the API. Lurkloot's CLI sends a genuine Chrome fingerprint instead, which
+          reaches both Kick's API and its viewer socket with no browser running.
+        </p>
+        <p>
+          Authorization uses Kick's smart-TV link flow — the same one Kick's own TV app uses.
+          The CLI prints a <code class="lp-code">kick.com/tv/login</code> URL and a six-digit
+          code; you confirm it on a device where you are already signed in, and the session
+          token is stored locally. The CLI requires no export and nothing pasted into a
+          terminal. An optional, user-initiated session-token transfer from the extension is
+          also available if you want to move an existing browser session.
+        </p>
+        <p><code class="lp-code">{DOCKER_IMAGE}</code></p>
+        <p>
+          <a href={LINKS.cli} target="_blank" rel="noopener">Read the headless CLI guide →</a>
+        </p>
+      </div>
+    </section>
+
+    <section id="safe" class="lp-sec">
+      <div class="wrap">
+        <p class="eyebrow">Trust</p>
+        <h2>Open source, no account, no telemetry</h2>
+        <p>
+          Lurkloot has no server, so there is nowhere for your Kick session to be sent. It
+          runs locally, uses the login you already have, and stores what it needs on your own
+          machine. Every line of it is on
+          <a href={LINKS.github} target="_blank" rel="noopener">GitHub</a> under Apache 2.0 —
+          read it, build it yourself, and check.
+        </p>
+        <p>
+          It is an unofficial tool and is not affiliated with, endorsed by, or sponsored by
+          Kick. Automating viewing may be against a platform's terms of service, so use it at
+          your own discretion. The <a href={LINKS.privacy}>privacy policy</a> covers what is
+          stored and where.
+        </p>
+      </div>
+    </section>
+
+    <Faq
+      items={kickFaqItems}
+      eyebrow="Kick FAQ"
+      heading="Kick Drops, answered."
+      deck="What people ask before farming Kick Drops automatically."
+    />
+
+    <section class="lp-cross">
+      <div class="wrap">
+        <div class="lp-cross__inner">
+          <div>
+            <h2>Farming Twitch as well?</h2>
+            <p>
+              Twitch works on different machinery — inventory-aware discovery, minute-watched
+              heartbeats and tiered rewards. The
+              <a href={LINKS.twitchFarmer}> Twitch Drops farmer</a> page goes through it.
+            </p>
+          </div>
+          <a class="btn btn--ghost" href={LINKS.twitchFarmer}>Twitch Drops farmer →</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</Base>
+
+<style>
+  .lp--kick {
+    --accent: var(--lime);
+    --accent-glow: var(--glow-lime);
+  }
+</style>

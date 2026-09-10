@@ -93,6 +93,7 @@ describe("background integrity alarm wiring", () => {
       controllerModule as typeof controllerModule & {
         createBackgroundAlarmListener?: (controller: {
           tickAndHandOff(): Promise<void>;
+          runTwitchChannelPointsClaim(): Promise<void>;
           runWatchHeartbeat(): Promise<void>;
           runTwitchIntegrityRefresh(): Promise<void>;
         }) => (alarm: { name: string }) => void;
@@ -102,6 +103,7 @@ describe("background integrity alarm wiring", () => {
     if (!createBackgroundAlarmListener) return;
     const controller = {
       tickAndHandOff: vi.fn(async () => undefined),
+      runTwitchChannelPointsClaim: vi.fn(async () => undefined),
       runWatchHeartbeat: vi.fn(async () => undefined),
       runTwitchIntegrityRefresh: vi.fn(async () => undefined),
     };
@@ -111,9 +113,11 @@ describe("background integrity alarm wiring", () => {
     listener({ name: "lurkloot.tick.kick" });
     listener({ name: "lurkloot.tick" });
     listener({ name: "lurkloot.twitch-integrity" });
+    listener({ name: "lurkloot.twitch-channel-points" });
     listener({ name: "unrelated.alarm" });
 
     expect(controller.runTwitchIntegrityRefresh).toHaveBeenCalledOnce();
+    expect(controller.runTwitchChannelPointsClaim).toHaveBeenCalledOnce();
     expect(controller.tickAndHandOff).toHaveBeenNthCalledWith(1, ["twitch"], "alarm");
     expect(controller.tickAndHandOff).toHaveBeenNthCalledWith(2, ["kick"], "alarm");
     expect(controller.tickAndHandOff).toHaveBeenCalledTimes(2);

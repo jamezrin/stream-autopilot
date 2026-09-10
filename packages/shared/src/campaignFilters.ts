@@ -1,4 +1,4 @@
-import { categoryListIndex } from "./categories";
+import { campaignPassesCategoryFilter } from "./categories";
 import { evaluateCampaignFarming } from "./campaignFarming";
 import type { CampaignFilterKey, DropCampaign, DropReward, EngineSettings, ExtensionSettings } from "./models";
 import { campaignHasSubscriptionRewards, canClaimReward, isRewardDeadlineFeasible, isRewardRelevantNow } from "./rewards";
@@ -100,8 +100,7 @@ export function campaignEligibleClass(campaign: DropCampaign, settings: EngineSe
   if (campaign.eligibility && campaign.eligibility !== "eligible") return false;
   if (settings.excludedCampaignIds.includes(campaign.id)) return false;
   if (!campaignPassesFarmingEligibility(campaign, settings.farmingEligibility)) return false;
-  const platformSettings = settings.platform[campaign.platform];
-  if (!platformSettings.farmAllCategories && categoryListIndex(campaign, platformSettings.categories) === -1) return false;
+  if (!campaignPassesCategoryFilter(campaign, settings.platform[campaign.platform])) return false;
   // Twitch cannot earn drops until the account is linked, so an unlinked Twitch
   // campaign is never farmable regardless of farmUnlinkedCampaigns. Kick DOES
   // accrue watch progress before linking (the link is only required to claim).
@@ -145,11 +144,11 @@ export function isCampaignVisible(
   // The category filter has no display-flag override anywhere, so it is
   // checked first, ahead of every other bucket below — it wins even over a
   // campaign that is ALSO excluded/finished/expired/upcoming/not-linked/
-  // subscription-gated with its matching display flag on. "Farm all
-  // categories" off means campaigns outside the list are gone from the Drops
-  // list, full stop, not just gone from farming.
-  const platformSettings = settings.platform[campaign.platform];
-  if (!platformSettings.farmAllCategories && categoryListIndex(campaign, platformSettings.categories) === -1) return false;
+  // subscription-gated with its matching display flag on. A category filtered
+  // out by include or exclude mode is gone from the Drops list, full stop, not
+  // just gone from farming. Same helper as campaignEligibleClass above, so the
+  // two can never disagree about what a mode means.
+  if (!campaignPassesCategoryFilter(campaign, settings.platform[campaign.platform])) return false;
   // Not in a farmable class for some other reason. Bucket by why, and consult
   // that class's display flag — the only way it can still be shown.
   const filter = settings.dropsListFilter;

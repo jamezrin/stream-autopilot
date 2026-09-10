@@ -17,7 +17,6 @@ const labels: Record<string, string> = {
   closeSearch: "Close search",
   settingsSearchPlaceholder: "Search settings…",
   settingsSearchNoResults: "No settings match",
-  settingsPlatformSettingsTitle: "Platform & Categories/Games",
   settingsPlatformSettings: "$1",
   settingsShowAdvancedTitle: "Show advanced settings",
   settingsSectionAdvancedActions: "Advanced actions",
@@ -36,7 +35,13 @@ const labels: Record<string, string> = {
   farmingTabsDescription: "Controls for video-tab farming.",
   settingsGroupAdvanced: "Advanced",
   advancedDescription: "Low-level scheduler and logging behavior.",
-  platformSettingsDescription: "Automation and channels for one provider.",
+  settingsGroupPlatformAdvanced: "Advanced & compatibility",
+  strictCampaignAvailabilityTitle: "Strict campaign availability",
+  strictCampaignAvailabilityDescription: "Only farm a campaign on channels Twitch lists it for.",
+  twitchSectionDescription: "Channel points, category filter, excluded channels, and Twitch compatibility.",
+  kickSectionDescription: "Daily challenges, category filter, excluded channels, and Kick compatibility.",
+  twitchAdvancedDescription: "Campaign availability and the transports Lurkloot uses.",
+  kickAdvancedDescription: "How Lurkloot opens Kick claim links.",
   settingsGroupCategories: "Categories",
   settingsGroupExcludedChannels: "Excluded channels",
   settingsLanguageTitle: "Language",
@@ -109,8 +114,11 @@ const labels: Record<string, string> = {
   autoClaimChannelPointsDescription: "Claim channel-point bonuses while farming this platform.",
   autoClaimChallengesTitle: "Auto-claim daily challenges",
   autoClaimChallengesDescription: "Claim Kick's daily challenge reward once its watch-time goal is met.",
-  farmAllCategoriesTitle: "Farm all categories",
-  farmAllCategoriesDescription: "Farm drops in every $1 category.",
+  categoryModeTitle: "Category filter",
+  categoryModeDescription: "Farm every $1 category, include only the categories you select, or exclude them.",
+  categoryModeAll: "All categories",
+  categoryModeInclude: "Only selected",
+  categoryModeExclude: "All except selected",
   excludedChannelsTitle: "Excluded drop channels",
   excludedChannelsDescription: "Campaign farming will skip these streamers.",
   excludedChannelsEmpty: "No excluded drop channels.",
@@ -206,15 +214,18 @@ describe("settings search view", () => {
 
   it("organizes the normal view into ordered collapsible settings sections", () => {
     const { container } = mountSettings();
+    // Target the title span by its class rather than by ordinal, so adding a
+    // badge or an icon to one section cannot silently shift what this reads.
     const sectionTitles = [...container.querySelectorAll<HTMLButtonElement>('button[aria-expanded]')]
-      .map((button) => button.querySelectorAll<HTMLSpanElement>("span")[2]?.textContent?.trim());
+      .map((button) => button.querySelector<HTMLSpanElement>("span.uppercase")?.textContent?.trim());
 
     expect(sectionTitles).toEqual([
       "Appearance & behavior",
       "Notifications",
       "Drops",
       "Farming tabs",
-      "Platform & Categories/Games",
+      "Twitch",
+      "Kick",
       "Advanced",
     ]);
     expect(container.textContent).toContain("Language, startup, and popup behavior.");
@@ -237,22 +248,40 @@ describe("settings search view", () => {
     expect(container.querySelector('[aria-label="Search"]')).toBeNull();
   });
 
-  it("shows one platform settings section at a time", () => {
+  it("gives each platform its own top-level section instead of a tab switch", () => {
     const { container } = mountSettings();
-    const twitchTab = container.querySelector<HTMLButtonElement>('[role="tab"][aria-label="Twitch"]');
-    const kickTab = container.querySelector<HTMLButtonElement>('[role="tab"][aria-label="Kick"]');
 
-    expect(container.textContent).toContain("Platform & Categories/Games");
-    expect(twitchTab?.getAttribute("aria-selected")).toBe("true");
-    expect(container.querySelector('[role="tab"][aria-label="Twitch settings"]')).toBeNull();
+    expect(container.querySelector('[role="tab"]')).toBeNull();
+    expect(container.querySelector("#settings-section-twitch")).not.toBeNull();
+    expect(container.querySelector("#settings-section-kick")).not.toBeNull();
+    // Both platforms are on screen at once, so neither needs to be selected.
     expect(container.textContent).toContain("Auto-claim channel points");
-    expect(container.textContent).not.toContain("Auto-claim daily challenges");
-
-    act(() => kickTab?.click());
-
-    expect(kickTab?.getAttribute("aria-selected")).toBe("true");
     expect(container.textContent).toContain("Auto-claim daily challenges");
-    expect(container.textContent).not.toContain("Auto-claim channel points");
+  });
+
+  it("gives every section a subtitle naming its own contents", () => {
+    const { container } = mountSettings();
+    const twitch = container.querySelector("#settings-section-twitch");
+    const kick = container.querySelector("#settings-section-kick");
+
+    // Three sections sharing one subtitle is what made the old layout read as
+    // the same section repeated, so no two of them may say the same thing.
+    expect(twitch?.textContent).toContain("Channel points, category filter");
+    expect(kick?.textContent).toContain("Daily challenges, category filter");
+    expect(twitch?.textContent).not.toContain("Daily challenges, category filter");
+  });
+
+  it("keeps each advanced group with the settings it tunes", () => {
+    const { container } = mountSettings();
+    const twitch = container.querySelector("#settings-section-twitch");
+    const general = container.querySelector("#settings-section-general\\.advanced");
+
+    // The platform advanced group is titled apart from the General one so the
+    // two are not read as the same section repeated.
+    expect(twitch?.textContent).toContain("Advanced & compatibility");
+    expect(twitch?.textContent).toContain("Strict campaign availability");
+    expect(general?.textContent).toContain("Scheduler interval");
+    expect(general?.textContent).not.toContain("Strict campaign availability");
   });
 
   it("filters settings by title as the user types", () => {
@@ -291,6 +320,21 @@ describe("settings search view", () => {
     expect(container.textContent).toContain("Export settings");
     expect(container.textContent).toContain("Import settings");
     expect(container.textContent).not.toContain("No settings match");
+  });
+
+  // The mode names live in the option labels, which the search haystack (title
+  // + description) never sees, so the description has to carry them or the one
+  // control that excludes categories is unfindable by the word "exclude".
+  it("finds the category filter by the mode the user is looking for", () => {
+    for (const query of ["exclude", "include", "categor"]) {
+      const { container } = mountSettings();
+      const search = openSearch(container);
+
+      act(() => setInputValue(search, query));
+
+      expect(container.textContent, query).toContain("Category filter");
+      expect(container.textContent, query).not.toContain("No settings match");
+    }
   });
 
   it("restores the full tree when the query is cleared", () => {

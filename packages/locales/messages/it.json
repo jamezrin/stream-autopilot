@@ -62,9 +62,6 @@
   "settingsSearchNoResults": {
     "message": "Nessuna impostazione corrisponde a «$1»."
   },
-  "settingsPlatformSettingsTitle": {
-    "message": "Piattaforma e categorie/giochi"
-  },
   "settingsPlatformSettings": {
     "message": "Impostazioni $1"
   },
@@ -154,6 +151,12 @@
   },
   "hideTipsDescription": {
     "message": "Nasconde i suggerimenti dalla finestra principale."
+  },
+  "inPagePanelTitle": {
+    "message": "Mostra il pannello su Twitch e Kick"
+  },
+  "inPagePanelDescription": {
+    "message": "Aggiunge un pulsante Lurkloot su twitch.tv e kick.com che apre questo popup in un pannello nella pagina."
   },
   "tipCampaignPriority": {
     "message": "I drop hanno priorità sulla lista. Trascina le campagne dalla maniglia per ordinarle."
@@ -464,9 +467,6 @@
   "platformSettingsTitle": {
     "message": "Impostazioni piattaforma"
   },
-  "platformSettingsDescription": {
-    "message": "Automazione e canali per un provider. Passa tra Twitch e Kick."
-  },
   "farmingTabsTitle": {
     "message": "Schede di farming"
   },
@@ -539,6 +539,21 @@
   "settingsGroupAdvanced": {
     "message": "Avanzate"
   },
+  "settingsGroupPlatformAdvanced": {
+    "message": "Avanzate e compatibilità"
+  },
+  "twitchSectionDescription": {
+    "message": "Punti canale, filtro categorie, canali esclusi e compatibilità Twitch."
+  },
+  "kickSectionDescription": {
+    "message": "Sfide giornaliere, filtro categorie, canali esclusi e compatibilità Kick."
+  },
+  "twitchAdvancedDescription": {
+    "message": "Disponibilità delle campagne e i trasporti di heartbeat e inventario usati da Lurkloot. Modificali solo se Twitch smette di funzionare."
+  },
+  "kickAdvancedDescription": {
+    "message": "Come Lurkloot apre i link di riscatto di Kick e il profilo di comportamento associato. Modificali solo se Kick smette di funzionare."
+  },
   "schedulerIntervalTitle": {
     "message": "Intervallo scheduler"
   },
@@ -587,24 +602,60 @@
   "insufficientTimeRemaining": {
     "message": "Tempo rimanente insufficiente"
   },
-  "campaignRejectionExcluded": { "message": "Questa campagna è esclusa dal farming." },
-  "campaignRejectionUpcoming": { "message": "Questa campagna non è ancora iniziata." },
-  "campaignRejectionExpired": { "message": "Questa campagna è terminata." },
-  "campaignRejectionCompleted": { "message": "Tutte le ricompense di questa campagna sono complete." },
-  "campaignRejectionUnlinkedDisabled": { "message": "Il farming senza un account collegato è disattivato." },
-  "campaignRejectionTwitchLinkRequired": { "message": "Questa campagna Twitch richiede di collegare un account." },
-  "campaignRejectionSubscriptionDisabled": { "message": "Il farming delle campagne con abbonamento è disattivato." },
-  "campaignRejectionCategoryFiltered": { "message": "Questa campagna non corrisponde alle categorie selezionate." },
-  "campaignRejectionPriorityNotSelected": { "message": "Questa campagna non è nella lista delle priorità." },
-  "campaignRejectionNoRewards": { "message": "Questa campagna non ha ricompense farmabili." },
-  "campaignRejectionNoUnclaimedRewards": { "message": "Questa campagna non ha ricompense da riscattare." },
-  "campaignRejectionPrerequisites": { "message": "$1 attende una ricompensa o un requisito precedente." },
-  "campaignRejectionRewardNotStarted": { "message": "$1 non è ancora disponibile." },
-  "campaignRejectionRewardWindowEnded": { "message": "$1 non è più disponibile." },
-  "campaignRejectionInsufficientTime": { "message": "$1 non può essere completata prima della scadenza." },
-  "campaignRejectionSubscriptionRequired": { "message": "$1 richiede un abbonamento valido." },
-  "campaignRejectionActionRequired": { "message": "$1 richiede un'azione diversa dalla visione." },
-  "campaignRejectionNoFarmableReward": { "message": "Nessuna ricompensa di questa campagna può essere farmata ora." },
+  "campaignRejectionExcluded": {
+    "message": "Questa campagna è esclusa dal farming."
+  },
+  "campaignRejectionUpcoming": {
+    "message": "Questa campagna non è ancora iniziata."
+  },
+  "campaignRejectionExpired": {
+    "message": "Questa campagna è terminata."
+  },
+  "campaignRejectionCompleted": {
+    "message": "Tutte le ricompense di questa campagna sono complete."
+  },
+  "campaignRejectionUnlinkedDisabled": {
+    "message": "Il farming senza un account collegato è disattivato."
+  },
+  "campaignRejectionTwitchLinkRequired": {
+    "message": "Questa campagna Twitch richiede di collegare un account."
+  },
+  "campaignRejectionSubscriptionDisabled": {
+    "message": "Il farming delle campagne con abbonamento è disattivato."
+  },
+  "campaignRejectionCategoryFiltered": {
+    "message": "Questa campagna non corrisponde alle categorie selezionate."
+  },
+  "campaignRejectionPriorityNotSelected": {
+    "message": "Questa campagna non è nella lista delle priorità."
+  },
+  "campaignRejectionNoRewards": {
+    "message": "Questa campagna non ha ricompense farmabili."
+  },
+  "campaignRejectionNoUnclaimedRewards": {
+    "message": "Questa campagna non ha ricompense da riscattare."
+  },
+  "campaignRejectionPrerequisites": {
+    "message": "$1 attende una ricompensa o un requisito precedente."
+  },
+  "campaignRejectionRewardNotStarted": {
+    "message": "$1 non è ancora disponibile."
+  },
+  "campaignRejectionRewardWindowEnded": {
+    "message": "$1 non è più disponibile."
+  },
+  "campaignRejectionInsufficientTime": {
+    "message": "$1 non può essere completata prima della scadenza."
+  },
+  "campaignRejectionSubscriptionRequired": {
+    "message": "$1 richiede un abbonamento valido."
+  },
+  "campaignRejectionActionRequired": {
+    "message": "$1 richiede un'azione diversa dalla visione."
+  },
+  "campaignRejectionNoFarmableReward": {
+    "message": "Nessuna ricompensa di questa campagna può essere farmata ora."
+  },
   "automationSectionTitle": {
     "message": "Automazione"
   },
@@ -650,11 +701,26 @@
   "settingsGroupCategories": {
     "message": "Categorie"
   },
-  "farmAllCategoriesTitle": {
-    "message": "Farma tutte le categorie"
+  "categoryModeTitle": {
+    "message": "Filtro categorie"
   },
-  "farmAllCategoriesDescription": {
-    "message": "Farma drop in ogni categoria $1. Disattiva per farmare solo un set scelto."
+  "categoryModeDescription": {
+    "message": "Farma tutte le categorie di $1, includi solo quelle che selezioni oppure escludile."
+  },
+  "categoryModeAll": {
+    "message": "Tutte le categorie"
+  },
+  "categoryModeInclude": {
+    "message": "Solo le selezionate"
+  },
+  "categoryModeExclude": {
+    "message": "Tutte tranne le selezionate"
+  },
+  "includeCategoriesInstruction": {
+    "message": "Su $1 vengono farmate solo queste categorie."
+  },
+  "excludeCategoriesInstruction": {
+    "message": "Su $1 vengono farmate tutte le categorie tranne queste."
   },
   "categoriesToFarm": {
     "message": "Categorie da farmare"
@@ -664,6 +730,9 @@
   },
   "noCategoriesSelected": {
     "message": "Nessuna categoria selezionata: non verrà farmato nulla su $1. Aggiungi categorie sotto."
+  },
+  "noCategoriesExcluded": {
+    "message": "Nessuna categoria esclusa: verranno farmate tutte le categorie di $1. Aggiungine qui sotto per saltarle."
   },
   "hasActiveDrops": {
     "message": "Ha drop attivi"
@@ -771,7 +840,7 @@
     "message": "Più dei drop."
   },
   "screenshotExtrasSubcopy": {
-    "message": "Punti canale e sfide Kick, riscattati anche per te. Una lista di attesa quando non resta nulla da farmare."
+    "message": "Punti canale, sfide Kick e drop da 2 minuti, riscattati anche per te. Una lista di attesa quando non resta nulla da farmare."
   },
   "screenshotExtrasPointsName": {
     "message": "Punti canale"
@@ -790,6 +859,12 @@
   },
   "screenshotExtrasWatchlistMeta": {
     "message": "Guarda i tuoi streamer tra una campagna e l'altra"
+  },
+  "screenshotExtrasFlashName": {
+    "message": "Drop da 2 minuti"
+  },
+  "screenshotExtrasFlashMeta": {
+    "message": "Kick · appena arrivano"
   },
   "screenshotEasyEyebrow": {
     "message": "Facile da usare"
@@ -839,6 +914,33 @@
   "screenshotUpdatedSubcopy": {
     "message": "Rilasci frequenti quando Twitch e Kick cambiano — e aperto a idee e miglioramenti."
   },
+  "screenshotUpdatedBrowsersTitle": {
+    "message": "Browser basati su Chromium"
+  },
+  "screenshotUpdatedBrowsersSub": {
+    "message": "Scheda Chrome Web Store. La stessa estensione."
+  },
+  "screenshotUpdatedHeadlessTitle": {
+    "message": "CLI"
+  },
+  "screenshotUpdatedHeadlessSub": {
+    "message": "Senza interfaccia. Lo stesso motore."
+  },
+  "screenshotUpdatedDockerTitle": {
+    "message": "Docker"
+  },
+  "screenshotUpdatedDockerSub": {
+    "message": "Lo stesso motore. In un container."
+  },
+  "screenshotUpdatedLicense": {
+    "message": "Apache-2.0"
+  },
+  "screenshotUpdatedRating": {
+    "message": "4.9"
+  },
+  "screenshotUpdatedUsers": {
+    "message": "oltre 1.000 utenti"
+  },
   "autoClaimReady": {
     "message": "Auto-riscatto pronto"
   },
@@ -886,6 +988,15 @@
   },
   "rateNudgeDismiss": {
     "message": "Non ora"
+  },
+  "githubStarNudgeTitle": {
+    "message": "Lurkloot è open source"
+  },
+  "githubStarNudgeBody": {
+    "message": "Se ti è stato utile, una stella su GitHub aiuta gli altri a trovarlo. I contributi sono i benvenuti, in particolare per funzionalità e traduzioni."
+  },
+  "githubStarNudgeAction": {
+    "message": "Metti una stella su GitHub"
   },
   "removeItem": {
     "message": "Rimuovi $1"
@@ -1133,9 +1244,6 @@
   "diagnosticsViewTab": {
     "message": "Diagnostica"
   },
-  "settingsGroupCompatibility": {
-    "message": "Compatibilità"
-  },
   "compatibilityAutomatic": {
     "message": "Automatica"
   },
@@ -1294,5 +1402,14 @@
   },
   "manualWatchPauseDetail": {
     "message": "Il farming è in pausa mentre guardi una diretta per conto tuo. Mettila in pausa, chiudila o passa a un'altra scheda per riprendere automaticamente il farming al prossimo controllo."
+  },
+  "reorderItem": {
+    "message": "Riordina $1"
+  },
+  "scrollRewardsLeft": {
+    "message": "Scorri le ricompense a sinistra"
+  },
+  "scrollRewardsRight": {
+    "message": "Scorri le ricompense a destra"
   }
 }

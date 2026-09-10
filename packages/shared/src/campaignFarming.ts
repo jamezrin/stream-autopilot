@@ -1,4 +1,4 @@
-import { categoryListIndex } from "./categories";
+import { campaignPassesCategoryFilter } from "./categories";
 import type { DropCampaign, DropReward, EngineSettings } from "./models";
 import {
   campaignHasSubscriptionRewards,
@@ -83,8 +83,7 @@ export function evaluateCampaignFarming(
     return rejected("subscription_campaigns_disabled");
   }
   if (campaign.platform === "twitch" && accountUnlinked) return rejected("twitch_link_required");
-  const platformSettings = settings.platform[campaign.platform];
-  if (!platformSettings.farmAllCategories && categoryListIndex(campaign, platformSettings.categories) === -1) {
+  if (!campaignPassesCategoryFilter(campaign, settings.platform[campaign.platform])) {
     return rejected("category_filtered");
   }
   if (options.includePriorityMode && settings.priorityMode === "priority_list_only" && settings.campaignPriorities[campaign.id] == null) {

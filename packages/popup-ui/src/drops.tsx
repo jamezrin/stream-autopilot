@@ -181,10 +181,11 @@ export function DropsPanel({ campaigns, gameMap, focus, refreshing, startCollaps
 function SortableCampaign(props: { campaign: CampaignView; index: number; farmingIndex: number; anyFarming: boolean; game: GameItem; expanded: boolean; refreshing: boolean; onToggle(): void; onRefreshCampaign(id: string): void | Promise<void>; onToggleExclude(id: string): void | Promise<void>; rankCount?: number; onRankMove?: (toIndex: number) => void }) {
   // The new dnd-kit animates the real element, so there is no DragOverlay copy
   // and no transform/transition to apply by hand.
+  const t = useT();
   const { ref, handleRef, isDragging } = useSortable({ id: props.campaign.id, index: props.index });
   return (
     <div ref={ref} data-campaign-id={props.campaign.id} onDragStart={preventNativeDrag}>
-      <CampaignCard {...props} dimmed={isDragging} dragHandle={<DragHandle handleRef={handleRef} label={`Reorder ${props.campaign.title}`} />} />
+      <CampaignCard {...props} dimmed={isDragging} dragHandle={<DragHandle handleRef={handleRef} label={t("reorderItem", props.campaign.title)} />} />
     </div>
   );
 }
@@ -481,6 +482,7 @@ function CampaignCard({ campaign, index, farmingIndex, anyFarming, game, expande
 }
 
 function RewardCarousel({ rewards }: { rewards: RewardView[] }) {
+  const t = useT();
   const rowRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -531,8 +533,8 @@ function RewardCarousel({ rewards }: { rewards: RewardView[] }) {
         <button
           type="button"
           onClick={() => scroll(-1)}
-          aria-label="Scroll rewards left"
-          title="Scroll rewards left"
+          aria-label={t("scrollRewardsLeft")}
+          title={t("scrollRewardsLeft")}
           className="absolute left-1 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-zinc-200 bg-white/95 text-zinc-700 shadow-md outline-none transition-colors hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] dark:border-zinc-700 dark:bg-zinc-900/95 dark:text-zinc-200 dark:hover:bg-zinc-800"
         >
           <ChevronLeft size={16} aria-hidden="true" />
@@ -542,8 +544,8 @@ function RewardCarousel({ rewards }: { rewards: RewardView[] }) {
         <button
           type="button"
           onClick={() => scroll(1)}
-          aria-label="Scroll rewards right"
-          title="Scroll rewards right"
+          aria-label={t("scrollRewardsRight")}
+          title={t("scrollRewardsRight")}
           className="absolute right-1 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-zinc-200 bg-white/95 text-zinc-700 shadow-md outline-none transition-colors hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] dark:border-zinc-700 dark:bg-zinc-900/95 dark:text-zinc-200 dark:hover:bg-zinc-800"
         >
           <ChevronRight size={16} aria-hidden="true" />

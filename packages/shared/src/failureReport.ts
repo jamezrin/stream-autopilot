@@ -77,7 +77,7 @@ function settingsSummary(settings: EngineSettings, platform: Platform): string {
     ["pauseOnManualWatch", settings.pauseOnManualWatch],
     ["priorityMode", settings.priorityMode],
     ["platform enabled", settings.platform[platform].enabled],
-    ["farmAllCategories", settings.platform[platform].farmAllCategories],
+    ["categoryMode", settings.platform[platform].categoryMode],
     ["compatibility profile", settings.compatibility[platform].profile],
     ["criticalFailurePromptEnabled", settings.criticalFailurePromptEnabled],
   ]);

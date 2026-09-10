@@ -26,7 +26,7 @@ flowchart TD
     E -- yes --> N1
     E -- no --> F{"class allowed?<br/>farmUnlinkedCampaigns /<br/>farmSubscriptionCampaigns"}
     F -- no --> N1
-    F -- yes --> G{"outside selected<br/>categories?<br/>farmAllCategories off"}
+    F -- yes --> G{"category filtered?<br/>campaignPassesCategoryFilter<br/>(include/exclude)"}
     G -- yes --> N1
     G -- no --> H{"Twitch AND<br/>not linked?"}
     H -- yes --> N1

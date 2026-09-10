@@ -180,7 +180,7 @@ describe("runtime message dispatch", () => {
   it("delegates a normal message to core exactly once", async () => {
     const env = setup();
     const message = { type: "getSnapshot" } as const;
-    const sender = { tab: { id: 42 } };
+    const sender = { tab: { id: 42, url: "https://www.twitch.tv/creator" } };
 
     await expect(env.dispatch(message, sender)).resolves.toBe("core");
 

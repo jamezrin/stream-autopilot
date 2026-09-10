@@ -15,3 +15,12 @@ export function shouldShowRateNudge(
   if (Number.isNaN(installedMs)) return false;
   return now.getTime() - installedMs >= minDays * DAY_MS;
 }
+
+export function shouldShowGithubStarNudge(
+  installedAt: string | undefined,
+  status: string,
+  now: Date,
+  minDays: number,
+): boolean {
+  return shouldShowRateNudge(installedAt, status, now, minDays);
+}

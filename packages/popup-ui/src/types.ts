@@ -113,19 +113,19 @@ type ScreenshotCopy = {
 };
 
 export type ScreenshotPopupVariant = ScreenshotCopy & {
-  layout: "hero" | "settings";
+  layout: "hero" | "extras" | "steps" | "settings";
   platform: Platform;
-  view: "drops" | "settings";
+  view: "drops" | "settings" | "watchlist";
 };
 
 export type ScreenshotMarketingVariant = ScreenshotCopy & {
-  layout: "extras" | "steps" | "updated";
+  layout: "updated";
 };
 
 export type ScreenshotVariant = ScreenshotPopupVariant | ScreenshotMarketingVariant;
 
 export function variantShowsPopup(variant: ScreenshotVariant): variant is ScreenshotPopupVariant {
-  return variant.layout === "hero" || variant.layout === "settings";
+  return variant.layout !== "updated";
 }
 
 export interface PopupAdapter {

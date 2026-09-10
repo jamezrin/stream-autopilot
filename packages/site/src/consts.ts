@@ -1,4 +1,5 @@
 // Shared, single-source-of-truth content for the landing page.
+import rootPackage from "../../../package.json" with { type: "json" };
 
 export const SITE = {
   name: "Lurkloot",
@@ -7,26 +8,11 @@ export const SITE = {
   url: "https://lurkloot.jamezrin.com",
   description:
     "Lurkloot is a free, open-source farmer for Twitch and Kick drops that runs through your own logged-in session. Use it as a browser extension, or run it headless with the prebuilt Docker image — lightweight tabless mode, auto-claim, smart channel switching, and a private, no-password design. Works with Rust, Valorant, and any drops campaign.",
-  // SEO keyword spread — woven into copy, not stuffed.
-  keywords: [
-    "farm twitch drops",
-    "twitch drops farmer",
-    "auto claim twitch drops",
-    "afk twitch drops",
-    "kick drops farmer",
-    "farm kick drops",
-    "rust twitch drops",
-    "valorant drops",
-    "twitch drops extension",
-    "twitch drops cli",
-    "headless twitch drops",
-    "self-hosted twitch drops",
-    "twitch drops docker",
-    "open source twitch drops",
-    "watch twitch drops automatically",
-    "drops auto claim",
-    "lurkloot",
-  ].join(", "),
+  // Released workspace version, kept in step with every published manifest by
+  // the release flow (scripts/release.mjs `packagePaths`). Surfaced in the
+  // SoftwareApplication structured data so it cannot go stale. The site's own
+  // package.json is deliberately not bumped by that flow, so read the root one.
+  version: rootPackage.version,
 } as const;
 
 // Published headless image — built multi-arch (amd64 + arm64) on GHCR by the
@@ -51,9 +37,11 @@ function withCampaign(url: string, campaign: "extension_install" | "open_source"
 
 export const LINKS = {
   chrome: withCampaign(EXTERNAL_URLS.chrome, "extension_install"),
-  // On-site page (rendered from the same source policy).
+  // On-site pages (no trailing slash, matching `trailingSlash: "ignore"`).
   privacy: "/privacy",
   changelog: "/changelog",
+  twitchFarmer: "/twitch-drops-farmer",
+  kickFarmer: "/kick-drops-farmer",
   x: "https://x.com/jamezrin",
   // The open-source repo (not the profile) — surfaced across hero/CLI/footer.
   github: withCampaign(EXTERNAL_URLS.github, "open_source"),

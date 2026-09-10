@@ -1,5 +1,4 @@
 import React from "react";
-import { Settings as SettingsIcon, type LucideIcon } from "lucide-react";
 import type { CategorySelection, ExtensionSettings, LanguageOverride, Platform } from "@lurkloot/shared/models";
 import type { SettingsPatch } from "@lurkloot/shared/settings";
 import { LOCALE_OPTIONS } from "@lurkloot/shared/i18n";
@@ -53,11 +52,9 @@ export interface SettingsSectionDef extends SettingsSectionNode<SettingsEntryDef
   // group without a cast. SettingsGroupDef is assignable to the node type, so
   // filterSettingsTree still accepts these sections.
   groups: SettingsGroupDef[];
-  // Exactly one of icon/iconNode is set per section: General uses a plain
-  // lucide icon, while Twitch/Kick use a colored platform mark (iconNode) so
-  // the two sections don't render identically.
-  icon?: LucideIcon;
-  iconNode?: React.ReactNode;
+  // Subtitle under the section heading. Only the platform sections set it: the
+  // General groups each render as their own section and carry their own.
+  description?: string;
 }
 
 // The shape of a settings patch's `platform` block, keyed by platform. Typing
@@ -78,7 +75,6 @@ export function buildSettingsRegistry(ctx: SettingsRegistryContext): SettingsSec
 
   const general: SettingsSectionDef = {
     id: "general",
-    icon: SettingsIcon,
     rows: [],
     groups: [
       {
@@ -120,6 +116,12 @@ export function buildSettingsRegistry(ctx: SettingsRegistryContext): SettingsSec
             titleKey: "hideTipsTitle",
             descriptionKey: "hideTipsDescription",
             render: () => <SettingRow title={t("hideTipsTitle")} description={t("hideTipsDescription")} checked={!settings.showTips} onChange={(hideTips) => void onSettingsChange({ showTips: !hideTips })} />,
+          },
+          {
+            id: "general.appearance.inPagePanel",
+            titleKey: "inPagePanelTitle",
+            descriptionKey: "inPagePanelDescription",
+            render: () => <SettingRow title={t("inPagePanelTitle")} description={t("inPagePanelDescription")} checked={settings.showInPagePanel} onChange={setFlag("showInPagePanel")} />,
           },
         ],
       },
@@ -344,17 +346,7 @@ export function buildSettingsRegistry(ctx: SettingsRegistryContext): SettingsSec
   };
 
   const platformSection = (platform: Platform): SettingsSectionDef => {
-    // The old SettingsPlatformSwitch rendered its selected platform this way;
-    // it's the only styling carried forward now that the switch is gone.
     const details = PLATFORMS[platform];
-    const iconNode = (
-      <span
-        className="flex h-4 w-4 items-center justify-center rounded text-[10px] font-black"
-        style={{ backgroundColor: details.color, color: platform === "kick" ? "#07140a" : "#fff" }}
-      >
-        {details.mark}
-      </span>
-    );
 
     const claimEntry: SettingsEntryDef = platform === "twitch"
       ? {
@@ -374,26 +366,30 @@ export function buildSettingsRegistry(ctx: SettingsRegistryContext): SettingsSec
       {
         id: `${platform}.categories`,
         titleKey: "settingsGroupCategories",
-        // No description: the farm-all row directly below carries its own. The
-        // count only means anything while an explicit allowlist is in use.
-        badge: settings.platform[platform].farmAllCategories
+        // No description: the mode row directly below carries its own. The count
+        // only means anything while the list is actually being consulted, which
+        // is both filtered modes but not "all".
+        badge: settings.platform[platform].categoryMode === "all"
           ? undefined
           : <Pill tone="outline">{settings.platform[platform].categories.length}</Pill>,
         entries: [
           {
-            id: `${platform}.categories.farmAll`,
-            titleKey: "farmAllCategoriesTitle",
-            descriptionKey: "farmAllCategoriesDescription",
-            // "Farm drops in every $1 category" — without this the search
-            // haystack holds the literal "$1" instead of "Twitch"/"Kick", and
-            // a query for the platform name never finds this entry.
+            id: `${platform}.categories.mode`,
+            titleKey: "categoryModeTitle",
+            descriptionKey: "categoryModeDescription",
+            // "Choose which $1 categories…" — without this the search haystack
+            // holds the literal "$1" instead of "Twitch"/"Kick", and a query for
+            // the platform name never finds this entry.
             descriptionSubstitution: details.label,
             render: () => (
               <PlatformCategorySettings
                 platform={platform}
                 suggestions={ctx.suggestions[platform]}
                 settings={settings}
-                onFarmAllCategoriesChange={(farmAllCategories) => void platformPatch(platform, { farmAllCategories })}
+                // Rides the same platformPatch path as every other per-platform
+                // setting, so a mode change invalidates the current target
+                // through the existing tickAfterSave lifecycle.
+                onCategoryModeChange={(categoryMode) => void platformPatch(platform, { categoryMode })}
                 onCategoriesChange={(categories) => void platformPatch(platform, { categories })}
                 onSearchCategories={(query) => ctx.onSearchCategories(platform, query)}
               />
@@ -423,12 +419,15 @@ export function buildSettingsRegistry(ctx: SettingsRegistryContext): SettingsSec
       },
     ];
 
-    // Twitch's advanced group also carries a farming toggle, so it is named for
-    // what it is rather than "Compatibility", and exists whether or not a
-    // compatibility registry was supplied. Kick has no such toggle and keeps a
-    // compatibility-only group. Each section still gets exactly one advanced
-    // group, and neither holds a lone entry in the popup, which always supplies
-    // a registry.
+    // Both platforms end in one advanced group with the same title, so the two
+    // platform sections read the same way. It is named "Advanced &
+    // compatibility" rather than the General section's plain "Advanced" so the
+    // two are told apart on sight: General tunes the scheduler, this one tunes
+    // one platform. The subtitle is per-platform because the contents differ —
+    // Twitch adds a farming toggle and has three compatibility components to
+    // Kick's two — and three sections sharing one subtitle read as the same
+    // section repeated. Twitch's group exists whether or not a compatibility
+    // registry was supplied; Kick's holds the compatibility editor alone.
     const advancedEntries: SettingsEntryDef[] = platform === "twitch"
       ? [{
         id: "twitch.advanced.strictCampaignAvailability",
@@ -465,24 +464,21 @@ export function buildSettingsRegistry(ctx: SettingsRegistryContext): SettingsSec
     }
 
     if (advancedEntries.length > 0) {
-      groups.push(platform === "twitch"
-        ? {
-          id: "twitch.advanced",
-          titleKey: "settingsGroupAdvanced",
-          description: t("advancedDescription"),
-          advanced: true,
-          entries: advancedEntries,
-        }
-        : {
-          id: `${platform}.compatibility`,
-          titleKey: "settingsGroupCompatibility",
-          description: t("compatibilitySectionDescription"),
-          advanced: true,
-          entries: advancedEntries,
-        });
+      groups.push({
+        id: `${platform}.advanced`,
+        titleKey: "settingsGroupPlatformAdvanced",
+        description: t(platform === "twitch" ? "twitchAdvancedDescription" : "kickAdvancedDescription"),
+        advanced: true,
+        entries: advancedEntries,
+      });
     }
 
-    return { id: platform, iconNode, rows: [claimEntry], groups };
+    return {
+      id: platform,
+      description: t(platform === "twitch" ? "twitchSectionDescription" : "kickSectionDescription"),
+      rows: [claimEntry],
+      groups,
+    };
   };
 
   return [

@@ -38,7 +38,7 @@ See the [CLI guide](packages/cli/README.md) for authentication, configuration, a
 
 If something is not working, [open a bug report](https://github.com/jamezrin/lurkloot/issues/new?template=bug_report.yml). Include the requested browser, platform, and reproduction details, but never share passwords, cookies, session tokens, or other credentials.
 
-Feature ideas and contributions are welcome through [GitHub Issues](https://github.com/jamezrin/lurkloot/issues) and pull requests.
+Feature ideas and contributions are welcome through [GitHub Issues](https://github.com/jamezrin/lurkloot/issues) and pull requests. See [CONTRIBUTING.md](CONTRIBUTING.md) for the setup, conventions, and checks a pull request should follow.
 
 ## Development
 
@@ -52,7 +52,7 @@ pnpm build
 pnpm build:firefox
 ```
 
-For implementation details and package boundaries, see [the architecture guide](docs/architecture.md).
+For implementation details and package boundaries, see [the architecture guide](docs/architecture.md). For how to set up the repository, the branch and commit conventions, and what to run before opening a pull request, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Releasing
 

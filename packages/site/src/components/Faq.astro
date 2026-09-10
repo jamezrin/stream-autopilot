@@ -1,17 +1,34 @@
 ---
-import { faqItems } from "../faq";
+// The accordion half of the FAQ. Content comes from the page so each landing
+// page can ask its own platform questions; the homepage keeps the general set.
+// The matching FAQPage schema is emitted by Base.astro from the same array.
+import { faqItems, type FaqItem } from "../faq";
+
+interface Props {
+  items?: FaqItem[];
+  eyebrow?: string;
+  heading?: string;
+  deck?: string;
+}
+
+const {
+  items = faqItems,
+  eyebrow = "Answers",
+  heading = "Good to know.",
+  deck = "Everything people want to know before installing.",
+} = Astro.props;
 ---
 
 <section id="faq" class="faq act">
   <div class="wrap faq__inner">
     <div class="faq__head">
-      <p class="eyebrow reveal">Answers</p>
-      <h2 class="reveal-slow">Good to know.</h2>
-      <p class="reveal">Everything people want to know before installing.</p>
+      <p class="eyebrow reveal">{eyebrow}</p>
+      <h2 class="reveal-slow">{heading}</h2>
+      <p class="reveal">{deck}</p>
     </div>
 
     <div class="faq__list reveal">
-      {faqItems.map((item, i) => (
+      {items.map((item, i) => (
         <details class="faq__item" open={i === 0}>
           <summary>
             <span>{item.q}</span>

@@ -188,7 +188,7 @@ export function AutomationStatusLine({ platform, presentation, farmingTitle, far
             )}
           </span>
         ) : presentation.state === "running" ? (
-          <span className="truncate" title={presentation.statusMessage}>{presentation.statusMessage ?? t("waitingEligibleStream")}</span>
+          <span className="truncate" title={t("waitingEligibleStream")}>{t("waitingEligibleStream")}</span>
         ) : (
           <span
             className={cn("min-w-0", roomy ? "line-clamp-2 leading-snug" : "truncate")}

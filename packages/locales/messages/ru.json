@@ -62,9 +62,6 @@
   "settingsSearchNoResults": {
     "message": "Настройки, соответствующие «$1», не найдены."
   },
-  "settingsPlatformSettingsTitle": {
-    "message": "Платформа и категории/игры"
-  },
   "settingsPlatformSettings": {
     "message": "Настройки $1"
   },
@@ -154,6 +151,12 @@
   },
   "hideTipsDescription": {
     "message": "Скрывает полезные советы в главном окне."
+  },
+  "inPagePanelTitle": {
+    "message": "Показывать панель на Twitch и Kick"
+  },
+  "inPagePanelDescription": {
+    "message": "Добавляет кнопку Lurkloot на twitch.tv и kick.com, которая открывает это окно в виде панели на странице."
   },
   "tipCampaignPriority": {
     "message": "Drops имеют приоритет над списком. Перетаскивайте кампании за ручку, чтобы задать порядок."
@@ -464,9 +467,6 @@
   "platformSettingsTitle": {
     "message": "Настройки платформы"
   },
-  "platformSettingsDescription": {
-    "message": "Автоматизация и каналы одного провайдера. Переключайтесь между Twitch и Kick."
-  },
   "farmingTabsTitle": {
     "message": "Вкладки фарма"
   },
@@ -539,6 +539,21 @@
   "settingsGroupAdvanced": {
     "message": "Дополнительно"
   },
+  "settingsGroupPlatformAdvanced": {
+    "message": "Дополнительно и совместимость"
+  },
+  "twitchSectionDescription": {
+    "message": "Баллы канала, фильтр категорий, исключённые каналы и совместимость с Twitch."
+  },
+  "kickSectionDescription": {
+    "message": "Ежедневные задания, фильтр категорий, исключённые каналы и совместимость с Kick."
+  },
+  "twitchAdvancedDescription": {
+    "message": "Доступность кампаний, а также транспорты сигналов и инвентаря, которые использует Lurkloot. Меняйте их, только если Twitch перестал работать."
+  },
+  "kickAdvancedDescription": {
+    "message": "Как Lurkloot открывает ссылки получения наград Kick и связанный с этим профиль поведения. Меняйте их, только если Kick перестал работать."
+  },
   "schedulerIntervalTitle": {
     "message": "Интервал планировщика"
   },
@@ -587,24 +602,60 @@
   "insufficientTimeRemaining": {
     "message": "Недостаточно оставшегося времени"
   },
-  "campaignRejectionExcluded": { "message": "Эта кампания исключена из фарминга." },
-  "campaignRejectionUpcoming": { "message": "Эта кампания ещё не началась." },
-  "campaignRejectionExpired": { "message": "Эта кампания завершилась." },
-  "campaignRejectionCompleted": { "message": "Все награды этой кампании получены." },
-  "campaignRejectionUnlinkedDisabled": { "message": "Фарминг без привязанной учётной записи отключён." },
-  "campaignRejectionTwitchLinkRequired": { "message": "Для этой кампании Twitch требуется привязка учётной записи." },
-  "campaignRejectionSubscriptionDisabled": { "message": "Фарминг кампаний с подпиской отключён." },
-  "campaignRejectionCategoryFiltered": { "message": "Эта кампания не соответствует выбранным категориям." },
-  "campaignRejectionPriorityNotSelected": { "message": "Этой кампании нет в списке приоритетов." },
-  "campaignRejectionNoRewards": { "message": "В этой кампании нет доступных для фарминга наград." },
-  "campaignRejectionNoUnclaimedRewards": { "message": "В этой кампании нет неполученных наград." },
-  "campaignRejectionPrerequisites": { "message": "$1 ожидает предыдущую награду или условие." },
-  "campaignRejectionRewardNotStarted": { "message": "$1 пока недоступна." },
-  "campaignRejectionRewardWindowEnded": { "message": "$1 больше недоступна." },
-  "campaignRejectionInsufficientTime": { "message": "$1 нельзя завершить до окончания срока." },
-  "campaignRejectionSubscriptionRequired": { "message": "$1 требует подходящую подписку." },
-  "campaignRejectionActionRequired": { "message": "$1 требует действие помимо просмотра." },
-  "campaignRejectionNoFarmableReward": { "message": "Сейчас ни одну награду этой кампании нельзя фармить." },
+  "campaignRejectionExcluded": {
+    "message": "Эта кампания исключена из фарминга."
+  },
+  "campaignRejectionUpcoming": {
+    "message": "Эта кампания ещё не началась."
+  },
+  "campaignRejectionExpired": {
+    "message": "Эта кампания завершилась."
+  },
+  "campaignRejectionCompleted": {
+    "message": "Все награды этой кампании получены."
+  },
+  "campaignRejectionUnlinkedDisabled": {
+    "message": "Фарминг без привязанной учётной записи отключён."
+  },
+  "campaignRejectionTwitchLinkRequired": {
+    "message": "Для этой кампании Twitch требуется привязка учётной записи."
+  },
+  "campaignRejectionSubscriptionDisabled": {
+    "message": "Фарминг кампаний с подпиской отключён."
+  },
+  "campaignRejectionCategoryFiltered": {
+    "message": "Эта кампания не соответствует выбранным категориям."
+  },
+  "campaignRejectionPriorityNotSelected": {
+    "message": "Этой кампании нет в списке приоритетов."
+  },
+  "campaignRejectionNoRewards": {
+    "message": "В этой кампании нет доступных для фарминга наград."
+  },
+  "campaignRejectionNoUnclaimedRewards": {
+    "message": "В этой кампании нет неполученных наград."
+  },
+  "campaignRejectionPrerequisites": {
+    "message": "$1 ожидает предыдущую награду или условие."
+  },
+  "campaignRejectionRewardNotStarted": {
+    "message": "$1 пока недоступна."
+  },
+  "campaignRejectionRewardWindowEnded": {
+    "message": "$1 больше недоступна."
+  },
+  "campaignRejectionInsufficientTime": {
+    "message": "$1 нельзя завершить до окончания срока."
+  },
+  "campaignRejectionSubscriptionRequired": {
+    "message": "$1 требует подходящую подписку."
+  },
+  "campaignRejectionActionRequired": {
+    "message": "$1 требует действие помимо просмотра."
+  },
+  "campaignRejectionNoFarmableReward": {
+    "message": "Сейчас ни одну награду этой кампании нельзя фармить."
+  },
   "automationSectionTitle": {
     "message": "Автоматизация"
   },
@@ -650,11 +701,26 @@
   "settingsGroupCategories": {
     "message": "Категории"
   },
-  "farmAllCategoriesTitle": {
-    "message": "Фармить все категории"
+  "categoryModeTitle": {
+    "message": "Фильтр категорий"
   },
-  "farmAllCategoriesDescription": {
-    "message": "Фармит drops во всех категориях $1. Отключите, чтобы фармить только выбранные."
+  "categoryModeDescription": {
+    "message": "Фармить все категории $1, включать только выбранные или исключать их."
+  },
+  "categoryModeAll": {
+    "message": "Все категории"
+  },
+  "categoryModeInclude": {
+    "message": "Только выбранные"
+  },
+  "categoryModeExclude": {
+    "message": "Все, кроме выбранных"
+  },
+  "includeCategoriesInstruction": {
+    "message": "На $1 фармятся только эти категории."
+  },
+  "excludeCategoriesInstruction": {
+    "message": "На $1 фармятся все категории, кроме этих."
   },
   "categoriesToFarm": {
     "message": "Категории для фарма"
@@ -664,6 +730,9 @@
   },
   "noCategoriesSelected": {
     "message": "Категории не выбраны: на $1 ничего не будет фармиться. Добавьте категории ниже."
+  },
+  "noCategoriesExcluded": {
+    "message": "Категории не исключены: будут фармиться все категории $1. Добавьте категории ниже, чтобы пропускать их."
   },
   "hasActiveDrops": {
     "message": "Есть активные drops"
@@ -771,7 +840,7 @@
     "message": "Больше, чем дропы."
   },
   "screenshotExtrasSubcopy": {
-    "message": "Баллы канала и челленджи Kick тоже клеймятся за вас. Idle-список, когда фармить больше нечего."
+    "message": "Баллы канала, челленджи Kick и 2-минутные дропы тоже клеймятся за вас. Idle-список, когда фармить больше нечего."
   },
   "screenshotExtrasPointsName": {
     "message": "Баллы канала"
@@ -790,6 +859,12 @@
   },
   "screenshotExtrasWatchlistMeta": {
     "message": "Смотрит ваших стримеров между кампаниями"
+  },
+  "screenshotExtrasFlashName": {
+    "message": "2-минутные дропы"
+  },
+  "screenshotExtrasFlashMeta": {
+    "message": "Kick · сразу как появляются"
   },
   "screenshotEasyEyebrow": {
     "message": "Просто использовать"
@@ -839,6 +914,33 @@
   "screenshotUpdatedSubcopy": {
     "message": "Частые релизы, когда Twitch и Kick меняются — и открыты к идеям и улучшениям."
   },
+  "screenshotUpdatedBrowsersTitle": {
+    "message": "Браузеры на базе Chromium"
+  },
+  "screenshotUpdatedBrowsersSub": {
+    "message": "Страница Chrome Web Store. То же расширение."
+  },
+  "screenshotUpdatedHeadlessTitle": {
+    "message": "CLI"
+  },
+  "screenshotUpdatedHeadlessSub": {
+    "message": "Без интерфейса. Тот же движок."
+  },
+  "screenshotUpdatedDockerTitle": {
+    "message": "Docker"
+  },
+  "screenshotUpdatedDockerSub": {
+    "message": "Тот же движок. В контейнере."
+  },
+  "screenshotUpdatedLicense": {
+    "message": "Apache-2.0"
+  },
+  "screenshotUpdatedRating": {
+    "message": "4.9"
+  },
+  "screenshotUpdatedUsers": {
+    "message": "более 1 000 пользователей"
+  },
   "autoClaimReady": {
     "message": "Автополучение готово"
   },
@@ -886,6 +988,15 @@
   },
   "rateNudgeDismiss": {
     "message": "Не сейчас"
+  },
+  "githubStarNudgeTitle": {
+    "message": "Lurkloot — проект с открытым исходным кодом"
+  },
+  "githubStarNudgeBody": {
+    "message": "Если расширение оказалось полезным, звезда на GitHub поможет другим его найти. Вклад в проект приветствуется — особенно функции и переводы."
+  },
+  "githubStarNudgeAction": {
+    "message": "Поставить звезду на GitHub"
   },
   "removeItem": {
     "message": "Удалить $1"
@@ -1133,9 +1244,6 @@
   "diagnosticsViewTab": {
     "message": "Диагностика"
   },
-  "settingsGroupCompatibility": {
-    "message": "Совместимость"
-  },
   "compatibilityAutomatic": {
     "message": "Автоматически"
   },
@@ -1294,5 +1402,14 @@
   },
   "manualWatchPauseDetail": {
     "message": "Фарм приостановлен, пока вы сами смотрите трансляцию. Поставьте её на паузу, закройте или перейдите на другую вкладку, чтобы фарм автоматически возобновился при следующей проверке."
+  },
+  "reorderItem": {
+    "message": "Изменить порядок: $1"
+  },
+  "scrollRewardsLeft": {
+    "message": "Прокрутить награды влево"
+  },
+  "scrollRewardsRight": {
+    "message": "Прокрутить награды вправо"
   }
 }

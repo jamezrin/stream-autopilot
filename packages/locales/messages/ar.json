@@ -62,9 +62,6 @@
   "settingsSearchNoResults": {
     "message": "لا توجد إعدادات تطابق «$1»."
   },
-  "settingsPlatformSettingsTitle": {
-    "message": "المنصة والفئات/الألعاب"
-  },
   "settingsPlatformSettings": {
     "message": "إعدادات $1"
   },
@@ -154,6 +151,12 @@
   },
   "hideTipsDescription": {
     "message": "يخفي النصائح المفيدة من النافذة الرئيسية."
+  },
+  "inPagePanelTitle": {
+    "message": "إظهار اللوحة على Twitch وKick"
+  },
+  "inPagePanelDescription": {
+    "message": "يضيف زر Lurkloot إلى twitch.tv وkick.com لفتح هذه النافذة كلوحة داخل الصفحة."
   },
   "tipCampaignPriority": {
     "message": "تأخذ Drops الأولوية على قائمة المشاهدة الخاملة. اسحب الحملات من المقبض لترتيب الفارم."
@@ -464,9 +467,6 @@
   "platformSettingsTitle": {
     "message": "إعدادات المنصة"
   },
-  "platformSettingsDescription": {
-    "message": "الأتمتة والقنوات لمزوّد واحد. بدّل بين Twitch وKick."
-  },
   "farmingTabsTitle": {
     "message": "علامات تبويب الفارم"
   },
@@ -539,6 +539,21 @@
   "settingsGroupAdvanced": {
     "message": "متقدم"
   },
+  "settingsGroupPlatformAdvanced": {
+    "message": "إعدادات متقدمة والتوافق"
+  },
+  "twitchSectionDescription": {
+    "message": "نقاط القناة وفلتر الفئات والقنوات المستبعدة والتوافق مع Twitch."
+  },
+  "kickSectionDescription": {
+    "message": "التحديات اليومية وفلتر الفئات والقنوات المستبعدة والتوافق مع Kick."
+  },
+  "twitchAdvancedDescription": {
+    "message": "توفّر الحملات، إضافة إلى وسائل نقل النبض والمخزون التي يستخدمها Lurkloot. لا تغيّرها إلا إذا توقف Twitch عن العمل."
+  },
+  "kickAdvancedDescription": {
+    "message": "طريقة فتح Lurkloot لروابط استلام مكافآت Kick وملف السلوك المرتبط بها. لا تغيّرها إلا إذا توقف Kick عن العمل."
+  },
   "schedulerIntervalTitle": {
     "message": "فاصل المجدول"
   },
@@ -587,24 +602,60 @@
   "insufficientTimeRemaining": {
     "message": "الوقت المتبقي غير كافٍ"
   },
-  "campaignRejectionExcluded": { "message": "هذه الحملة مستبعدة من الجمع التلقائي." },
-  "campaignRejectionUpcoming": { "message": "هذه الحملة لم تبدأ بعد." },
-  "campaignRejectionExpired": { "message": "انتهت هذه الحملة." },
-  "campaignRejectionCompleted": { "message": "اكتملت جميع مكافآت هذه الحملة." },
-  "campaignRejectionUnlinkedDisabled": { "message": "جمع الحملات دون حساب مرتبط معطّل." },
-  "campaignRejectionTwitchLinkRequired": { "message": "تتطلب حملة Twitch هذه ربط حساب." },
-  "campaignRejectionSubscriptionDisabled": { "message": "جمع حملات الاشتراك معطّل." },
-  "campaignRejectionCategoryFiltered": { "message": "هذه الحملة لا تطابق الفئات المحددة." },
-  "campaignRejectionPriorityNotSelected": { "message": "هذه الحملة ليست في قائمة الأولوية." },
-  "campaignRejectionNoRewards": { "message": "لا تحتوي هذه الحملة على مكافآت قابلة للجمع." },
-  "campaignRejectionNoUnclaimedRewards": { "message": "لا تحتوي هذه الحملة على مكافآت غير مستلمة." },
-  "campaignRejectionPrerequisites": { "message": "$1 بانتظار مكافأة أو شرط سابق." },
-  "campaignRejectionRewardNotStarted": { "message": "$1 غير متاحة بعد." },
-  "campaignRejectionRewardWindowEnded": { "message": "$1 لم تعد متاحة." },
-  "campaignRejectionInsufficientTime": { "message": "لا يمكن إكمال $1 قبل الموعد النهائي." },
-  "campaignRejectionSubscriptionRequired": { "message": "تتطلب $1 اشتراكًا مؤهلًا." },
-  "campaignRejectionActionRequired": { "message": "تتطلب $1 إجراءً غير المشاهدة." },
-  "campaignRejectionNoFarmableReward": { "message": "لا يمكن جمع أي مكافأة من هذه الحملة حاليًا." },
+  "campaignRejectionExcluded": {
+    "message": "هذه الحملة مستبعدة من الجمع التلقائي."
+  },
+  "campaignRejectionUpcoming": {
+    "message": "هذه الحملة لم تبدأ بعد."
+  },
+  "campaignRejectionExpired": {
+    "message": "انتهت هذه الحملة."
+  },
+  "campaignRejectionCompleted": {
+    "message": "اكتملت جميع مكافآت هذه الحملة."
+  },
+  "campaignRejectionUnlinkedDisabled": {
+    "message": "جمع الحملات دون حساب مرتبط معطّل."
+  },
+  "campaignRejectionTwitchLinkRequired": {
+    "message": "تتطلب حملة Twitch هذه ربط حساب."
+  },
+  "campaignRejectionSubscriptionDisabled": {
+    "message": "جمع حملات الاشتراك معطّل."
+  },
+  "campaignRejectionCategoryFiltered": {
+    "message": "هذه الحملة لا تطابق الفئات المحددة."
+  },
+  "campaignRejectionPriorityNotSelected": {
+    "message": "هذه الحملة ليست في قائمة الأولوية."
+  },
+  "campaignRejectionNoRewards": {
+    "message": "لا تحتوي هذه الحملة على مكافآت قابلة للجمع."
+  },
+  "campaignRejectionNoUnclaimedRewards": {
+    "message": "لا تحتوي هذه الحملة على مكافآت غير مستلمة."
+  },
+  "campaignRejectionPrerequisites": {
+    "message": "$1 بانتظار مكافأة أو شرط سابق."
+  },
+  "campaignRejectionRewardNotStarted": {
+    "message": "$1 غير متاحة بعد."
+  },
+  "campaignRejectionRewardWindowEnded": {
+    "message": "$1 لم تعد متاحة."
+  },
+  "campaignRejectionInsufficientTime": {
+    "message": "لا يمكن إكمال $1 قبل الموعد النهائي."
+  },
+  "campaignRejectionSubscriptionRequired": {
+    "message": "تتطلب $1 اشتراكًا مؤهلًا."
+  },
+  "campaignRejectionActionRequired": {
+    "message": "تتطلب $1 إجراءً غير المشاهدة."
+  },
+  "campaignRejectionNoFarmableReward": {
+    "message": "لا يمكن جمع أي مكافأة من هذه الحملة حاليًا."
+  },
   "automationSectionTitle": {
     "message": "الأتمتة"
   },
@@ -650,11 +701,26 @@
   "settingsGroupCategories": {
     "message": "الفئات"
   },
-  "farmAllCategoriesTitle": {
-    "message": "فارم كل الفئات"
+  "categoryModeTitle": {
+    "message": "تصفية الفئات"
   },
-  "farmAllCategoriesDescription": {
-    "message": "فارم Drops في كل فئات $1. أوقفه لفارم مجموعة مختارة فقط."
+  "categoryModeDescription": {
+    "message": "افرم كل فئات $1، أو ضمّن الفئات المحددة فقط، أو استبعدها."
+  },
+  "categoryModeAll": {
+    "message": "كل الفئات"
+  },
+  "categoryModeInclude": {
+    "message": "المحددة فقط"
+  },
+  "categoryModeExclude": {
+    "message": "الكل عدا المحددة"
+  },
+  "includeCategoriesInstruction": {
+    "message": "لن يتم الفارم على $1 إلا في هذه الفئات."
+  },
+  "excludeCategoriesInstruction": {
+    "message": "يتم الفارم في كل فئات $1 عدا هذه."
   },
   "categoriesToFarm": {
     "message": "الفئات للفارم"
@@ -664,6 +730,9 @@
   },
   "noCategoriesSelected": {
     "message": "لم يتم تحديد فئات: لن يتم فارم أي شيء على $1. أضف فئات أدناه."
+  },
+  "noCategoriesExcluded": {
+    "message": "لم يتم استبعاد أي فئة: سيتم الفارم في كل فئات $1. أضف فئات أدناه لتخطيها."
   },
   "hasActiveDrops": {
     "message": "لديه Drops نشطة"
@@ -771,7 +840,7 @@
     "message": "أكثر من دروبس."
   },
   "screenshotExtrasSubcopy": {
-    "message": "نقاط القناة وتحديات Kick تُطالب أيضاً لأجلك. قائمة مشاهدة خاملة عندما لا يبقى شيء للفارم."
+    "message": "نقاط القناة وتحديات Kick ودروبات الدقيقتين تُطالب أيضاً لأجلك. قائمة مشاهدة خاملة عندما لا يبقى شيء للفارم."
   },
   "screenshotExtrasPointsName": {
     "message": "نقاط القناة"
@@ -790,6 +859,12 @@
   },
   "screenshotExtrasWatchlistMeta": {
     "message": "تشاهد ستريمرك بين الحملات"
+  },
+  "screenshotExtrasFlashName": {
+    "message": "دروبات دقيقتين"
+  },
+  "screenshotExtrasFlashMeta": {
+    "message": "Kick · لحظة إعلانها"
   },
   "screenshotEasyEyebrow": {
     "message": "سهل الاستخدام"
@@ -839,6 +914,33 @@
   "screenshotUpdatedSubcopy": {
     "message": "إصدارات متكررة كلما تغيّر Twitch وKick — ومفتوح للأفكار والتحسينات."
   },
+  "screenshotUpdatedBrowsersTitle": {
+    "message": "متصفحات مبنية على Chromium"
+  },
+  "screenshotUpdatedBrowsersSub": {
+    "message": "صفحة Chrome Web Store. نفس الإضافة."
+  },
+  "screenshotUpdatedHeadlessTitle": {
+    "message": "CLI"
+  },
+  "screenshotUpdatedHeadlessSub": {
+    "message": "بلا واجهة. نفس المحرك."
+  },
+  "screenshotUpdatedDockerTitle": {
+    "message": "Docker"
+  },
+  "screenshotUpdatedDockerSub": {
+    "message": "نفس المحرك. في حاوية."
+  },
+  "screenshotUpdatedLicense": {
+    "message": "Apache-2.0"
+  },
+  "screenshotUpdatedRating": {
+    "message": "4.9"
+  },
+  "screenshotUpdatedUsers": {
+    "message": "أكثر من 1,000 مستخدم"
+  },
   "autoClaimReady": {
     "message": "الاستلام التلقائي جاهز"
   },
@@ -886,6 +988,15 @@
   },
   "rateNudgeDismiss": {
     "message": "ليس الآن"
+  },
+  "githubStarNudgeTitle": {
+    "message": "Lurkloot مفتوح المصدر"
+  },
+  "githubStarNudgeBody": {
+    "message": "إذا كان مفيدًا، فإن نجمة على GitHub تساعد الآخرين على العثور عليه. المساهمات مرحب بها، خاصة الميزات والترجمات."
+  },
+  "githubStarNudgeAction": {
+    "message": "ضع نجمة على GitHub"
   },
   "removeItem": {
     "message": "إزالة $1"
@@ -1133,9 +1244,6 @@
   "diagnosticsViewTab": {
     "message": "التشخيصات"
   },
-  "settingsGroupCompatibility": {
-    "message": "التوافق"
-  },
   "compatibilityAutomatic": {
     "message": "تلقائي"
   },
@@ -1294,5 +1402,14 @@
   },
   "manualWatchPauseDetail": {
     "message": "تم إيقاف الزراعة مؤقتًا أثناء مشاهدتك لبث مباشر بنفسك. أوقفه مؤقتًا أو أغلقه أو انتقل بعيدًا عن علامة التبويب هذه لاستئناف الزراعة تلقائيًا عند الفحص التالي."
+  },
+  "reorderItem": {
+    "message": "إعادة ترتيب $1"
+  },
+  "scrollRewardsLeft": {
+    "message": "تمرير المكافآت إلى اليسار"
+  },
+  "scrollRewardsRight": {
+    "message": "تمرير المكافآت إلى اليمين"
   }
 }

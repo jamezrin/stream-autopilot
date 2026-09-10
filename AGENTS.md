@@ -10,7 +10,7 @@ This is a TypeScript pnpm monorepo (`packages/*`, see `pnpm-workspace.yaml`) cen
 - **`packages/locales`** — the localized message catalog package imported as `@lurkloot/locales`. JSON catalogs live in `messages/`, and `src/index.ts` exposes the async catalog loader used by the extension and popup UI.
 - **`packages/popup-ui`** — the shared React popup UI imported as `@lurkloot/popup-ui` (`Popup.tsx`, `primitives.tsx`, view components like `idleWatchlist.tsx`/`drops.tsx`/`settings.tsx`, and the rate-nudge logic), consumed by both the extension popup and the site demo.
 - **`packages/shared`** — framework-agnostic shared contracts imported as `@lurkloot/shared`: `models.ts`, `settings.ts`, `messages.ts`, `categories.ts`, `i18n.ts`, `logging.ts`.
-- **`packages/site`** — the Astro marketing site (deployed to Cloudflare Pages at `https://lurkloot.jamezrin.com`). Pages are in `src/pages/` (`index.astro`, `privacy.astro`, `changelog.astro`), changelog data is in `src/changelog.json` with types in `src/changelog.ts`, other content data is in `src/faq.ts`/`src/consts.ts`, and components/layouts/styles are alongside. It imports the real popup UI for the live demo.
+- **`packages/site`** — the Astro marketing site (deployed to Cloudflare Pages at `https://lurkloot.jamezrin.com`). Pages are in `src/pages/` (`index.astro`, `privacy.astro`, `changelog.astro`, and the SEO landing pages `twitch-drops-farmer.astro`/`kick-drops-farmer.astro`), changelog data is in `src/changelog.json` with types in `src/changelog.ts`, other content data is in `src/faq.ts`/`src/consts.ts`, and components/layouts/styles are alongside. It imports the real popup UI for the live demo. Read [docs/seo.md](docs/seo.md) before editing page metadata, structured data, or either platform landing page — the two landing pages deliberately share a shell but no copy, and must not be collapsed into one templated component.
 
 Other top-level dirs: `docs/` (architecture and store-listing notes), `scripts/` (repo tooling), and `references/` (optional, untracked local snapshots — see below).
 
@@ -40,8 +40,9 @@ whose diff is only the version bump. Candidate artifacts refresh on every push t
 and on every release-branch push.
 
 Merge the generated release PR with a merge commit; **Release** starts automatically, publishes the
-GitHub release, GHCR aliases, Chrome Web Store submission and production site after one approval,
-then merges `main` directly into `develop` with the dedicated sync App. A hotfix is the same flow
+GitHub release, GHCR aliases, Chrome Web Store submission and production site after approval, then a
+separate `sync` job — approved on `production` in its own right — merges `main` directly into
+`develop` with the dedicated sync App. A hotfix is the same flow
 with `release/patch` on a PR branched from `main`. Use manual **Release** dispatch only for idempotent
 recovery. Do not create or move tags by hand.
 

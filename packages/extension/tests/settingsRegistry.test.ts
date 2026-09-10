@@ -51,12 +51,14 @@ describe("settings registry", () => {
   // editors. Listed explicitly (not by an `endsWith` suffix match) so a future
   // one-toggle group can never be silently exempted by sharing a suffix, and so
   // the assertion also catches an editor group quietly growing a toggle list.
+  // Both platforms now end in a `.advanced` group, and only Kick's is an editor
+  // group — a suffix match here would wrongly exempt Twitch's toggle list too.
   const EDITOR_GROUP_IDS = [
     "twitch.categories",
     "kick.categories",
     "twitch.channels",
     "kick.channels",
-    "kick.compatibility",
+    "kick.advanced",
   ];
 
   it("gives every non-editor group at least two entries, and every editor group exactly one", () => {
@@ -84,12 +86,12 @@ describe("settings registry", () => {
 
   it("marks exactly one advanced group per section", () => {
     const advanced = registry().flatMap((section) => section.groups.filter((group) => group.advanced).map((group) => group.id));
-    // Twitch's advanced group also holds a farming toggle, so it is named for
-    // that rather than "Compatibility"; Kick has only compatibility rows.
+    // Both platform sections end in an identically titled advanced group;
+    // Twitch's also holds a farming toggle, Kick's has only compatibility rows.
     expect(advanced).toEqual([
       "general.advanced",
       "twitch.advanced",
-      "kick.compatibility",
+      "kick.advanced",
     ]);
   });
 
@@ -102,8 +104,9 @@ describe("settings registry", () => {
       onSearchCategories: async () => [],
     });
     const groups = withoutCompatibility.flatMap((section) => section.groups.map((group) => group.id));
-    expect(groups).not.toContain("twitch.compatibility");
-    expect(groups).not.toContain("kick.compatibility");
+    // Kick's advanced group holds nothing but the compatibility editor, so
+    // without a registry Kick gets no advanced group at all.
+    expect(groups).not.toContain("kick.advanced");
     // Twitch's advanced group survives without a registry because it also holds
     // the strict-availability toggle, but the compatibility rows are gone.
     const entries = allEntryIds(withoutCompatibility);
@@ -123,6 +126,7 @@ describe("settings registry", () => {
         "general.appearance.autoStart",
         "general.appearance.pauseOnManualWatch",
         "general.appearance.hideTips",
+        "general.appearance.inPagePanel",
         "general.notifications.rewardEarned",
         "general.notifications.noDropsLeft",
         "general.drops.autoClaim",
@@ -147,12 +151,12 @@ describe("settings registry", () => {
         "general.advanced.deadlineSafetyMargin",
         "general.advanced.diagnosticLogging",
         "twitch.autoClaimChannelPoints",
-        "twitch.categories.farmAll",
+        "twitch.categories.mode",
         "twitch.channels.excluded",
         "twitch.advanced.strictCampaignAvailability",
         "twitch.compatibility.rows",
         "kick.autoClaimChallenges",
-        "kick.categories.farmAll",
+        "kick.categories.mode",
         "kick.channels.excluded",
         "kick.compatibility.rows",
       ]

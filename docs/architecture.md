@@ -28,6 +28,65 @@ Package-qualified paths below are written as `packages/<package>/...` when owner
 
 State and normalized settings are loaded and saved through `packages/extension/src/core/storage.ts` in the extension and through `packages/cli/src/storage.ts` in the CLI. The scheduler stores independent `WatchSession`, campaign, manual-watch, and managed-tab state for `twitch` and `kick`; diagnostics and activity events are emitted through the reporter outside `SchedulerState`. A short-lived Twitch Client-Integrity bundle is stored separately so claim mutations can replay page-issued Twitch headers while the token is valid.
 
+### Scheduler admission
+
+The shared controller reserves one active scheduler tick and at most one pending
+follow-up per platform, before loading settings or beginning tick diagnostics.
+Overlapping callers share the pending result promise. Twitch and Kick have
+independent lanes; extension alarms and CLI intervals request each platform
+separately. The CLI also shares result observers so repeated intervals cannot
+accumulate reporting continuations behind the same pending tick.
+
+Pending triggers merge by their existing selection semantics: `manual_tick`,
+`manual_resume`, and `claim_handoff` force selection and bypass backoff; `startup`
+forces selection without bypassing backoff. Other user actions, including
+settings and automation toggles, retain their persisted mutations through fresh
+settings/state loads. Ordinary alarms and discovery signals do not override a
+higher-priority trigger. Equal-priority triggers retain the first reason, while
+diagnostics count every merged reason. Valid discovery signals share an already
+pending scheduler follow-up instead of requesting another cycle afterward.
+
+Each executed follow-up reloads current settings/state and selects from the
+latest committed discovery revision. Disablement discards obsolete pending work;
+shutdown and host reset cancel it and abort active ticks. Reset also closes
+admission until cleanup finishes. Discovery signal controller/generation checks
+remain in force. Tick start/finish timing covers executed work only; separate
+diagnostics report merged or discarded trigger counts. Heartbeat admission and
+its fixed cadence remain independent of scheduler admission.
+
+### Discovery work
+
+The shared collector evaluates campaign farmability using the refresh's settings
+and one timestamp before listing channels. Completed, expired, excluded,
+infeasible and statically disallowed campaigns stay in the inventory with empty
+channel observations. Claimable rewards and uncertain channel eligibility retain
+their existing behavior. This gate uses the same evaluator as selection.
+
+Kick checks eligible campaigns through an optional adapter batch contract. Three
+workers process independent campaigns; each campaign checks candidates in order
+and stops at its first valid channel. This avoids speculative requests after an
+early match. Idle Watchlist checks are independent jobs and all remain observed.
+Raw API/page responses are shared by URL only within that discovery revision;
+each candidate retains its own campaign, ACL metadata and category expectation.
+The next revision fetches fresh evidence. A single campaign's candidate chain
+remains sequential, trading its latency for the existing early-match request
+budget. Campaign and candidate result ordering never depends on completion order.
+
+Missing Kick inventory/progress, malformed general-channel directories, missing
+required category evidence, cancellation or failed checks do not replace the
+last coherent snapshot. On failure, workers stop taking new work and drain active
+requests before returning. The collector also drains paired inventory and
+followed-channel operations. Strict Kick discovery awaits stale followed-cache
+refreshes, including an existing refresh, before cycle-level fetch observation is
+consumed. This adds the followed lookup's latency once per five-minute cache
+expiry, while fresh-cache reads remain immediate. HTTP 429 never retries through a different
+execution context. Discovery diagnostics report duration, inventory count,
+campaigns skipped before channel work, candidate observations and unique channel
+checks. Failed attempts without counters report that work metrics are unavailable
+rather than reporting zero work. The attribution fields contain only counts;
+strict missing-evidence failures use fixed messages. Both extension and CLI run
+this collector and the same Kick adapter.
+
 ## Runtime Messages
 
 The popup and content scripts do not call adapters directly. They send typed runtime messages from `@lurkloot/shared/messages`:
@@ -45,7 +104,19 @@ Important setting groups:
 
 - Global automation: `running`, `autoStartDropFarming`, per-platform `enabled`.
 - Farming behavior: `autoClaim`, `autoClaimChannelPoints`, `idleWatchlistFallbackOnly`, `priorityMode`, `campaignPriorities`, `excludedCampaignIds`, `farmingEligibility`.
-- Platform preferences: `platform[platform].idleWatchlistChannels`, `platform[platform].excludedChannels`, `platform[platform].farmAllCategories`, and `platform[platform].categories`.
+- Platform preferences: `platform[platform].idleWatchlistChannels`, `platform[platform].excludedChannels`, `platform[platform].categoryMode`, and `platform[platform].categories`.
+
+`categoryMode` is `"all"`, `"include"` or `"exclude"`, and one stored `categories`
+list serves all three: `all` farms everything and leaves the list inactive,
+`include` farms only the listed categories (an empty list farms nothing) with
+list order supplying category priority, and `exclude` farms everything except the
+listed categories (an empty list is equivalent to `all`) with list order carrying
+no scheduling meaning. Switching mode never rewrites the array, so returning to
+`include` restores the ordering the user had set. Both questions — does a
+campaign pass, and what is its category priority — are answered only by
+`campaignPassesCategoryFilter` and `categoryPriorityScore` in
+`@lurkloot/shared/categories`, so farming eligibility, Drops-list visibility,
+scheduler rejection reasons and priority scoring cannot disagree.
 - Tab/playback behavior: `tablessMode`, `muteFarmingTabs`, `keepFarmingVideosUnmuted`, `pauseOnManualWatch`, `autoCloseFinishedDrops`, `offlineRetryLimit`.
 - Notifications: `notifyRewardEarned`, `notifyNoDropsLeft`.
 
@@ -163,7 +234,7 @@ Temporary page-context tabs are reference-counted per origin and removed after t
 - Campaign discovery fetches `https://web.kick.com/api/v1/drops/campaigns`.
 - Progress refresh fetches `https://web.kick.com/api/v1/drops/progress`.
 - Candidate discovery prefers campaign allowed-channel data. Otherwise it queries `https://web.kick.com/api/v1/livestreams` with `category_id`, sorted by viewer count.
-- Followed channels come from `https://kick.com/api/v1/user/livestreams`, which Kick itself filters to the account's live follows (no pagination of the full follow list), cached the same way and for the same reason as Twitch's (see above), in `KickDiscoveryState`. A signed-out session or a failed lookup answers with an empty list, and selection falls back to viewer count.
+- Followed channels come from `https://kick.com/api/v1/user/livestreams`, which Kick itself filters to the account's live follows (no pagination of the full follow list), cached for five minutes in `KickDiscoveryState`. Strict discovery awaits stale refreshes to keep fetch lifecycle observation inside its cycle; standalone callers can still read stale values immediately. A signed-out session or a failed lookup answers with an empty list, and selection falls back to viewer count.
 - Channel validation calls `https://kick.com/api/v2/channels/{username}` and checks live state plus category id. If that fails, it falls back to parsing channel page HTML.
 - Reward claiming posts to `https://web.kick.com/api/v1/drops/claim` with campaign, reward, and claim identifiers.
 - Tabless watching exchanges the Kick session for a viewer WebSocket token, opens Kick's viewer socket, and sends watch livestream events while the channel remains live and in the expected category.

@@ -78,6 +78,10 @@ jobs:
       packages: write
       pull-requests: write
       statuses: write
+      # The candidate's attest job emits build provenance; a reusable workflow's permission
+      # ceiling is validated against the caller.
+      id-token: write
+      attestations: write
     uses: ./.github/workflows/build-release-candidate.yml
     with:
       ref: ${{ github.event.pull_request.head.sha }}
@@ -142,6 +146,20 @@ jobs:
         env:
           VERSION: ${{ steps.policy.outputs.version }}
         run: node scripts/release/cli.mjs prepare-workspace --version "$VERSION" --date "$(date -u +%F)"
+      # `main` already carrying the bump means the release merged but was never approved, and the
+      # cut has nothing to open a pull request from. Say so here rather than failing later inside
+      # `gh pr create` with "no commits between main and release/X.Y.Z".
+      - name: Detect a release that is already bumped on main
+        env:
+          VERSION: ${{ steps.policy.outputs.version }}
+          TRIGGER: ${{ github.event.pull_request.number }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          git add package.json packages/*/package.json packages/site/src/changelog.json
+          git diff --cached --quiet || exit 0
+          gh pr comment "$TRIGGER" --body "\`main\` already carries the version bump for \`$VERSION\`, so there is no release pull request to cut. This is the abandoned-release case: the release pull request merged but its \`production\` approval was never given. Dispatch **Release** manually to finish publishing \`$VERSION\`; do not re-apply a release label."
+          echo "main already carries $VERSION; dispatch Release to finish publication" >&2
+          exit 1
       - id: open
         name: Push the release branch and open its pull request
         env:
@@ -176,6 +194,10 @@ jobs:
       packages: write
       pull-requests: write
       statuses: write
+      # The candidate's attest job emits build provenance; a reusable workflow's permission
+      # ceiling is validated against the caller.
+      id-token: write
+      attestations: write
     uses: ./.github/workflows/build-release-candidate.yml
     with:
       ref: ${{ needs.cut.outputs.release_sha }}

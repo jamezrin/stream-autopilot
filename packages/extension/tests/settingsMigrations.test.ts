@@ -399,3 +399,70 @@ describe("schema v3", () => {
     expect(migrated.settings.criticalFailurePromptEnabled).toBe(false);
   });
 });
+
+describe("schema v5", () => {
+  const CATEGORIES = [
+    { id: "13", name: "Rust" },
+    { id: "21", name: "Other" },
+  ];
+
+  it("maps an explicit farm-all off to include mode, preserving the list and its order", () => {
+    const migrated = migrateSettings({
+      schemaVersion: 4,
+      platform: { twitch: { farmAllCategories: false, categories: CATEGORIES } },
+    });
+
+    expect(migrated.settings.platform).toMatchObject({
+      twitch: { categoryMode: "include", categories: CATEGORIES },
+    });
+    expect((migrated.settings.platform as Record<string, Record<string, unknown>>).twitch.farmAllCategories).toBeUndefined();
+    expect(migrated.diagnostics).toContainEqual(expect.objectContaining({
+      code: "deprecated_property",
+      path: "platform.twitch.farmAllCategories",
+      replacement: "platform.twitch.categoryMode",
+    }));
+  });
+
+  it("maps farm-all on to all mode on both platforms", () => {
+    const migrated = migrateSettings({
+      schemaVersion: 4,
+      platform: { twitch: { farmAllCategories: true }, kick: { farmAllCategories: true } },
+    });
+
+    expect(migrated.settings.platform).toMatchObject({
+      twitch: { categoryMode: "all" },
+      kick: { categoryMode: "all" },
+    });
+  });
+
+  // The old normalizer read the boolean as booleanOr(value, true), so anything
+  // that was not exactly `false` already meant farm-all.
+  it("treats a wrong-typed legacy value the way the old normalizer did", () => {
+    const migrated = migrateSettings({
+      schemaVersion: 4,
+      platform: { kick: { farmAllCategories: "no" } },
+    });
+
+    expect(migrated.settings.platform).toMatchObject({ kick: { categoryMode: "all" } });
+  });
+
+  it("lets an already-current key win over the legacy one", () => {
+    const migrated = migrateSettings({
+      schemaVersion: 4,
+      platform: { twitch: { farmAllCategories: false, categoryMode: "exclude" } },
+    });
+
+    expect(migrated.settings.platform).toMatchObject({ twitch: { categoryMode: "exclude" } });
+  });
+
+  it("leaves a document without the legacy key untouched and reports nothing", () => {
+    const migrated = migrateSettings({
+      schemaVersion: 4,
+      platform: { twitch: { categories: CATEGORIES } },
+    });
+
+    expect(migrated.settings.platform).toMatchObject({ twitch: { categories: CATEGORIES } });
+    expect((migrated.settings.platform as Record<string, Record<string, unknown>>).twitch.categoryMode).toBeUndefined();
+    expect(migrated.diagnostics.filter((diagnostic) => diagnostic.path.endsWith("farmAllCategories"))).toEqual([]);
+  });
+});

@@ -37,11 +37,33 @@ export interface WatchTabOptions {
 
 export interface AdapterOperationOptions {
   signal?: AbortSignal;
+  // Snapshot discovery must reject missing evidence instead of publishing a
+  // partial inventory. Standalone operations may retain their best-effort path.
+  requireComplete?: boolean;
+}
+
+export interface ChannelCheckRequest {
+  channel: ChannelCandidate;
+  campaign?: DropCampaign;
+}
+
+export interface ChannelCheckBatch {
+  // Request order; undefined is allowed only after an earlier successful check
+  // for that campaign. Idle requests always require their own observation.
+  checks: Array<ChannelCheck | undefined>;
+  uniqueChannelChecks: number;
 }
 
 export interface CandidateChannelSelection {
   channel?: ChannelCandidate;
   checked: number;
+  observations?: ChannelCheck[];
+  metrics?: {
+    cacheHits: number;
+    cacheMisses: number;
+    batchRequests: number;
+    singleFallbacks: number;
+  };
 }
 
 // A gamification challenge that was just claimed. Account-level, so unlike
@@ -69,6 +91,9 @@ export interface PlatformAdapter {
   // empty list and lose nothing but the preference.
   listFollowedChannels?(options?: AdapterOperationOptions): Promise<string[]>;
   checkChannel(channel: ChannelCandidate, options?: AdapterOperationOptions & { campaign?: DropCampaign }): Promise<ChannelCheck>;
+  // One revision only: implementations may share equivalent provider evidence,
+  // but must preserve campaign-specific decisions and drain all work on failure.
+  checkChannels?(requests: ChannelCheckRequest[], options?: AdapterOperationOptions): Promise<ChannelCheckBatch>;
   claimReward(campaign: DropCampaign, reward: DropReward, options?: AdapterOperationOptions): Promise<boolean>;
   // Whether a "claimable" reward can actually be claimed right now. Twitch only
   // exposes the real drop-instance id once it releases the claim, so auto-claim

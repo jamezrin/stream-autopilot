@@ -27,7 +27,14 @@ export type RuntimeMessage =
   | { type: "exportDiagnostics"; platform: Platform }
   | { type: "clearActivity" }
   | { type: "resetExtension" }
-  | { type: "exportCliCredentials" };
+  | { type: "exportCliCredentials" }
+  // Answers with the asking tab's own id, which a content script cannot read
+  // for itself. The in-page panel compares it against
+  // SchedulerState.managedWatchTabs to stay out of the extension's own farming
+  // tabs. Deliberately a plain id rather than an "am I managed?" predicate: the
+  // id is stable, so the caller can re-evaluate from persisted scheduler state
+  // as it changes, instead of racing the background's tab registration.
+  | { type: "getTabId" };
 
 // Credential blob the popup exports for the headless CLI's `login --import`. It
 // carries only the session tokens the CLI transports replay — never anything the

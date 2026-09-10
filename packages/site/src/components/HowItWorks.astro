@@ -1,4 +1,11 @@
 ---
+import { LINKS } from "../consts";
+
+const deeper = [
+  { key: "twitch", href: LINKS.twitchFarmer, label: "Farm Twitch Drops automatically" },
+  { key: "kick", href: LINKS.kickFarmer, label: "Farm Kick Drops automatically" },
+];
+
 const steps = [
   {
     n: "01",
@@ -34,6 +41,21 @@ const steps = [
         </li>
       ))}
     </ol>
+
+    <div class="how__deeper reveal">
+      <p class="eyebrow">Platform specifics</p>
+      <div class="how__deeper-links">
+        {deeper.map((link) => (
+          <a class={`how__deep how__deep--${link.key}`} href={link.href}>
+            <span class="how__deep-dot" aria-hidden="true"></span>
+            <span>{link.label}</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+        ))}
+      </div>
+    </div>
   </div>
 </section>
 
@@ -83,5 +105,66 @@ const steps = [
     color: var(--muted);
     font-size: 1.02rem;
     max-width: 36ch;
+  }
+  /* Two deep-link tiles into the platform landing pages. Sized well below the
+     hero CTA so they read as "go deeper", not as a competing call to action. */
+  .how__deeper {
+    margin-top: clamp(3rem, 6vw, 4.5rem);
+  }
+  .how__deeper-links {
+    margin-top: 1.1rem;
+    display: grid;
+    gap: 0.7rem;
+  }
+  @media (min-width: 640px) {
+    .how__deeper-links { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  /* Above the steps breakpoint, borrow the steps' 3-column track so the two
+     tiles sit exactly under columns 1 and 2 rather than nearly under them. */
+  @media (min-width: 820px) {
+    .how__deeper-links {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(2rem, 4vw, 3.5rem);
+    }
+  }
+  .how__deep {
+    --deep: var(--purple-soft);
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 1.05rem 1.3rem;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--ink-0);
+    font-weight: 600;
+    font-size: 0.98rem;
+    letter-spacing: -0.01em;
+    transition: border-color 0.25s var(--ease), background 0.25s var(--ease), transform 0.25s var(--ease);
+  }
+  .how__deep--kick { --deep: var(--lime); }
+  .how__deep-dot {
+    flex: 0 0 auto;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--deep);
+    box-shadow: 0 0 10px color-mix(in oklch, var(--deep) 55%, transparent);
+  }
+  .how__deep svg {
+    flex: 0 0 auto;
+    width: 17px;
+    height: 17px;
+    margin-left: auto;
+    color: var(--faint);
+    transition: transform 0.25s var(--ease), color 0.25s var(--ease);
+  }
+  .how__deep:hover {
+    border-color: var(--line-strong);
+    background: var(--ink-1);
+    transform: translateY(-2px);
+  }
+  .how__deep:hover svg {
+    color: var(--deep);
+    transform: translateX(3px);
   }
 </style>

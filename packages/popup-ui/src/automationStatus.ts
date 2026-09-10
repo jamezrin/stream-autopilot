@@ -19,7 +19,6 @@ export interface AutomationPresentation {
   detailKey?: string;
   tone: AutomationTone;
   operational: boolean;
-  statusMessage?: string;
   action?: AutomationAction;
 }
 
@@ -84,7 +83,6 @@ export function automationPresentation({
         detailKey: undefined,
         tone: "accent",
         operational: true,
-        statusMessage: session?.message,
       };
     }
     case "checking":

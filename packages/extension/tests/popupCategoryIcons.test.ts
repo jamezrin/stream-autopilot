@@ -9,9 +9,9 @@ import { gameItemsFromCampaigns } from "../../popup-ui/src/viewModels";
 const t = (key: string): string => key;
 
 describe("popup category icons", () => {
-  function renderSelectedCategory(imageUrl?: string): string {
+  function renderSelectedCategory(imageUrl?: string, categoryMode: "include" | "exclude" = "include"): string {
     const settings = mergeSettings(undefined);
-    settings.platform.twitch.farmAllCategories = false;
+    settings.platform.twitch.categoryMode = categoryMode;
     settings.platform.twitch.categories = [{
       id: "33214",
       name: "Fort Night",
@@ -22,7 +22,7 @@ describe("popup category icons", () => {
       platform: "twitch",
       suggestions: [],
       settings,
-      onFarmAllCategoriesChange: () => {},
+      onCategoryModeChange: () => {},
       onCategoriesChange: () => {},
       onSearchCategories: async () => [],
     }));
@@ -41,6 +41,16 @@ describe("popup category icons", () => {
 
     expect(markup).not.toContain("<img");
     expect(markup).toContain(">FN</span>");
+  });
+
+  // Exclude mode drops the reordering affordances (order is meaningless in a
+  // denylist) but keeps the row itself — artwork, name and removal — intact.
+  it("renders the same category artwork without rank controls in exclude mode", () => {
+    const markup = renderSelectedCategory("https://art.example/fortnite.jpg", "exclude");
+
+    expect(markup).toContain('src="https://art.example/fortnite.jpg"');
+    expect(markup).not.toContain("reorderItem");
+    expect(markup).toContain("removeItem");
   });
 
   it("preserves campaign category artwork in active-drop suggestions", () => {

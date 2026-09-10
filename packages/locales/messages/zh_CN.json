@@ -3,13 +3,13 @@
     "message": "Lurkloot"
   },
   "extensionStoreName": {
-    "message": "Lurkloot - Twitch 与 Kick 掉宝刷取"
+    "message": "Lurkloot - Twitch 与 Kick 掉宝挂机助手"
   },
   "extensionDescription": {
-    "message": "通过正常浏览器会话、可见的静音标签页和可选低资源模式刷 Twitch 与 Kick 掉宝。"
+    "message": "通过正常的浏览器登录会话、可见的静音标签页和可选的低资源模式，在 Twitch 与 Kick 上挂机获取掉宝。"
   },
   "promoTagline": {
-    "message": "自动刷 Twitch 与 Kick 掉宝。"
+    "message": "自动挂机获取 Twitch 与 Kick 掉宝。"
   },
   "languageBrowser": {
     "message": "使用浏览器语言"
@@ -62,9 +62,6 @@
   "settingsSearchNoResults": {
     "message": "未找到与“$1”匹配的设置。"
   },
-  "settingsPlatformSettingsTitle": {
-    "message": "平台和分类/游戏"
-  },
   "settingsPlatformSettings": {
     "message": "$1 设置"
   },
@@ -72,7 +69,7 @@
     "message": "显示高级设置"
   },
   "settingsSectionJumpNavLabel": {
-    "message": "跳转到分区"
+    "message": "跳转到设置分组"
   },
   "settingsSectionAdvancedActions": {
     "message": "高级操作"
@@ -81,7 +78,7 @@
     "message": "导入、导出或重置 Lurkloot 设置。"
   },
   "activityTitle": {
-    "message": "活动"
+    "message": "运行记录"
   },
   "activeStatus": {
     "message": "活动中"
@@ -90,16 +87,16 @@
     "message": "已暂停"
   },
   "refreshSchedule": {
-    "message": "刷新计划"
+    "message": "刷新状态"
   },
   "openInventory": {
-    "message": "打开库存"
+    "message": "打开掉宝库存"
   },
   "openActivity": {
-    "message": "打开活动"
+    "message": "打开运行记录"
   },
   "closeActivity": {
-    "message": "关闭活动"
+    "message": "关闭运行记录"
   },
   "openSettings": {
     "message": "打开设置"
@@ -117,10 +114,10 @@
     "message": "掉宝"
   },
   "idleWatchlistTab": {
-    "message": "空闲观看列表"
+    "message": "备用观看列表"
   },
   "automationTitle": {
-    "message": "$1 自动化"
+    "message": "$1 自动挂机"
   },
   "automationRunning": {
     "message": "运行中"
@@ -132,22 +129,22 @@
     "message": "正在停止"
   },
   "startingAutomation": {
-    "message": "正在启动自动化..."
+    "message": "正在启动挂机..."
   },
   "pausingAutomation": {
-    "message": "正在暂停自动化..."
+    "message": "正在暂停挂机..."
   },
   "watchingLabel": {
     "message": "正在观看"
   },
   "farmingLabel": {
-    "message": "正在刷"
+    "message": "挂机中"
   },
   "waitingEligibleStream": {
-    "message": "当前没有适合此活动的符合条件的直播"
+    "message": "当前没有符合此掉宝活动条件的直播"
   },
   "watchingPausedHint": {
-    "message": "观看已暂停。切换开关以继续刷掉宝。"
+    "message": "观看已暂停。打开开关即可恢复挂机。"
   },
   "hideTipsTitle": {
     "message": "隐藏提示"
@@ -155,20 +152,26 @@
   "hideTipsDescription": {
     "message": "在主弹窗中隐藏实用提示。"
   },
+  "inPagePanelTitle": {
+    "message": "在 Twitch 和 Kick 上显示面板"
+  },
+  "inPagePanelDescription": {
+    "message": "在 twitch.tv 和 kick.com 上添加 Lurkloot 按钮，点击后可在页面内打开此弹窗。"
+  },
   "tipCampaignPriority": {
-    "message": "Drops 优先于空闲观看列表。拖动活动把手即可设置刷取顺序。"
+    "message": "默认优先挂机获取掉宝，再观看备用观看列表中的频道。拖动活动旁的拖动柄即可调整挂机顺序。"
   },
   "tipMissingCampaigns": {
-    "message": "找不到活动？请检查平台的 Drops 库存，然后查看设置中的活动筛选器。"
+    "message": "找不到某个掉宝活动？请先查看相应平台的掉宝库存，再检查设置中的活动筛选条件。"
   },
   "tipCategorySelection": {
-    "message": "只刷特定游戏？关闭平台设置中的“刷取所有类别”，然后选择类别。"
+    "message": "只想挂机特定游戏？请在平台设置中关闭“挂机所有分类”，再选择所需分类。"
   },
   "tipIdleWatchlist": {
-    "message": "没有符合条件的 Drops 时，空闲观看列表会刷取所选频道。"
+    "message": "默认优先挂机获取掉宝；没有符合条件的掉宝时，会自动观看备用观看列表中的频道。"
   },
   "tipTablessMode": {
-    "message": "无标签页模式占用更少资源，并在需要时回退到静音标签页。"
+    "message": "无标签页模式占用更少资源，必要时会改用静音标签页。"
   },
   "tipCli": {
     "message": "不想使用扩展？Lurkloot 也提供基于 Docker 的 CLI。"
@@ -183,7 +186,7 @@
     "message": "提交 GitHub issue"
   },
   "tipExcludedCampaigns": {
-    "message": "误排除了活动？可在 Drops 设置中恢复。"
+    "message": "不小心排除了掉宝活动？可在掉宝设置中恢复。"
   },
   "tipTranslations": {
     "message": "翻译由 AI 自动维护。欢迎在 GitHub 上帮助改进。"
@@ -192,13 +195,13 @@
     "message": "阅读翻译指南"
   },
   "noCampaigns": {
-    "message": "尚未发现活动。"
+    "message": "尚未发现掉宝活动。"
   },
   "campaignSearchPlaceholder": {
-    "message": "搜索活动…"
+    "message": "搜索掉宝活动…"
   },
   "campaignSearchNoResults": {
-    "message": "未找到与“$1”匹配的活动。"
+    "message": "未找到与“$1”匹配的掉宝活动。"
   },
   "closeSearch": {
     "message": "关闭搜索"
@@ -207,10 +210,10 @@
     "message": "搜索"
   },
   "noActivity": {
-    "message": "尚未记录活动。按刷新运行检查。"
+    "message": "尚无运行记录。点击刷新即可检查。"
   },
   "noDiagnostics": {
-    "message": "尚未记录诊断信息。扩展运行时会出现。"
+    "message": "尚无诊断记录。扩展运行时会自动记录。"
   },
   "searchDiagnostics": {
     "message": "搜索诊断信息"
@@ -219,16 +222,16 @@
     "message": "没有与“$1”匹配的诊断信息。"
   },
   "platformActivity": {
-    "message": "$1 活动"
+    "message": "$1 运行记录"
   },
   "platformDiagnostics": {
     "message": "$1 诊断信息"
   },
   "lastCheck": {
-    "message": "上次检查 $1"
+    "message": "上次检查：$1"
   },
   "noChecksYet": {
-    "message": "尚无检查"
+    "message": "尚未检查"
   },
   "debug": {
     "message": "调试"
@@ -312,7 +315,7 @@
     "message": "完成"
   },
   "nextReward": {
-    "message": "下一个：$1"
+    "message": "下一个奖励：$1"
   },
   "startsIn": {
     "message": "$1 后开始"
@@ -324,19 +327,19 @@
     "message": "剩余"
   },
   "campaignLeft": {
-    "message": "活动剩余"
+    "message": "还需观看"
   },
   "done": {
     "message": "完成"
   },
   "farmed": {
-    "message": "已刷"
+    "message": "已挂机时长"
   },
   "rewards": {
     "message": "奖励"
   },
   "inCampaignOrder": {
-    "message": "按活动顺序"
+    "message": "按活动内奖励顺序"
   },
   "allChannels": {
     "message": "所有频道"
@@ -345,13 +348,13 @@
     "message": "$1 个频道"
   },
   "includeInFarming": {
-    "message": "加入刷取"
+    "message": "加入挂机"
   },
   "excludeFromFarming": {
-    "message": "从刷取中排除"
+    "message": "从挂机中排除"
   },
   "noIdleWatchlist": {
-    "message": "未配置空闲观看列表频道。"
+    "message": "备用观看列表中尚未添加频道。"
   },
   "channelPlaceholder": {
     "message": "频道"
@@ -381,22 +384,22 @@
     "message": "外观和行为"
   },
   "pauseManualTitle": {
-    "message": "手动观看时暂停"
+    "message": "手动观看时暂停挂机"
   },
   "pauseManualDescription": {
-    "message": "当你打开并自行观看直播时停止刷取。"
+    "message": "当你亲自观看直播时暂停挂机。"
   },
   "autoStartTitle": {
-    "message": "启动时自动开始"
+    "message": "启动时自动挂机"
   },
   "autoStartDescription": {
-    "message": "扩展加载后立即开始刷取。"
+    "message": "扩展加载后立即开始挂机。"
   },
   "notificationsTitle": {
     "message": "通知"
   },
   "notificationsDescription": {
-    "message": "奖励可领取或活动结束时的提醒。"
+    "message": "奖励可领取或掉宝活动结束时提醒你。"
   },
   "settingsGroupNotifications": {
     "message": "通知"
@@ -405,19 +408,19 @@
     "message": "已获得奖励"
   },
   "rewardEarnedDescription": {
-    "message": "当掉宝奖励可领取时通知。"
+    "message": "掉宝奖励可领取时通知你。"
   },
   "noDropsLeftTitle": {
-    "message": "没有可刷的掉宝"
+    "message": "没有剩余掉宝"
   },
   "noDropsLeftDescription": {
-    "message": "当所有活动活动都刷完时通知。"
+    "message": "所有进行中的掉宝活动都已无奖励可挂机时通知你。"
   },
   "dropsSettingsTitle": {
     "message": "掉宝"
   },
   "dropsSettingsDescription": {
-    "message": "领取资格、优先级和活动可见性。"
+    "message": "领取、参与资格、优先级和掉宝活动显示设置。"
   },
   "settingsGroupDrops": {
     "message": "掉宝"
@@ -426,67 +429,64 @@
     "message": "自动领取掉宝"
   },
   "autoClaimDescription": {
-    "message": "奖励可用后自动领取。"
+    "message": "掉宝奖励可领取时自动领取。"
   },
   "campaignPriorityTitle": {
-    "message": "活动优先级"
+    "message": "掉宝活动优先级"
   },
   "campaignPriorityDescription": {
-    "message": "决定要刷取哪些活动。优先级列表只刷你手动排序的活动；其他选项会从所有活动中选择。可在平台设置中限制每个平台的分类。"
+    "message": "决定如何选择挂机的掉宝活动。“仅按优先级列表”只会挂机你手动排序过的活动；其他选项会从所有活动中选择。你还可以在平台设置中选择各平台参与挂机的分类。"
   },
   "priorityListOnly": {
-    "message": "仅优先级列表"
+    "message": "仅按优先级列表"
   },
   "endingSoonest": {
-    "message": "最早结束"
+    "message": "即将结束的优先"
   },
   "lowAvailabilityFirst": {
-    "message": "低可用性优先"
+    "message": "可用频道较少的优先"
   },
   "idleWatchlistSettingsTitle": {
-    "message": "空闲观看列表"
+    "message": "备用观看列表"
   },
   "idleWatchlistSettingsDescription": {
-    "message": "共享的备用列表行为。"
+    "message": "没有符合条件的掉宝时使用的备用频道。"
   },
   "idleWatchlistFallbackOnlyTitle": {
-    "message": "优先刷取掉宝而非空闲观看列表"
+    "message": "掉宝优先于备用观看列表"
   },
   "idleWatchlistFallbackOnlyDescription": {
-    "message": "一旦有可刷取的合格掉宝，就离开空闲观看列表频道。关闭时，会一直观看该频道直到其下播。"
+    "message": "一旦有符合条件的掉宝可挂机，便停止观看备用频道。关闭此选项后，会继续观看当前备用频道，直到其下播。"
   },
   "preferKnownChannelsTitle": {
-    "message": "优先选择已关注和空闲观看列表中的频道"
+    "message": "优先选择已关注和备用观看列表中的频道"
   },
   "preferKnownChannelsDescription": {
-    "message": "当某个掉宝在多个频道上可获取时，优先选择你已关注或在空闲观看列表中的频道，而非陌生频道。"
+    "message": "当某个掉宝可在多个频道获取时，优先选择你已关注或已加入备用观看列表的频道，而非陌生频道。"
   },
   "platformSettingsTitle": {
     "message": "平台设置"
   },
-  "platformSettingsDescription": {
-    "message": "某个平台的自动化与频道。可在 Twitch 和 Kick 间切换。"
-  },
   "farmingTabsTitle": {
-    "message": "刷取标签页"
+    "message": "挂机标签页"
   },
   "farmingTabsDescription": {
-    "message": "视频标签页刷取控制。启用无标签低资源模式时，标签页相关控制会禁用。"
+    "message": "视频标签页挂机相关设置。启用无标签页低资源模式时，标签页专用设置将不可用。"
   },
   "settingsGroupFarmingTabs": {
-    "message": "刷取标签页"
+    "message": "挂机标签页"
   },
   "tablessTitle": {
-    "message": "无标签低资源模式"
+    "message": "无标签页低资源模式"
   },
   "tablessDescription": {
-    "message": "通过轻量观看信号而不是视频标签页刷取。Twitch 使用观看心跳；Kick 使用观众连接。如果停止计数，会自动退回标签页。"
+    "message": "无需打开视频标签页，而是通过轻量级观看信号挂机。Twitch 使用观看心跳，Kick 使用观看连接；若无法继续累积掉宝进度，会自动改用标签页。"
   },
   "tablessFallbackFailureLimitTitle": {
-    "message": "无标签页回退阈值"
+    "message": "改用标签页的失败次数"
   },
   "tablessFallbackFailureLimitDescription": {
-    "message": "连续发生这么多次无标签页观看信号失败后打开视频标签页。"
+    "message": "无标签页观看信号连续失败达到该次数后，打开视频标签页。"
   },
   "tablessFallbackFailureLimitDisabledReason": {
     "message": "启用无标签页低资源模式以更改此设置。"
@@ -495,31 +495,31 @@
     "message": "次失败"
   },
   "autoCloseTabsTitle": {
-    "message": "自动关闭刷取标签页"
+    "message": "自动关闭挂机标签页"
   },
   "autoCloseTabsDescription": {
-    "message": "扩展空闲时自动关闭，也就是没有掉宝可刷或主播可看。"
+    "message": "扩展进入空闲状态时（没有掉宝可挂机或没有主播可观看），自动关闭挂机标签页。"
   },
   "muteTabsTitle": {
-    "message": "静对刷取标签页音"
+    "message": "将挂机标签页静音"
   },
   "muteTabsDescription": {
-    "message": "刷取时保持 Drops 和空闲观看列表标签页静音。"
+    "message": "挂机时，掉宝标签页和备用观看列表标签页始终保持静音。"
   },
   "keepVideosUnmutedTitle": {
-    "message": "保持刷取视频不静音"
+    "message": "保持挂机播放器不静音"
   },
   "keepVideosUnmutedDescription": {
-    "message": "浏览器标签页静音时，保持页面视频播放器不静音。"
+    "message": "浏览器标签页静音时，保持页面内的视频播放器不静音。"
   },
   "tablessDisabledReason": {
-    "message": "启用无标签低资源模式时不可用。"
+    "message": "启用无标签页低资源模式时不可用。"
   },
   "adFocusTitle": {
-    "message": "广告期间聚焦标签页"
+    "message": "广告期间切换到挂机标签页"
   },
   "adFocusDescription": {
-    "message": "广告倒计时会在后台标签页冻结。广告播放时短暂聚焦刷取标签页，然后恢复之前的标签页。"
+    "message": "后台标签页中的广告倒计时可能停止。广告播放时，Lurkloot 会短暂切换到挂机标签页，让倒计时继续，随后返回你之前的标签页。"
   },
   "off": {
     "message": "关闭"
@@ -534,52 +534,67 @@
     "message": "高级"
   },
   "advancedDescription": {
-    "message": "仅在了解后果时更改：这些控制底层调度和日志。"
+    "message": "只有在了解其作用时才更改这些设置——它们控制底层调度和日志行为。"
   },
   "settingsGroupAdvanced": {
     "message": "高级"
   },
+  "settingsGroupPlatformAdvanced": {
+    "message": "高级与兼容性"
+  },
+  "twitchSectionDescription": {
+    "message": "频道积分、分类筛选、排除的频道以及 Twitch 兼容性。"
+  },
+  "kickSectionDescription": {
+    "message": "每日挑战、分类筛选、排除的频道以及 Kick 兼容性。"
+  },
+  "twitchAdvancedDescription": {
+    "message": "活动可用性，以及 Lurkloot 使用的心跳和库存传输方式。仅在 Twitch 无法正常工作时才更改。"
+  },
+  "kickAdvancedDescription": {
+    "message": "Lurkloot 打开 Kick 领取链接的方式，以及其背后的行为配置。仅在 Kick 无法正常工作时才更改。"
+  },
   "schedulerIntervalTitle": {
-    "message": "调度间隔"
+    "message": "定时检查间隔"
   },
   "schedulerIntervalDescription": {
-    "message": "活动和主播状态刷新的频率。"
+    "message": "掉宝活动和主播状态的刷新频率。"
   },
   "postClaimHandoffTitle": {
-    "message": "快速奖励交接"
+    "message": "领取后快速检查"
   },
   "postClaimHandoffDescription": {
-    "message": "领取掉宝后，短暂检查活动中的下一个奖励，而不是等待下一个计划周期。仅限 Twitch。"
+    "message": "领取掉宝后，在短时间内按设定间隔检查该活动的下一个奖励，无需等待下次常规定时检查。仅适用于 Twitch。"
   },
   "postClaimHandoffIntervalTitle": {
-    "message": "交接检查间隔"
+    "message": "后续奖励检查间隔"
   },
   "postClaimHandoffIntervalDescription": {
     "message": "两次检查下一个奖励之间的等待时间。"
   },
   "postClaimHandoffMaxTitle": {
-    "message": "交接时间上限"
+    "message": "后续奖励检查时限"
   },
   "postClaimHandoffMaxDescription": {
-    "message": "超过这段时间后放弃并返回常规计划。"
+    "message": "超过该时限后，停止额外检查并恢复常规定时检查。"
   },
   "secondsSuffix": {
     "message": "秒"
   },
   "deadlineSafetyMarginTitle": {
-    "message": "截止时间安全余量"
+    "message": "额外预留时间"
   },
   "deadlineSafetyMarginDescription": {
-    "message": "开始获取奖励前需额外预留的分钟数。"
+    "message": "判断是否来得及完成奖励时，在所需观看时长之外额外预留的分钟数。"
   },
   "deadlineSafetyMarginDisabledReason": {
-    "message": "启用截止时间筛选后才能修改安全余量。"
+    "message": "启用“跳过无法按时完成的奖励”后才能更改预留时间。"
   },
   "skipUnfinishableRewardsTitle": {
-    "message": "跳过无法完成的奖励"
+    "message": "跳过无法按时完成的奖励"
   },
   "skipUnfinishableRewardsDescription": {
-    "message": "当剩余观看时间超过截止前可用时间时，不再获取该奖励。"
+    "message": "如果剩余观看时长超过截止前的可用时间，则不挂机获取该奖励。"
   },
   "minutesSuffix": {
     "message": "分钟"
@@ -587,47 +602,83 @@
   "insufficientTimeRemaining": {
     "message": "剩余时间不足"
   },
-  "campaignRejectionExcluded": { "message": "此活动已被排除，不会自动获取。" },
-  "campaignRejectionUpcoming": { "message": "此活动尚未开始。" },
-  "campaignRejectionExpired": { "message": "此活动已结束。" },
-  "campaignRejectionCompleted": { "message": "此活动的所有奖励均已完成。" },
-  "campaignRejectionUnlinkedDisabled": { "message": "未关联账户时获取活动奖励的功能已关闭。" },
-  "campaignRejectionTwitchLinkRequired": { "message": "此 Twitch 活动要求关联账户。" },
-  "campaignRejectionSubscriptionDisabled": { "message": "订阅活动的自动获取功能已关闭。" },
-  "campaignRejectionCategoryFiltered": { "message": "此活动不符合所选分类。" },
-  "campaignRejectionPriorityNotSelected": { "message": "此活动不在优先列表中。" },
-  "campaignRejectionNoRewards": { "message": "此活动没有可自动获取的奖励。" },
-  "campaignRejectionNoUnclaimedRewards": { "message": "此活动没有未领取的奖励。" },
-  "campaignRejectionPrerequisites": { "message": "$1 正在等待前置奖励或条件。" },
-  "campaignRejectionRewardNotStarted": { "message": "$1 尚未开放。" },
-  "campaignRejectionRewardWindowEnded": { "message": "$1 已不可用。" },
-  "campaignRejectionInsufficientTime": { "message": "$1 无法在截止时间前完成。" },
-  "campaignRejectionSubscriptionRequired": { "message": "$1 需要符合条件的订阅。" },
-  "campaignRejectionActionRequired": { "message": "$1 需要观看以外的操作。" },
-  "campaignRejectionNoFarmableReward": { "message": "此活动目前没有可自动获取的奖励。" },
+  "campaignRejectionExcluded": {
+    "message": "此掉宝活动已从挂机中排除。"
+  },
+  "campaignRejectionUpcoming": {
+    "message": "此掉宝活动尚未开始。"
+  },
+  "campaignRejectionExpired": {
+    "message": "此掉宝活动已结束。"
+  },
+  "campaignRejectionCompleted": {
+    "message": "此活动的所有奖励均已完成。"
+  },
+  "campaignRejectionUnlinkedDisabled": {
+    "message": "已关闭未关联账号时的活动挂机功能。"
+  },
+  "campaignRejectionTwitchLinkRequired": {
+    "message": "此 Twitch 掉宝活动要求关联账号。"
+  },
+  "campaignRejectionSubscriptionDisabled": {
+    "message": "已关闭订阅活动的挂机功能。"
+  },
+  "campaignRejectionCategoryFiltered": {
+    "message": "此掉宝活动不属于所选分类。"
+  },
+  "campaignRejectionPriorityNotSelected": {
+    "message": "此掉宝活动不在优先级列表中。"
+  },
+  "campaignRejectionNoRewards": {
+    "message": "此掉宝活动没有可挂机获取的奖励。"
+  },
+  "campaignRejectionNoUnclaimedRewards": {
+    "message": "此掉宝活动没有尚未领取的奖励。"
+  },
+  "campaignRejectionPrerequisites": {
+    "message": "获取 $1 前，需要先完成前置奖励或满足其他条件。"
+  },
+  "campaignRejectionRewardNotStarted": {
+    "message": "$1 尚不可获取。"
+  },
+  "campaignRejectionRewardWindowEnded": {
+    "message": "$1 已无法获取。"
+  },
+  "campaignRejectionInsufficientTime": {
+    "message": "$1 无法在截止时间前完成。"
+  },
+  "campaignRejectionSubscriptionRequired": {
+    "message": "$1 需要符合条件的订阅。"
+  },
+  "campaignRejectionActionRequired": {
+    "message": "$1 需要执行观看以外的操作。"
+  },
+  "campaignRejectionNoFarmableReward": {
+    "message": "此掉宝活动目前没有可挂机获取的奖励。"
+  },
   "automationSectionTitle": {
-    "message": "自动化"
+    "message": "自动挂机"
   },
   "farmOnPlatform": {
-    "message": "在 $1 上刷掉宝并空闲观看列表。"
+    "message": "在 $1 上挂机获取掉宝，并观看备用观看列表中的频道。"
   },
   "enabled": {
     "message": "已启用"
   },
   "idleWatchlistEditHint": {
-    "message": "选择 $1 后，在空闲观看列表标签页编辑。"
+    "message": "选择 $1 后，可在“备用观看列表”标签页中编辑。"
   },
   "autoClaimChannelPointsTitle": {
-    "message": "自动领取频道积分"
+    "message": "自动领取频道点数"
   },
   "autoClaimChannelPointsDescription": {
-    "message": "在该平台刷取时自动领取频道积分奖励。"
+    "message": "在该平台挂机时自动领取频道点数奖励。"
   },
   "strictCampaignAvailabilityTitle": {
-    "message": "严格的活动可用性"
+    "message": "严格限制掉宝活动频道"
   },
   "strictCampaignAvailabilityDescription": {
-    "message": "仅在 Twitch 列出该活动的频道上刷取。Twitch 经常遗漏可刷取的活动，因此可能导致部分掉宝未被刷取。"
+    "message": "只在 Twitch 为该掉宝活动列出的频道中挂机。Twitch 经常漏列实际可挂机的活动，启用后可能因此错过掉宝。"
   },
   "autoClaimChallengesTitle": {
     "message": "自动领取每日挑战"
@@ -642,7 +693,7 @@
     "message": "排除的掉宝频道"
   },
   "excludedChannelsDescription": {
-    "message": "活动刷取会跳过这些主播。"
+    "message": "挂机获取掉宝时会跳过这些主播。"
   },
   "excludedChannelsEmpty": {
     "message": "没有排除的掉宝频道。"
@@ -650,23 +701,41 @@
   "settingsGroupCategories": {
     "message": "分类"
   },
-  "farmAllCategoriesTitle": {
-    "message": "刷所有分类"
+  "categoryModeTitle": {
+    "message": "分类筛选"
   },
-  "farmAllCategoriesDescription": {
-    "message": "刷取每个 $1 分类的掉宝。关闭后只刷所选分类。"
+  "categoryModeDescription": {
+    "message": "挂机 $1 的所有分类、仅包含所选分类，或排除所选分类。"
+  },
+  "categoryModeAll": {
+    "message": "所有分类"
+  },
+  "categoryModeInclude": {
+    "message": "仅所选分类"
+  },
+  "categoryModeExclude": {
+    "message": "所选分类除外"
+  },
+  "includeCategoriesInstruction": {
+    "message": "在 $1 上只挂机这些分类。"
+  },
+  "excludeCategoriesInstruction": {
+    "message": "在 $1 上挂机除这些以外的所有分类。"
   },
   "categoriesToFarm": {
-    "message": "要刷的分类"
+    "message": "要挂机的分类"
   },
   "dragToPrioritize": {
-    "message": "拖动以排序"
+    "message": "拖动以调整优先级"
   },
   "noCategoriesSelected": {
-    "message": "未选择分类：$1 上不会刷取任何内容。请在下方添加分类。"
+    "message": "未选择分类：不会在 $1 上挂机获取掉宝。请在下方添加分类。"
+  },
+  "noCategoriesExcluded": {
+    "message": "未排除任何分类：将挂机 $1 的所有分类。在下方添加分类即可跳过它们。"
   },
   "hasActiveDrops": {
-    "message": "有活动掉宝"
+    "message": "有进行中的掉宝"
   },
   "otherCategories": {
     "message": "其他分类"
@@ -684,40 +753,40 @@
     "message": "已添加。"
   },
   "activityLogLevelsTitle": {
-    "message": "活动日志级别"
+    "message": "运行记录级别"
   },
   "activityLogLevelsDescription": {
-    "message": "选择活动日志记录哪些级别。错误始终保留。"
+    "message": "选择运行记录中保存哪些级别；错误记录始终保留。"
   },
   "farmUnlinkedTitle": {
-    "message": "刷取无需关联账号的活动"
+    "message": "未关联账号时也挂机"
   },
   "farmUnlinkedDescription": {
-    "message": "关闭后，将跳过需要关联账号的活动。开启后，平台规则仍可能要求关联账号。"
+    "message": "关闭后，将跳过尚未关联账号的掉宝活动。开启后，仍须遵守平台的账号关联要求。"
   },
   "farmSubscriptionTitle": {
-    "message": "刷取需要订阅的活动"
+    "message": "挂机需订阅的掉宝活动"
   },
   "farmSubscriptionDescription": {
-    "message": "关闭后，将跳过奖励需要频道订阅的活动。"
+    "message": "关闭后，将跳过需要订阅频道才能获得奖励的掉宝活动。"
   },
   "dropsListFilterTitle": {
-    "message": "Drops 列表视图"
+    "message": "掉宝列表显示内容"
   },
   "dropsListFilterDescription": {
-    "message": "选择在 Drops 列表中显示的活动。有可领取奖励的活动始终可见。"
+    "message": "选择掉宝列表中显示哪些掉宝活动。含有可领取奖励的活动始终显示。"
   },
   "dropsListFilterLockedHint": {
-    "message": "刷取这些活动期间始终显示。"
+    "message": "正在挂机的掉宝活动始终显示。"
   },
   "forgetExcludedTitle": {
-    "message": "忘记排除的活动"
+    "message": "恢复已排除的活动"
   },
   "forgetExcludedDescription": {
-    "message": "清除你从刷取中排除的所有活动。"
+    "message": "取消所有掉宝活动的排除状态，允许它们重新参与挂机。"
   },
   "forget": {
-    "message": "忘记"
+    "message": "恢复"
   },
   "unknownGame": {
     "message": "未知游戏"
@@ -741,7 +810,7 @@
     "message": "已获得奖励"
   },
   "notificationNoDropsLeft": {
-    "message": "没有可刷的掉宝"
+    "message": "没有剩余掉宝"
   },
   "notificationRewardFromCampaign": {
     "message": "$1 来自 $2"
@@ -753,25 +822,25 @@
     "message": "你从 $2 挑战中赢得了一张 $1 卡片。"
   },
   "notificationNoDropsLeftMessage": {
-    "message": "$1 没有可刷取的合格掉宝。"
+    "message": "$1 没有符合条件的掉宝可供挂机。"
   },
   "screenshotHeroEyebrow": {
     "message": "Twitch + Kick"
   },
   "screenshotHeroHeadline": {
-    "message": "一边做别的，一边挂机刷 drops。"
+    "message": "一边做别的，一边挂机拿掉宝。"
   },
   "screenshotHeroSubcopy": {
-    "message": "用你已登录的会话自动领取。不用密码。"
+    "message": "使用你自己的登录会话自动领取，无需提供密码。"
   },
   "screenshotExtrasEyebrow": {
-    "message": "不止活动"
+    "message": "不只掉宝活动"
   },
   "screenshotExtrasHeadline": {
-    "message": "不只是 drops。"
+    "message": "不只是掉宝。"
   },
   "screenshotExtrasSubcopy": {
-    "message": "频道点数和 Kick 每日挑战也会帮你领。没有可刷的 drops 时，用闲置观看列表。"
+    "message": "频道点数、Kick 每日挑战和两分钟掉落也会自动领取。没有掉宝可挂机时，自动观看备用观看列表中的频道。"
   },
   "screenshotExtrasPointsName": {
     "message": "频道点数"
@@ -786,10 +855,16 @@
     "message": "Kick · 也会帮你领取"
   },
   "screenshotExtrasWatchlistName": {
-    "message": "闲置观看列表"
+    "message": "备用观看列表"
   },
   "screenshotExtrasWatchlistMeta": {
-    "message": "活动间隙帮你看选定的主播"
+    "message": "掉宝活动间隙，自动观看选定的主播"
+  },
+  "screenshotExtrasFlashName": {
+    "message": "两分钟掉落"
+  },
+  "screenshotExtrasFlashMeta": {
+    "message": "Kick · 一出现就跟上"
   },
   "screenshotEasyEyebrow": {
     "message": "上手很简单"
@@ -801,7 +876,7 @@
     "message": "安装"
   },
   "screenshotEasyInstallSub": {
-    "message": "Chrome 网上应用店。不用账号。"
+    "message": "从 Chrome 应用商店安装，无需注册 Lurkloot 账号。"
   },
   "screenshotEasyPinTitle": {
     "message": "固定图标"
@@ -819,7 +894,7 @@
     "message": "开始挂机"
   },
   "screenshotEasyProfitSub": {
-    "message": "它刷，你做别的。"
+    "message": "它负责挂机，你去做别的。"
   },
   "screenshotSettingsEyebrow": {
     "message": "你的规则"
@@ -828,16 +903,43 @@
     "message": "按你的方式挂机。"
   },
   "screenshotSettingsSubcopy": {
-    "message": "优先级、游戏、无标签页模式、自动领取 — 按平台设置。"
+    "message": "优先级、游戏、无标签页模式、自动领取——各平台分别设置。"
   },
   "screenshotUpdatedEyebrow": {
     "message": "开源"
   },
   "screenshotUpdatedHeadline": {
-    "message": "功能完整。持续更新。"
+    "message": "功能丰富，持续更新。"
   },
   "screenshotUpdatedSubcopy": {
-    "message": "Twitch 和 Kick 一变就跟进发版，也欢迎想法和改进。"
+    "message": "持续跟进 Twitch 和 Kick 的变化，欢迎提出建议和参与改进。"
+  },
+  "screenshotUpdatedBrowsersTitle": {
+    "message": "基于 Chromium 的浏览器"
+  },
+  "screenshotUpdatedBrowsersSub": {
+    "message": "Chrome Web Store 上架。同一扩展。"
+  },
+  "screenshotUpdatedHeadlessTitle": {
+    "message": "CLI"
+  },
+  "screenshotUpdatedHeadlessSub": {
+    "message": "无界面。同一引擎。"
+  },
+  "screenshotUpdatedDockerTitle": {
+    "message": "Docker"
+  },
+  "screenshotUpdatedDockerSub": {
+    "message": "同一引擎。在容器中运行。"
+  },
+  "screenshotUpdatedLicense": {
+    "message": "Apache-2.0"
+  },
+  "screenshotUpdatedRating": {
+    "message": "4.9"
+  },
+  "screenshotUpdatedUsers": {
+    "message": "1,000+ 用户"
   },
   "autoClaimReady": {
     "message": "自动领取就绪"
@@ -887,6 +989,15 @@
   "rateNudgeDismiss": {
     "message": "暂不"
   },
+  "githubStarNudgeTitle": {
+    "message": "Lurkloot 是开源的"
+  },
+  "githubStarNudgeBody": {
+    "message": "如果它对你有帮助，在 GitHub 上点一颗星能让更多人发现它。欢迎贡献，尤其是新功能和翻译。"
+  },
+  "githubStarNudgeAction": {
+    "message": "在 GitHub 上加星"
+  },
   "removeItem": {
     "message": "移除 $1"
   },
@@ -894,10 +1005,10 @@
     "message": "无界面 CLI"
   },
   "cliExportDescription": {
-    "message": "使用 Lurkloot CLI 在服务器或 Docker 中运行掉宝挂机，使用此浏览器已登录的会话。"
+    "message": "使用 Lurkloot CLI 在服务器或 Docker 中挂机获取掉宝，并复用此浏览器的登录会话。"
   },
   "cliExportHint": {
-    "message": "导出你的 Twitch 和 Kick 会话令牌，供 CLI 的“login --import”重复使用。请妥善保管该文件——任何持有者都能使用你的会话。"
+    "message": "导出你的 Twitch 和 Kick 会话令牌，供 CLI 的“login --import”命令使用。请妥善保管文件——任何获得文件的人都能使用你的登录会话。"
   },
   "cliExportConfirm": {
     "message": "这会将你的 Twitch 和 Kick 会话令牌下载为一个文件。任何拥有该文件的人都能在这些网站上以你的身份操作。是否继续？"
@@ -909,13 +1020,13 @@
     "message": "确认导出"
   },
   "cliExportButton": {
-    "message": "导出凭据"
+    "message": "导出登录凭据"
   },
   "settingsExportTitle": {
     "message": "导入/导出设置"
   },
   "settingsExportHint": {
-    "message": "将设置保存到文件，或在其他浏览器中加载它们。绝不包含您的 Twitch 或 Kick 登录信息。"
+    "message": "将设置保存到文件，或导入到其他浏览器。文件中绝不会包含你的 Twitch 或 Kick 登录信息。"
   },
   "settingsExportButton": {
     "message": "导出设置"
@@ -924,7 +1035,7 @@
     "message": "导入设置"
   },
   "settingsImportConfirm": {
-    "message": "这将用所选文件中的设置替换您当前的设置。是否继续？"
+    "message": "这会用所选文件中的设置替换你当前的设置。是否继续？"
   },
   "settingsImportCancel": {
     "message": "取消"
@@ -936,13 +1047,13 @@
     "message": "该文件不是有效的 Lurkloot 设置导出文件。"
   },
   "settingsExportFailed": {
-    "message": "Lurkloot 无法导出您的设置。请重试。"
+    "message": "Lurkloot 无法导出你的设置。请重试。"
   },
   "factoryResetTitle": {
     "message": "重置 Lurkloot"
   },
   "factoryResetHint": {
-    "message": "清除所有 Lurkloot 设置、挂机进度和活动记录。你的 Twitch 和 Kick 账号仍会保持登录。"
+    "message": "清除所有 Lurkloot 设置、挂机进度和运行记录。你的 Twitch 和 Kick 账号仍会保持登录。"
   },
   "factoryResetButton": {
     "message": "重置 Lurkloot"
@@ -969,13 +1080,13 @@
     "message": "包含诊断日志"
   },
   "diagnosticLoggingDescription": {
-    "message": "记录有助于诊断问题的其他技术详情。正常活动始终会保留。"
+    "message": "记录可帮助诊断问题的额外技术信息。常规运行记录始终保留。"
   },
   "activityFarmingStarted": {
-    "message": "已开始领取 $2 中的 $1。"
+    "message": "已开始挂机，目标为 $2 中的 $1。"
   },
   "activityFarmingStopped": {
-    "message": "已停止领取 $2 中的 $1：$3。"
+    "message": "已停止挂机，目标为 $2 中的 $1：$3。"
   },
   "activityRewardClaimed": {
     "message": "已领取 $2 中的 $1。"
@@ -993,19 +1104,19 @@
     "message": "已忽略 $1 的严重故障，正在重试。"
   },
   "criticalFailureReasonNoProgress": {
-    "message": "尽管反复出错，仍无进展"
+    "message": "反复出错且一直没有进度"
   },
   "criticalFailureReasonPageContextChurn": {
-    "message": "有一个标签页不断重新打开"
+    "message": "某个标签页反复重新打开"
   },
   "criticalFailureTitle": {
     "message": "Lurkloot 已停止工作"
   },
   "criticalFailureBodyNoProgress": {
-    "message": "长时间反复出错且掉宝没有任何进度。该平台可能发生了变化，扩展已无法获得掉宝。"
+    "message": "长时间反复出错，且掉宝进度没有变化。平台可能发生了变化，导致扩展无法继续挂机获取掉宝。"
   },
   "criticalFailureBodyTabChurn": {
-    "message": "某个标签页不断重新打开。已停止重新打开，让你可以正常使用浏览器，该平台的挂机已暂停。"
+    "message": "某个标签页不断重新打开。Lurkloot 已停止重新打开它，以免影响你正常使用浏览器，并已暂停该平台的挂机。"
   },
   "criticalFailureCopyAndReport": {
     "message": "复制日志并提交问题"
@@ -1017,16 +1128,16 @@
     "message": "无法自动复制。请选中并复制以下内容，然后提交问题。"
   },
   "activityPageContextOpened": {
-    "message": "已在 $1 打开后台上下文，因为$2。"
+    "message": "由于 $2，已在 $1 打开后台页面。"
   },
   "activityPageContextClosed": {
-    "message": "已关闭 $1 的后台上下文，因为$2。"
+    "message": "由于 $2，已关闭 $1 的后台页面。"
   },
   "activityPageContextOpenReasonBackgroundRejected": {
     "message": "Kick 拒绝了无标签页请求"
   },
   "activityPageContextReasonManagedContextUnusable": {
-    "message": "之前的后台上下文无法使用"
+    "message": "先前的后台页面无法使用"
   },
   "activityPageContextCloseReasonBackgroundRecovered": {
     "message": "无标签页请求已恢复"
@@ -1035,13 +1146,13 @@
     "message": "已有 Kick 标签页可用"
   },
   "activityInterruption": {
-    "message": "领取已中断：$1。"
+    "message": "挂机已中断：$1。"
   },
   "activityInterruptionWithDetail": {
-    "message": "领取已中断：$1（$2）。"
+    "message": "挂机已中断：$1（$2）。"
   },
   "activityReasonAutomationDisabled": {
-    "message": "自动化已停用"
+    "message": "自动挂机已关闭"
   },
   "activityReasonPlatformDisabled": {
     "message": "平台已停用"
@@ -1050,13 +1161,13 @@
     "message": "身份验证不可用"
   },
   "activityReasonPlatformBackoff": {
-    "message": "平台正在暂时等待"
+    "message": "已暂缓该平台的操作，等待重试"
   },
   "activityReasonPlatformError": {
     "message": "平台发生错误"
   },
   "activityReasonCampaignIneligible": {
-    "message": "活动已不再符合条件"
+    "message": "掉宝活动已不再符合条件"
   },
   "activityReasonChannelExcluded": {
     "message": "频道已被排除"
@@ -1065,28 +1176,28 @@
     "message": "频道已离线"
   },
   "activityReasonChannelMismatch": {
-    "message": "频道已不再匹配"
+    "message": "频道已不再符合条件"
   },
   "activityReasonWatchUnhealthy": {
-    "message": "播放健康检查失败"
+    "message": "观看状态检查失败"
   },
   "activityReasonNoProgress": {
-    "message": "该频道没有获得掉宝进度"
+    "message": "该频道没有增加掉宝进度"
   },
   "activityReasonHigherPriorityReward": {
     "message": "已切换到更高优先级的奖励"
   },
   "activityReasonHigherPriorityIdleWatchlist": {
-    "message": "空闲观看列表获得了优先级"
+    "message": "备用观看列表中出现了优先级更高的频道"
   },
   "activityReasonWatchRequirementCompleted": {
-    "message": "观看要求已完成"
+    "message": "已满足观看时长要求"
   },
   "activityReasonRuntimeRestart": {
     "message": "扩展程序已重新启动"
   },
   "activityReasonTargetChanged": {
-    "message": "领取目标已更改"
+    "message": "挂机目标已更改"
   },
   "activityReasonCriticalFailure": {
     "message": "检测到严重故障"
@@ -1107,13 +1218,13 @@
     "message": "无法清除活动历史记录，请重试。"
   },
   "copyActivityLog": {
-    "message": "复制日志"
+    "message": "复制记录"
   },
   "copyLoadedActivityLog": {
-    "message": "复制已加载"
+    "message": "复制已加载的记录"
   },
   "copyActivityLogCopied": {
-    "message": "已复制 $1 条事件"
+    "message": "已复制 $1 条记录"
   },
   "copyActivityLogFailed": {
     "message": "无法复制日志，请重试。"
@@ -1122,40 +1233,37 @@
     "message": "全部导出"
   },
   "exportAllDiagnosticsDone": {
-    "message": "已导出 $1 条"
+    "message": "已导出 $1 条记录"
   },
   "exportAllDiagnosticsFailed": {
     "message": "无法导出日志。请重试。"
   },
   "activityViewTab": {
-    "message": "活动"
+    "message": "运行记录"
   },
   "diagnosticsViewTab": {
     "message": "诊断信息"
-  },
-  "settingsGroupCompatibility": {
-    "message": "兼容性"
   },
   "compatibilityAutomatic": {
     "message": "自动"
   },
   "compatibilityTwitchProfileTitle": {
-    "message": "Twitch 兼容性配置文件"
+    "message": "Twitch 兼容性方案"
   },
   "compatibilityTwitchProfileDescription": {
-    "message": "选择内置的 Twitch 配置文件，或让 Lurkloot 自动选择。"
+    "message": "选择内置的 Twitch 兼容性方案，或让 Lurkloot 自动选择。"
   },
   "compatibilityKickProfileTitle": {
-    "message": "Kick 兼容性配置文件"
+    "message": "Kick 兼容性方案"
   },
   "compatibilityKickProfileDescription": {
-    "message": "选择内置的 Kick 配置文件，或让 Lurkloot 自动选择。"
+    "message": "选择内置的 Kick 兼容性方案，或让 Lurkloot 自动选择。"
   },
   "compatibilitySectionTitle": {
     "message": "兼容性"
   },
   "compatibilitySectionDescription": {
-    "message": "仅当 Twitch 或 Kick 无法正常工作时再更改；这些设置可帮助绕过平台问题。"
+    "message": "仅当 Twitch 或 Kick 无法正常工作时再更改；这些设置可帮助应对平台兼容问题。"
   },
   "compatibilityComponentProfile": {
     "message": "配置方案"
@@ -1179,22 +1287,22 @@
     "message": "已由 $1 取代"
   },
   "compatibilityTwitchHeartbeatTitle": {
-    "message": "Twitch 心跳传输"
+    "message": "Twitch 心跳传输方式"
   },
   "compatibilityTwitchHeartbeatDescription": {
-    "message": "覆盖内置的 Twitch 观看心跳。"
+    "message": "手动指定 Twitch 观看心跳的传输方式。"
   },
   "compatibilityTwitchInventoryTitle": {
-    "message": "Twitch 库存查询"
+    "message": "Twitch 掉宝库存查询"
   },
   "compatibilityTwitchInventoryDescription": {
-    "message": "覆盖内置的 Twitch 库存查询。"
+    "message": "手动指定 Twitch 掉宝库存的查询方式。"
   },
   "compatibilityKickClaimTitle": {
-    "message": "Kick 链接处理"
+    "message": "Kick 领取与账号关联处理"
   },
   "compatibilityKickClaimDescription": {
-    "message": "覆盖内置的 Kick 账户链接处理。"
+    "message": "手动指定 Kick 账号关联要求的处理方式。"
   },
   "compatibilityLifecycleRecommended": {
     "message": "推荐"
@@ -1206,10 +1314,10 @@
     "message": "实验性"
   },
   "compatibilityOverrideWarning": {
-    "message": "手动兼容性覆盖已启用。平台变化时可能会失效。"
+    "message": "已启用手动兼容性设置。平台变化后，这些设置可能失效。"
   },
   "compatibilityRestoreAutomatic": {
-    "message": "恢复自动兼容性"
+    "message": "恢复自动选择"
   },
   "compatibilityOptionTwitchProfile202607": {
     "message": "Twitch 2026 年 7 月版"
@@ -1233,10 +1341,10 @@
     "message": "Kick 2026 年 7 月版"
   },
   "compatibilityOptionKickClaimV1": {
-    "message": "链接处理 v1"
+    "message": "领取处理 v1"
   },
   "compatibilityOptionKickClaimV2": {
-    "message": "链接处理 v2"
+    "message": "领取处理 v2"
   },
   "automationChecking": {
     "message": "正在检查"
@@ -1245,7 +1353,7 @@
     "message": "需要登录"
   },
   "automationBlocked": {
-    "message": "已阻止"
+    "message": "受阻"
   },
   "automationUnavailable": {
     "message": "暂时不可用"
@@ -1254,7 +1362,7 @@
     "message": "正在检查你的登录会话…"
   },
   "authSignInMissing": {
-    "message": "请登录以继续获取掉宝。"
+    "message": "请登录以继续挂机获取掉宝。"
   },
   "authSignInRejected": {
     "message": "你的会话已失效。请重新登录以继续。"
@@ -1278,10 +1386,10 @@
     "message": "平台暂时不可用。Lurkloot 将自动重试。"
   },
   "automationPausedTabClosed": {
-    "message": "已暂停 — 标签页已关闭"
+    "message": "已暂停——标签页已关闭"
   },
   "watchTabClosedPauseDetail": {
-    "message": "你关闭了挂机标签页，因此 Lurkloot 已停止在此挂机。"
+    "message": "你关闭了挂机标签页，因此 Lurkloot 已停止在此平台挂机。"
   },
   "resumeFarming": {
     "message": "恢复挂机"
@@ -1293,6 +1401,15 @@
     "message": "手动观看"
   },
   "manualWatchPauseDetail": {
-    "message": "你亲自观看直播期间，挂机已暂停。暂停直播、关闭直播，或切换离开此标签页后，挂机会在下一次检查时自动恢复。"
+    "message": "你亲自观看直播期间，挂机已暂停。暂停播放、关闭直播或切换到其他标签页后，挂机会在下次检查时自动恢复。"
+  },
+  "reorderItem": {
+    "message": "调整 $1 的顺序"
+  },
+  "scrollRewardsLeft": {
+    "message": "向左滚动奖励列表"
+  },
+  "scrollRewardsRight": {
+    "message": "向右滚动奖励列表"
   }
 }

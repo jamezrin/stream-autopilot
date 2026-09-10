@@ -1,0 +1,74 @@
+---
+// Sticky header for every page that is not the homepage (legal pages, the
+// changelog, and the platform landing pages). Extracted from the copies that
+// privacy.astro and changelog.astro each carried inline so a new page — a
+// future /twitch-drops/<game>/ included — inherits the chrome for free.
+import { LINKS } from "../consts";
+import logo from "../assets/logo-ring.svg";
+
+interface Props {
+  // Sibling pages worth surfacing in the header. Kept optional: the legal
+  // pages deliberately show nothing but the brand and the install CTA.
+  links?: { href: string; label: string }[];
+}
+
+const { links = [] } = Astro.props;
+---
+
+<header class="subnav">
+  <div class="wrap subnav__inner">
+    <a class="subnav__brand" href="/">
+      <img src={logo.src} width="28" height="28" alt="" />
+      <span>Lurkloot</span>
+    </a>
+    {links.length > 0 && (
+      <nav class="subnav__links" aria-label="Sections">
+        {links.map((link) => <a href={link.href}>{link.label}</a>)}
+      </nav>
+    )}
+    <a class="btn btn--primary subnav__cta" href={LINKS.chrome} target="_blank" rel="noopener">
+      Add to browser
+    </a>
+  </div>
+</header>
+
+<style>
+  .subnav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-bottom: 1px solid var(--line);
+    background: rgba(6, 6, 9, 0.8);
+    backdrop-filter: blur(12px);
+  }
+  .subnav__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    gap: 1.5rem;
+  }
+  .subnav__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .subnav__brand img { border-radius: 8px; }
+  .subnav__links {
+    display: none;
+    gap: 1.4rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  /* The brand already fills the row on narrow screens; sibling links would
+     wrap the header to two lines, so they only appear once there is space. */
+  @media (min-width: 760px) {
+    .subnav__links { display: inline-flex; }
+  }
+  .subnav__links a { transition: color 0.2s var(--ease); }
+  .subnav__links a:hover { color: var(--lime); }
+  .subnav__cta { padding: 0.55em 1.05em; font-size: 0.88rem; }
+</style>

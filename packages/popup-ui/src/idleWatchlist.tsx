@@ -52,7 +52,7 @@ export function IdleWatchlistPanel({ platform, streamers, expanded, adding, onEx
   }
 
   return (
-    <section className="space-y-1.5">
+    <section id="idle-watchlist" className="space-y-1.5">
       <SectionHeader
         label={t("idleWatchlistTab")}
         count={`${streamers.length}/20`}
@@ -106,11 +106,12 @@ export function IdleWatchlistPanel({ platform, streamers, expanded, adding, onEx
 function SortableIdleWatchlist({ streamer, index, count, platform, onRemove, onMove }: { streamer: StreamerItem; index: number; count: number; platform: Platform; onRemove(): void; onMove(toIndex: number): void }) {
   // The new dnd-kit animates the real element, so there is no DragOverlay copy
   // and no transform/transition to apply by hand.
+  const t = useT();
   const { ref, handleRef, isDragging } = useSortable({ id: streamer.id, index });
   const status = <IdleWatchlistStatus streamer={streamer} />;
   return (
     <div ref={ref} onDragStart={preventNativeDrag}>
-      <CompactRow index={index} rankCount={count} rankLabel={streamer.name} onRankMove={onMove} avatar={streamer.name.slice(0, 2).toUpperCase()} avatarStyle={{ backgroundColor: "var(--accent-soft)", color: "var(--accent-text)" }} title={streamer.name} titleHref={channelUrl(platform, streamer.id)} subtitle={streamer.subtitle} dimmed={isDragging} dragHandle={<DragHandle handleRef={handleRef} label={`Reorder ${streamer.name}`} />} trailing={<span className="flex shrink-0 items-center gap-1.5">{status}<RemoveRowButton label={`Remove ${streamer.name}`} onClick={onRemove} /></span>} />
+      <CompactRow index={index} rankCount={count} rankLabel={streamer.name} onRankMove={onMove} avatar={streamer.name.slice(0, 2).toUpperCase()} avatarStyle={{ backgroundColor: "var(--accent-soft)", color: "var(--accent-text)" }} title={streamer.name} titleHref={channelUrl(platform, streamer.id)} subtitle={streamer.subtitle} dimmed={isDragging} dragHandle={<DragHandle handleRef={handleRef} label={t("reorderItem", streamer.name)} />} trailing={<span className="flex shrink-0 items-center gap-1.5">{status}<RemoveRowButton label={t("removeItem", streamer.name)} onClick={onRemove} /></span>} />
     </div>
   );
 }

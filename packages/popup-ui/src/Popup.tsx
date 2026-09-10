@@ -17,10 +17,12 @@ import { loadCatalog } from "@lurkloot/locales";
 import { buildFailureReport } from "@lurkloot/shared/failureReport";
 import { I18nContext, PopupRuntimeContext } from "./context";
 import {
+  GITHUB_STAR_NUDGE_MIN_DAYS,
   PLATFORM_INVENTORY_URLS,
   PLATFORMS,
   RATE_NUDGE_MIN_DAYS,
   SCREENSHOT_VARIANTS,
+  SCREENSHOT_WATCHLIST_LIVE,
   SELECTED_PLATFORM_KEY,
 } from "./constants";
 import type {
@@ -60,7 +62,9 @@ import {
   type ActivityStream,
 } from "./activity.logic";
 import { AttributionFooter } from "./footer";
-import { RateNudge, shouldShowRateNudge } from "./rateNudge";
+import { RateNudge, shouldShowGithubStarNudge, shouldShowRateNudge } from "./rateNudge";
+import { GithubStarNudge } from "./githubStarNudge";
+import { popupNoticeSlot } from "./popupNoticeSlot";
 import { UpdateNotice } from "./updateNotice";
 import { DropsPanel } from "./drops";
 import { CriticalFailurePanel } from "./criticalFailure";
@@ -81,6 +85,7 @@ function isPlatform(value: unknown): value is Platform {
 export function Popup({ adapter, initialState }: { adapter: PopupAdapter; initialState?: PopupInitialState }): React.ReactElement {
   const preview = initialState?.preview ?? false;
   const initialVariant = initialState?.variant ?? screenshotVariant("drops");
+  const watchlistShot = preview && variantShowsPopup(initialVariant) && initialVariant.view === "watchlist";
   const [snapshot, setSnapshot] = useState<RuntimeSnapshot | null>(null);
   const [overrideCatalog, setOverrideCatalog] = useState<MessageCatalog | undefined>();
   const [fallbackCatalog, setFallbackCatalog] = useState<MessageCatalog | undefined>();
@@ -89,7 +94,7 @@ export function Popup({ adapter, initialState }: { adapter: PopupAdapter; initia
   );
   // Drops and the Idle Watchlist share one view; the watchlist folds away under
   // the campaigns until asked for (or until a screenshot variant wants it).
-  const [watchlistExpanded, setWatchlistExpanded] = useState(false);
+  const [watchlistExpanded, setWatchlistExpanded] = useState(watchlistShot);
   const [watchlistAdding, setWatchlistAdding] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(
     preview && variantShowsPopup(initialVariant) && initialVariant.view === "settings",
@@ -196,6 +201,11 @@ export function Popup({ adapter, initialState }: { adapter: PopupAdapter; initia
       setSnapshot(snapshotWithMergedSettings(nextSnapshot));
     });
   }, [adapter, previewPlatform, preview]);
+
+  useEffect(() => {
+    if (!watchlistShot || !snapshot) return;
+    document.getElementById("idle-watchlist")?.scrollIntoView?.({ block: "start" });
+  }, [snapshot, watchlistShot]);
 
   useEffect(() => {
     if (preview || !adapter.getPendingChangelogVersion) return;
@@ -628,6 +638,13 @@ export function Popup({ adapter, initialState }: { adapter: PopupAdapter; initia
   const gameMap = Object.fromEntries(games.map((game) => [game.id, game]));
   const idleWatchlistChannels = settings.platform[platform].idleWatchlistChannels;
   const idleWatchlist = idleWatchlistChannels.map((username) => streamerItemFromFallback(username, session, t));
+  const screenshotWatchlist = watchlistShot
+    ? idleWatchlist.map((item) => {
+        const live = SCREENSHOT_WATCHLIST_LIVE[item.id];
+        if (!live) return item;
+        return { ...item, name: live.displayName, live: true, viewers: live.viewers, subtitle: live.subtitle };
+      })
+    : idleWatchlist;
   const automation = {
     twitch: pendingAutomation.twitch ?? settings.platform.twitch.enabled,
     kick: pendingAutomation.kick ?? settings.platform.kick.enabled,
@@ -657,6 +674,13 @@ export function Popup({ adapter, initialState }: { adapter: PopupAdapter; initia
   const updateNotice = pendingChangelogVersion && adapter.changelogUrl
     ? { version: pendingChangelogVersion, href: adapter.changelogUrl(pendingChangelogVersion) }
     : undefined;
+  const now = new Date();
+  const noticeSlot = popupNoticeSlot({
+    preview,
+    hasUpdateNotice: Boolean(updateNotice),
+    showRateNudge: shouldShowRateNudge(snapshot.state.installedAt, settings.rateNudgeStatus, now, RATE_NUDGE_MIN_DAYS),
+    showGithubStarNudge: shouldShowGithubStarNudge(snapshot.state.installedAt, settings.githubStarNudgeStatus, now, GITHUB_STAR_NUDGE_MIN_DAYS),
+  });
 
   return (
       <PopupRuntimeContext.Provider value={{ adapter, preview }}>
@@ -774,7 +798,7 @@ export function Popup({ adapter, initialState }: { adapter: PopupAdapter; initia
             ) : (
               <motion.div key="main" initial={{ opacity: 0, x: -14 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -14 }} transition={{ duration: 0.18 }} className="space-y-3">
                 <AnimatePresence initial={false}>
-                  {updateNotice ? (
+                  {noticeSlot === "update" && updateNotice ? (
                     <UpdateNotice
                       key="update-notice"
                       version={updateNotice.version}
@@ -782,11 +806,18 @@ export function Popup({ adapter, initialState }: { adapter: PopupAdapter; initia
                       onDismiss={dismissUpdateNotice}
                     />
                   ) : null}
-                  {!updateNotice && !preview && shouldShowRateNudge(snapshot.state.installedAt, settings.rateNudgeStatus, new Date(), RATE_NUDGE_MIN_DAYS) ? (
+                  {noticeSlot === "rate" ? (
                     <RateNudge
                       key="rate-nudge"
                       onRate={() => void updateSettings({ rateNudgeStatus: "rated" })}
                       onDismiss={() => void updateSettings({ rateNudgeStatus: "dismissed" })}
+                    />
+                  ) : null}
+                  {noticeSlot === "github-star" ? (
+                    <GithubStarNudge
+                      key="github-star-nudge"
+                      onStar={() => void updateSettings({ githubStarNudgeStatus: "starred" })}
+                      onDismiss={() => void updateSettings({ githubStarNudgeStatus: "dismissed" })}
                     />
                   ) : null}
                 </AnimatePresence>
@@ -834,7 +865,7 @@ export function Popup({ adapter, initialState }: { adapter: PopupAdapter; initia
                 <IdleWatchlistPanel
                   key={platform}
                   platform={platform}
-                  streamers={idleWatchlist}
+                  streamers={screenshotWatchlist}
                   expanded={watchlistExpanded}
                   adding={watchlistAdding}
                   onExpandedChange={(next) => { setWatchlistExpanded(next); if (!next) setWatchlistAdding(false); }}

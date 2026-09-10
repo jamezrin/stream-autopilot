@@ -1,5 +1,5 @@
 import type { DropCampaign, ExtensionSettings, Platform, WatchSession } from "@lurkloot/shared/models";
-import { NO_CATEGORY_ID, categoryListIndex, isUncategorizedCampaign } from "@lurkloot/shared/categories";
+import { NO_CATEGORY_ID, categoryPriorityScore, isUncategorizedCampaign } from "@lurkloot/shared/categories";
 import {
   campaignHasSubscriptionRewards,
   campaignHasWatchRewards,
@@ -34,7 +34,8 @@ export function sortCampaignsForPopup(campaigns: DropCampaign[], settings: Exten
     if (leftPriority != null && rightPriority != null && leftPriority !== rightPriority) return rightPriority - leftPriority;
     if (leftPriority != null && rightPriority == null) return -1;
     if (rightPriority != null && leftPriority == null) return 1;
-    const categoryOrder = categoryPriorityScore(left, settings) - categoryPriorityScore(right, settings);
+    const categoryOrder = categoryPriorityScore(left, settings.platform[left.platform])
+      - categoryPriorityScore(right, settings.platform[right.platform]);
     if (categoryOrder !== 0) return categoryOrder;
     const leftEnd = left.endsAt ? Date.parse(left.endsAt) : Number.MAX_SAFE_INTEGER;
     const rightEnd = right.endsAt ? Date.parse(right.endsAt) : Number.MAX_SAFE_INTEGER;
@@ -68,13 +69,6 @@ export function gameItemsFromCampaigns(campaigns: DropCampaign[], t: TFunction):
       });
   });
   return [...discovered.values()].sort((left, right) => left.name.localeCompare(right.name));
-}
-
-function categoryPriorityScore(campaign: DropCampaign, settings: ExtensionSettings): number {
-  const platformSettings = settings.platform[campaign.platform];
-  if (platformSettings.farmAllCategories) return Number.MAX_SAFE_INTEGER;
-  const index = categoryListIndex(campaign, platformSettings.categories);
-  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }
 
 function gameId(campaign: DropCampaign): string {

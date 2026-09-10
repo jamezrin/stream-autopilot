@@ -25,6 +25,6 @@
     "@types/yargs": "^17.0.33",
     "esbuild": "^0.28.0",
     "typescript": "^7.0.0",
-    "vitest": "^4.0.0"
+    "vitest": "^5.0.0"
   }
 }

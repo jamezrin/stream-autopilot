@@ -105,8 +105,16 @@ const labels: Record<string, string> = {
   autoClaimChannelPointsDescription: "Claim channel-point bonuses while farming this platform.",
   autoClaimChallengesTitle: "Auto-claim daily challenges",
   autoClaimChallengesDescription: "Claim Kick's daily challenge reward once its watch-time goal is met.",
-  farmAllCategoriesTitle: "Farm all categories",
-  farmAllCategoriesDescription: "Farm drops in every $1 category.",
+  settingsGroupPlatformAdvanced: "Advanced & compatibility",
+  twitchSectionDescription: "Channel points, category filter, excluded channels, and Twitch compatibility.",
+  kickSectionDescription: "Daily challenges, category filter, excluded channels, and Kick compatibility.",
+  twitchAdvancedDescription: "Campaign availability and the transports Lurkloot uses.",
+  kickAdvancedDescription: "How Lurkloot opens Kick claim links.",
+  categoryModeTitle: "Category filter",
+  categoryModeDescription: "Farm every $1 category, include only the categories you select, or exclude them.",
+  categoryModeAll: "All categories",
+  categoryModeInclude: "Only selected",
+  categoryModeExclude: "All except selected",
   excludedChannelsTitle: "Excluded drop channels",
   excludedChannelsDescription: "Campaign farming will skip these streamers.",
   excludedChannelsEmpty: "No excluded drop channels.",
@@ -287,14 +295,22 @@ describe("deadline feasibility setting", () => {
     );
   });
 
-  it("targets category changes to their platform", () => {
+  // The mode change must ride platformPatch, which carries tickAfterSave for the
+  // one platform — the existing selection-invalidation path, not a new one.
+  it("targets category mode changes to their platform", () => {
     const { container, onSettingsChange } = mountSettings();
-    const toggle = container.querySelector('[role="switch"][aria-label="Farm all categories"]') as HTMLButtonElement;
+    const select = container.querySelector('select[aria-label="Category filter"]') as HTMLSelectElement;
 
-    act(() => toggle.click());
+    act(() => {
+      // linkedom's select.value is getter-only, so the selection is staged the
+      // same way compatibilitySettingsView.test.tsx does it.
+      for (const option of select.querySelectorAll("option")) option.selected = option.getAttribute("value") === "exclude";
+      Object.defineProperty(select, "value", { configurable: true, value: "exclude" });
+      select.dispatchEvent(new window.Event("change", { bubbles: true }));
+    });
 
     expect(onSettingsChange).toHaveBeenCalledWith(
-      { platform: { twitch: { farmAllCategories: false } } },
+      { platform: { twitch: { categoryMode: "exclude" } } },
       { tickAfterSave: true, tickAfterSavePlatforms: ["twitch"] },
     );
   });

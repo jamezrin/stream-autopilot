@@ -74,6 +74,11 @@ export function mergePlatformState(
       source.gamification,
       platform,
     ),
+    campaignSearchBackoffs: mergeOptionalEntry(
+      destination.campaignSearchBackoffs,
+      source.campaignSearchBackoffs,
+      platform,
+    ),
     deadlineInfeasibleRewardIds: mergeOptionalEntry(
       destination.deadlineInfeasibleRewardIds,
       source.deadlineInfeasibleRewardIds,

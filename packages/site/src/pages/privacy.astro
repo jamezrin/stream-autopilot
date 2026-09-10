@@ -1,9 +1,8 @@
 ---
 import { marked } from "marked";
 import Base from "../layouts/Base.astro";
+import SubNav from "../components/SubNav.astro";
 import Footer from "../components/Footer.astro";
-import { LINKS } from "../consts";
-import logo from "../assets/logo-ring.svg";
 // Single source of truth: the same policy shipped with the extension + store.
 // Inlined at build via Vite ?raw so it doesn't depend on runtime file paths
 // (Astro 6 resolves import.meta.url to the emitted chunk, not the source).
@@ -17,17 +16,7 @@ const html = marked.parse(body, { gfm: true, breaks: false });
   title="Privacy Policy — Lurkloot"
   description="Lurkloot does not collect, transmit, sell, or share user data. Everything stays on your device. Read the full privacy policy."
 >
-  <header class="legalnav">
-    <div class="wrap legalnav__inner">
-      <a class="legalnav__brand" href="/">
-        <img src={logo.src} width="28" height="28" alt="" />
-        <span>Lurkloot</span>
-      </a>
-      <a class="btn btn--primary legalnav__cta" href={LINKS.chrome} target="_blank" rel="noopener">
-        Add to browser
-      </a>
-    </div>
-  </header>
+  <SubNav />
 
   <main class="legal">
     <div class="wrap legal__wrap">
@@ -42,32 +31,6 @@ const html = marked.parse(body, { gfm: true, breaks: false });
 </Base>
 
 <style>
-  .legalnav {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    border-bottom: 1px solid var(--line);
-    background: rgba(6, 6, 9, 0.8);
-    backdrop-filter: blur(12px);
-  }
-  .legalnav__inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 64px;
-    gap: 1.5rem;
-  }
-  .legalnav__brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55rem;
-    font-family: var(--font-display);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-  }
-  .legalnav__brand img { border-radius: 8px; }
-  .legalnav__cta { padding: 0.55em 1.05em; font-size: 0.88rem; }
-
   .legal {
     padding: clamp(3rem, 8vw, 6rem) 0 clamp(4rem, 8vw, 6rem);
   }

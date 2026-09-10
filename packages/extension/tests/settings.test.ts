@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { applySettingsPatch, DEFAULT_ENGINE_SETTINGS, DEFAULT_SETTINGS, mergeEngineSettings, mergeSettings } from "@lurkloot/shared/settings";
+import { migrateSettings } from "@lurkloot/shared/settingsSchema";
 
 describe("engine settings", () => {
   // The tab-policy fields (mute / keep-unmuted / auto-close / ad focus) and the
@@ -12,6 +13,7 @@ describe("engine settings", () => {
     "adFocusMode",
     "languageOverride",
     "rateNudgeStatus",
+    "githubStarNudgeStatus",
     "diagnosticLogging",
     "dropsListFilter",
   ] as const;
@@ -30,6 +32,7 @@ describe("engine settings", () => {
     expect(DEFAULT_SETTINGS.adFocusMode).toBe("window");
     expect(DEFAULT_SETTINGS.languageOverride).toBe("browser");
     expect(DEFAULT_SETTINGS.rateNudgeStatus).toBe("pending");
+    expect(DEFAULT_SETTINGS.githubStarNudgeStatus).toBe("pending");
   });
 });
 
@@ -105,8 +108,8 @@ describe("settings", () => {
       pollIntervalMinutes: 1,
       diagnosticLogging: true,
       platform: {
-        twitch: { excludedChannels: [], farmAllCategories: true, categories: [] },
-        kick: { excludedChannels: [], farmAllCategories: true, categories: [] },
+        twitch: { excludedChannels: [], categoryMode: "all", categories: [] },
+        kick: { excludedChannels: [], categoryMode: "all", categories: [] },
       },
     });
   });
@@ -263,6 +266,15 @@ describe("settings", () => {
       .toBe("pending");
   });
 
+  it("validates the github star nudge status", () => {
+    expect(DEFAULT_SETTINGS.githubStarNudgeStatus).toBe("pending");
+    expect(mergeSettings(undefined).githubStarNudgeStatus).toBe("pending");
+    expect(mergeSettings({ githubStarNudgeStatus: "starred" }).githubStarNudgeStatus).toBe("starred");
+    expect(mergeSettings({ githubStarNudgeStatus: "dismissed" }).githubStarNudgeStatus).toBe("dismissed");
+    expect(mergeSettings({ githubStarNudgeStatus: "bogus" } as unknown as Parameters<typeof mergeSettings>[0]).githubStarNudgeStatus)
+      .toBe("pending");
+  });
+
   it("validates the language override", () => {
     expect(mergeSettings(undefined).languageOverride).toBe("browser");
     expect(mergeSettings({ languageOverride: "es" }).languageOverride).toBe("es");
@@ -285,7 +297,7 @@ describe("settings", () => {
     expect(settings.platform.twitch.idleWatchlistChannels).toEqual(["third", "first", "second"]);
   });
 
-  it("defaults Farm all categories on and ignores the legacy gamePriority list", () => {
+  it("defaults categoryMode to all and ignores the legacy gamePriority list", () => {
     const settings = mergeSettings({
       platform: {
         twitch: { enabled: true, idleWatchlistChannels: [], gamePriority: ["13", "rust"] },
@@ -293,12 +305,72 @@ describe("settings", () => {
       },
     } as unknown as Parameters<typeof mergeSettings>[0]);
 
-    expect(settings.platform.twitch.farmAllCategories).toBe(true);
-    expect(settings.platform.kick.farmAllCategories).toBe(true);
+    expect(settings.platform.twitch.categoryMode).toBe("all");
+    expect(settings.platform.kick.categoryMode).toBe("all");
     // The legacy ordering list is dropped (it had no display names), so no bare
     // ids like "13" leak in as categories.
     expect(settings.platform.twitch.categories).toEqual([]);
     expect(settings.platform.kick.categories).toEqual([]);
+  });
+
+  it("keeps every valid category mode and falls back to all for an invalid one", () => {
+    for (const categoryMode of ["all", "include", "exclude"] as const) {
+      expect(mergeSettings({ platform: { twitch: { categoryMode } } } as never).platform.twitch.categoryMode)
+        .toBe(categoryMode);
+    }
+    expect(mergeSettings({ platform: { kick: { categoryMode: "everything" } } } as never).platform.kick.categoryMode)
+      .toBe("all");
+    expect(mergeSettings({ platform: { kick: { categoryMode: false } } } as never).platform.kick.categoryMode)
+      .toBe("all");
+  });
+
+  it("normalizes and dedupes the category list identically in every mode", () => {
+    for (const categoryMode of ["all", "include", "exclude"] as const) {
+      const settings = mergeSettings({
+        platform: {
+          twitch: {
+            categoryMode,
+            categories: [
+              { id: " 13 ", name: " Rust " },
+              { id: "13", name: "Rust duplicate" },
+              { id: "", name: "No id" },
+              { id: "21", name: "Other", imageUrl: "http://insecure.example/art.png" },
+            ],
+          },
+        },
+      } as never);
+
+      expect(settings.platform.twitch.categories).toEqual([
+        { id: "13", name: "Rust" },
+        { id: "21", name: "Other" },
+      ]);
+    }
+  });
+
+  // The whole point of one shared list: an include ordering survives a round
+  // trip through exclude untouched, so switching back restores the priority.
+  it("preserves the stored list across mode switches", () => {
+    const categories = [{ id: "13", name: "Rust" }, { id: "21", name: "Other" }];
+    let settings = mergeSettings({ platform: { twitch: { categoryMode: "include", categories } } } as never);
+    settings = applySettingsPatch(settings, { platform: { twitch: { categoryMode: "exclude" } } });
+    expect(settings.platform.twitch.categories).toEqual(categories);
+    settings = applySettingsPatch(settings, { platform: { twitch: { categoryMode: "include" } } });
+    expect(settings.platform.twitch.categories).toEqual(categories);
+  });
+
+  // Migration then normalization is the pipeline every host runs on a stored
+  // document, so an upgrading profile must come out farming the same set.
+  it("carries a legacy allowlist through migration into an include-mode profile", () => {
+    const categories = [{ id: "13", name: "Rust" }];
+    const migrated = migrateSettings({
+      schemaVersion: 4,
+      platform: { twitch: { farmAllCategories: false, categories }, kick: { farmAllCategories: true } },
+    });
+    const settings = mergeSettings(migrated.settings as never);
+
+    expect(settings.platform.twitch.categoryMode).toBe("include");
+    expect(settings.platform.twitch.categories).toEqual(categories);
+    expect(settings.platform.kick.categoryMode).toBe("all");
   });
 });
 
@@ -335,5 +407,22 @@ describe("farmingEligibility in the engine contract", () => {
 
   it("keeps dropsListFilter off the engine contract", () => {
     expect("dropsListFilter" in mergeEngineSettings({})).toBe(false);
+  });
+});
+
+describe("in-page panel default", () => {
+  // On by default is a deliberate product call, not an oversight. The feature
+  // exists for people who do not pin the extension and find the toolbar popup
+  // awkward to reach; gating it behind a toggle inside that popup would only
+  // ever reach the people who already open it comfortably. Flipping this to
+  // false silently un-ships the feature for almost everyone, so it is pinned.
+  it("shows the in-page panel unless the user turns it off", () => {
+    expect(DEFAULT_SETTINGS.showInPagePanel).toBe(true);
+    expect(mergeSettings(undefined).showInPagePanel).toBe(true);
+    expect(mergeSettings({}).showInPagePanel).toBe(true);
+  });
+
+  it("respects an explicit opt-out", () => {
+    expect(mergeSettings({ showInPagePanel: false }).showInPagePanel).toBe(false);
   });
 });

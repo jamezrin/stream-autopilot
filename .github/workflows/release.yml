@@ -23,11 +23,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: read
       pull-requests: read
     outputs:
       version: ${{ steps.metadata.outputs.version }}
       ref: ${{ steps.metadata.outputs.ref }}
       pr_number: ${{ steps.metadata.outputs.pr_number }}
+      candidate_digest: ${{ steps.candidate-image.outputs.digest }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -81,14 +83,45 @@ jobs:
           EXPECTED: ${{ steps.policy.outputs.version }}
         run: test "$COMMITTED" = "$EXPECTED"
       - run: node scripts/release.mjs check
+      # The candidate image is what verification approved, so publication promotes that exact
+      # manifest rather than rebuilding it. Resolving the digest here, rather than in publish, is
+      # what lets the rebuild job below stay skipped on the normal path. A missing candidate is not
+      # an error: it is the recovery case, and the rebuild fallback covers it.
+      - id: candidate-image
+        name: Resolve the verified candidate image digest
+        env:
+          ACTOR: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          VERSION: ${{ steps.metadata.outputs.version }}
+        run: |
+          image="ghcr.io/$OWNER/lurkloot-cli"
+          registry_token=$(curl --fail --silent --show-error \
+            --user "$ACTOR:$GHCR_TOKEN" \
+            "https://ghcr.io/token?service=ghcr.io&scope=repository:$OWNER/lurkloot-cli:pull" \
+            | jq -er '.token')
+          digest=$(curl --fail --silent --show-error --head \
+            --header "Authorization: Bearer $registry_token" \
+            --header 'Accept: application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json' \
+            "https://ghcr.io/v2/$OWNER/lurkloot-cli/manifests/candidate-$VERSION" 2>/dev/null \
+            | tr -d '\r' \
+            | sed -n 's/^Docker-Content-Digest: //Ip' || true)
+          case "$digest" in
+            sha256:*) echo "promoting $image@$digest" ;;
+            *) digest=""; echo "no candidate-$VERSION image; publication will rebuild" ;;
+          esac
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
 
   # The extension is not rebuilt here. Publication promotes the candidate prerelease in place, so the
   # signed artifacts it already carries are the ones that ship; publish downloads them back.
 
+  # The CLI image follows the same rule: the approved job retags the verified candidate manifest by
+  # digest. This rebuild runs only when that candidate is gone, which is a recovery path.
   # GitHub validates the called workflow's permission ceiling before evaluating its skipped
   # publish job. The build matrix itself explicitly reduces packages back to none.
   docker:
     needs: resolve
+    if: needs.resolve.outputs.candidate_digest == ''
     permissions:
       contents: read
       packages: write
@@ -121,6 +154,13 @@ jobs:
 
   publish:
     needs: [resolve, docker, site-build]
+    # `docker` is skipped whenever a candidate image exists, and a skipped dependency would
+    # otherwise skip this job with it.
+    if: >-
+      !cancelled() &&
+      needs.resolve.result == 'success' &&
+      needs.site-build.result == 'success' &&
+      (needs.docker.result == 'success' || needs.docker.result == 'skipped')
     runs-on: ubuntu-latest
     environment: production
     permissions:
@@ -130,6 +170,7 @@ jobs:
     env:
       VERSION: ${{ needs.resolve.outputs.version }}
       RELEASE_PR: ${{ needs.resolve.outputs.pr_number }}
+      CANDIDATE_DIGEST: ${{ needs.resolve.outputs.candidate_digest }}
       GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v7
@@ -146,10 +187,9 @@ jobs:
           RELEASE_SYNC_APP_ID: ${{ secrets.RELEASE_SYNC_APP_ID }}
           RELEASE_SYNC_APP_PRIVATE_KEY: ${{ secrets.RELEASE_SYNC_APP_PRIVATE_KEY }}
         run: node scripts/release/cli.mjs app-token
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 11.24.0
-      - uses: actions/download-artifact@v8
+      # Only the rebuild fallback produces these; digest promotion needs no local image.
+      - if: needs.docker.result == 'success'
+        uses: actions/download-artifact@v8
         with:
           pattern: stable-docker-${{ github.run_id }}-${{ github.run_attempt }}-oci-*
           path: docker-images
@@ -185,46 +225,56 @@ jobs:
           else
             echo "v$VERSION is already the stable release"
           fi
-      - uses: docker/login-action@v4
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Verify and publish immutable stable image
+      - name: Promote the verified candidate image
         env:
           IMAGE: ghcr.io/${{ github.repository_owner }}/lurkloot-cli
         run: |
           major="${VERSION%%.*}"
           minor="${VERSION%.*}"
-          staging="release-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          cd docker-images
-          sha256sum -c image-amd64.tar.sha256
-          sha256sum -c image-arm64.tar.sha256
-          # Recovery rebuilds OCI archives; those digests are not guaranteed to match the
-          # already-published immutable tag. Leave X.Y.Z in place when it exists.
-          if docker buildx imagetools inspect "$IMAGE:$VERSION" --raw >/dev/null 2>&1; then
-            echo "$IMAGE:$VERSION already published; leaving the immutable digest in place"
-            exit 0
+          if [ -n "$CANDIDATE_DIGEST" ]; then
+            # The normal path. The candidate manifest is the one the required checks passed
+            # against, so the stable tags point at those exact bytes; nothing is rebuilt.
+            source="$IMAGE@$CANDIDATE_DIGEST"
+            desired="$CANDIDATE_DIGEST"
+          else
+            # Recovery only, when the candidate image no longer exists. A rebuild of the same
+            # source is not bit-identical, so its digest is not the reviewed one.
+            staging="release-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+            cd docker-images
+            sha256sum -c image-amd64.tar.sha256
+            sha256sum -c image-arm64.tar.sha256
+            for arch in amd64 arm64; do
+              docker load --input "image-$arch.tar"
+              docker tag "$IMAGE:$VERSION-$arch" "$IMAGE:$staging-$arch"
+              docker push "$IMAGE:$staging-$arch"
+            done
+            docker buildx imagetools create --tag "$IMAGE:$staging" \
+              "$IMAGE:$staging-amd64" "$IMAGE:$staging-arm64"
+            source="$IMAGE:$staging"
+            desired=$(docker buildx imagetools inspect "$IMAGE:$staging" --format '{{.Manifest.Digest}}')
+            cd ..
           fi
-          for arch in amd64 arm64; do
-            docker load --input "image-$arch.tar"
-            docker tag "$IMAGE:$VERSION-$arch" "$IMAGE:$staging-$arch"
-            docker push "$IMAGE:$staging-$arch"
-          done
-          docker buildx imagetools create --tag "$IMAGE:$staging" \
-            "$IMAGE:$staging-amd64" "$IMAGE:$staging-arm64"
-          desired=$(docker buildx imagetools inspect "$IMAGE:$staging" --raw | sha256sum | cut -d' ' -f1)
-          if docker buildx imagetools inspect "$IMAGE:$VERSION" --raw > existing-manifest.json 2>/dev/null; then
-            existing=$(sha256sum existing-manifest.json | cut -d' ' -f1)
-            if [ "$existing" != "$desired" ]; then
-              echo "refusing to move immutable image $IMAGE:$VERSION from sha256:$existing to sha256:$desired" >&2
+          existing=$(docker buildx imagetools inspect "$IMAGE:$VERSION" --format '{{.Manifest.Digest}}' 2>/dev/null || true)
+          if [ -n "$existing" ] && [ "$existing" != "$desired" ]; then
+            if [ -n "$CANDIDATE_DIGEST" ]; then
+              echo "refusing to move immutable image $IMAGE:$VERSION from $existing to $desired" >&2
               exit 1
             fi
+            # A rerun that had to rebuild found the immutable tag already published. That digest
+            # stays authoritative; the moving aliases are pointed at it rather than at the rebuild.
+            echo "$IMAGE:$VERSION already published; aliasing the published digest $existing"
+            source="$IMAGE@$existing"
+            desired="$existing"
           fi
           docker buildx imagetools create \
             --tag "$IMAGE:$VERSION" --tag "$IMAGE:$minor" --tag "$IMAGE:$major" --tag "$IMAGE:latest" \
-            "$IMAGE:$staging"
-          published=$(docker buildx imagetools inspect "$IMAGE:$VERSION" --raw | sha256sum | cut -d' ' -f1)
+            "$source"
+          published=$(docker buildx imagetools inspect "$IMAGE:$VERSION" --format '{{.Manifest.Digest}}')
           test "$published" = "$desired"
       - name: Publish to the Chrome Web Store
         env:
@@ -240,6 +290,40 @@ jobs:
           directory: site-artifact
           api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Report stable publication
+        run: >-
+          gh pr comment "$RELEASE_PR"
+          --body "Released v$VERSION. Chrome Web Store review was requested with automatic publication: https://chrome.google.com/webstore/devconsole/5fdc4582-d1e8-4714-819e-d4bdcee7da79/aobaackpofkghaejdnnmpmeaiaoibhdn"
+
+  # Synchronization is deliberately outside publish. It verifies the merged `develop` tree, which is
+  # not the tree being released, so a develop-side failure must not be able to wedge a release that
+  # has already shipped: this leaves a completed release plus one retryable job, instead of a rerun
+  # that repeats the entire publication before failing in the same place. Its own checkout is clean,
+  # so nothing has to be restored before switching branches.
+  sync:
+    needs: [resolve, publish]
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve.outputs.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.26.0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - id: sync-token
+        name: Mint the dedicated synchronization credential
+        env:
+          RELEASE_SYNC_APP_ID: ${{ secrets.RELEASE_SYNC_APP_ID }}
+          RELEASE_SYNC_APP_PRIVATE_KEY: ${{ secrets.RELEASE_SYNC_APP_PRIVATE_KEY }}
+        run: node scripts/release/cli.mjs app-token
       - name: Merge main directly into develop with the dedicated App
         env:
           SYNC_TOKEN: ${{ steps.sync-token.outputs.token }}
@@ -249,17 +333,9 @@ jobs:
           export GIT_CONFIG_COUNT=1
           export GIT_CONFIG_KEY_0=http.https://github.com/.extraheader
           export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth"
-          # Publication dirties the workspace before this runs: the site deploy installs wrangler on
-          # demand, which rewrites package.json. Synchronization switches branches, so it aborts on a
-          # dirty tree. Everything is already published by now, so tracked edits are discarded.
-          git restore --staged --worktree -- .
           # Playwright browsers live in the runner cache, not the worktree, so they survive the
           # branch switch inside sync-branches. Candidate and PR verify jobs already install
-          # Chromium; this publish checkout may be an older release SHA whose defaultVerify does not.
+          # Chromium; this checkout may be an older release SHA whose defaultVerify does not.
           pnpm install --frozen-lockfile
           pnpm --filter @lurkloot/extension exec playwright install chromium
           node scripts/release/cli.mjs sync-branches --remote origin
-      - name: Report stable publication
-        run: >-
-          gh pr comment "$RELEASE_PR"
-          --body "Released v$VERSION. Chrome Web Store review was requested with automatic publication: https://chrome.google.com/webstore/devconsole/5fdc4582-d1e8-4714-819e-d4bdcee7da79/aobaackpofkghaejdnnmpmeaiaoibhdn"

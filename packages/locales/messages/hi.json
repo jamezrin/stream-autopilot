@@ -62,9 +62,6 @@
   "settingsSearchNoResults": {
     "message": "कोई सेटिंग “$1” से मेल नहीं खाती।"
   },
-  "settingsPlatformSettingsTitle": {
-    "message": "प्लेटफ़ॉर्म और श्रेणियाँ/गेम"
-  },
   "settingsPlatformSettings": {
     "message": "$1 सेटिंग्स"
   },
@@ -154,6 +151,12 @@
   },
   "hideTipsDescription": {
     "message": "मुख्य पॉपअप से उपयोगी सुझाव हटाएँ।"
+  },
+  "inPagePanelTitle": {
+    "message": "Twitch और Kick पर पैनल दिखाएँ"
+  },
+  "inPagePanelDescription": {
+    "message": "twitch.tv और kick.com पर एक Lurkloot बटन जोड़ता है जो इस पॉपअप को पेज पर एक पैनल में खोलता है।"
   },
   "tipCampaignPriority": {
     "message": "Drops को निष्क्रिय वॉचलिस्ट पर प्राथमिकता मिलती है। क्रम तय करने के लिए कैंपेन को ग्रिप से खींचें।"
@@ -464,9 +467,6 @@
   "platformSettingsTitle": {
     "message": "प्लेटफ़ॉर्म सेटिंग्स"
   },
-  "platformSettingsDescription": {
-    "message": "एक प्रदाता के लिए ऑटोमेशन और चैनल। Twitch और Kick के बीच बदलें।"
-  },
   "farmingTabsTitle": {
     "message": "फ़ार्मिंग टैब"
   },
@@ -539,6 +539,21 @@
   "settingsGroupAdvanced": {
     "message": "उन्नत"
   },
+  "settingsGroupPlatformAdvanced": {
+    "message": "उन्नत और संगतता"
+  },
+  "twitchSectionDescription": {
+    "message": "चैनल पॉइंट, श्रेणी फ़िल्टर, बाहर रखे गए चैनल और Twitch संगतता।"
+  },
+  "kickSectionDescription": {
+    "message": "दैनिक चुनौतियाँ, श्रेणी फ़िल्टर, बाहर रखे गए चैनल और Kick संगतता।"
+  },
+  "twitchAdvancedDescription": {
+    "message": "अभियान उपलब्धता, साथ ही Lurkloot द्वारा उपयोग किए जाने वाले हार्टबीट और इन्वेंटरी ट्रांसपोर्ट। इन्हें तभी बदलें जब Twitch काम करना बंद कर दे।"
+  },
+  "kickAdvancedDescription": {
+    "message": "Lurkloot, Kick के क्लेम लिंक कैसे खोलता है और उसके पीछे का व्यवहार प्रोफ़ाइल। इन्हें तभी बदलें जब Kick काम करना बंद कर दे।"
+  },
   "schedulerIntervalTitle": {
     "message": "शेड्यूलर अंतराल"
   },
@@ -587,24 +602,60 @@
   "insufficientTimeRemaining": {
     "message": "पर्याप्त समय शेष नहीं"
   },
-  "campaignRejectionExcluded": { "message": "इस कैंपेन को फ़ार्मिंग से बाहर रखा गया है।" },
-  "campaignRejectionUpcoming": { "message": "यह कैंपेन अभी शुरू नहीं हुआ है।" },
-  "campaignRejectionExpired": { "message": "यह कैंपेन समाप्त हो गया है।" },
-  "campaignRejectionCompleted": { "message": "इस कैंपेन के सभी रिवॉर्ड पूरे हो चुके हैं।" },
-  "campaignRejectionUnlinkedDisabled": { "message": "लिंक किए खाते के बिना कैंपेन फ़ार्मिंग बंद है।" },
-  "campaignRejectionTwitchLinkRequired": { "message": "इस Twitch कैंपेन के लिए खाता लिंक करना आवश्यक है।" },
-  "campaignRejectionSubscriptionDisabled": { "message": "सब्सक्रिप्शन कैंपेन फ़ार्मिंग बंद है।" },
-  "campaignRejectionCategoryFiltered": { "message": "यह कैंपेन चुनी गई कैटेगरी से मेल नहीं खाता।" },
-  "campaignRejectionPriorityNotSelected": { "message": "यह कैंपेन प्राथमिकता सूची में नहीं है।" },
-  "campaignRejectionNoRewards": { "message": "इस कैंपेन में फ़ार्म करने योग्य रिवॉर्ड नहीं हैं।" },
-  "campaignRejectionNoUnclaimedRewards": { "message": "इस कैंपेन में बिना क्लेम किए रिवॉर्ड नहीं हैं।" },
-  "campaignRejectionPrerequisites": { "message": "$1 पहले के रिवॉर्ड या आवश्यकता की प्रतीक्षा कर रहा है।" },
-  "campaignRejectionRewardNotStarted": { "message": "$1 अभी उपलब्ध नहीं है।" },
-  "campaignRejectionRewardWindowEnded": { "message": "$1 अब उपलब्ध नहीं है।" },
-  "campaignRejectionInsufficientTime": { "message": "$1 समय सीमा से पहले पूरा नहीं हो सकता।" },
-  "campaignRejectionSubscriptionRequired": { "message": "$1 के लिए योग्य सब्सक्रिप्शन चाहिए।" },
-  "campaignRejectionActionRequired": { "message": "$1 के लिए देखने के अलावा दूसरी कार्रवाई चाहिए।" },
-  "campaignRejectionNoFarmableReward": { "message": "इस कैंपेन का कोई रिवॉर्ड अभी फ़ार्म नहीं किया जा सकता।" },
+  "campaignRejectionExcluded": {
+    "message": "इस कैंपेन को फ़ार्मिंग से बाहर रखा गया है।"
+  },
+  "campaignRejectionUpcoming": {
+    "message": "यह कैंपेन अभी शुरू नहीं हुआ है।"
+  },
+  "campaignRejectionExpired": {
+    "message": "यह कैंपेन समाप्त हो गया है।"
+  },
+  "campaignRejectionCompleted": {
+    "message": "इस कैंपेन के सभी रिवॉर्ड पूरे हो चुके हैं।"
+  },
+  "campaignRejectionUnlinkedDisabled": {
+    "message": "लिंक किए खाते के बिना कैंपेन फ़ार्मिंग बंद है।"
+  },
+  "campaignRejectionTwitchLinkRequired": {
+    "message": "इस Twitch कैंपेन के लिए खाता लिंक करना आवश्यक है।"
+  },
+  "campaignRejectionSubscriptionDisabled": {
+    "message": "सब्सक्रिप्शन कैंपेन फ़ार्मिंग बंद है।"
+  },
+  "campaignRejectionCategoryFiltered": {
+    "message": "यह कैंपेन चुनी गई कैटेगरी से मेल नहीं खाता।"
+  },
+  "campaignRejectionPriorityNotSelected": {
+    "message": "यह कैंपेन प्राथमिकता सूची में नहीं है।"
+  },
+  "campaignRejectionNoRewards": {
+    "message": "इस कैंपेन में फ़ार्म करने योग्य रिवॉर्ड नहीं हैं।"
+  },
+  "campaignRejectionNoUnclaimedRewards": {
+    "message": "इस कैंपेन में बिना क्लेम किए रिवॉर्ड नहीं हैं।"
+  },
+  "campaignRejectionPrerequisites": {
+    "message": "$1 पहले के रिवॉर्ड या आवश्यकता की प्रतीक्षा कर रहा है।"
+  },
+  "campaignRejectionRewardNotStarted": {
+    "message": "$1 अभी उपलब्ध नहीं है।"
+  },
+  "campaignRejectionRewardWindowEnded": {
+    "message": "$1 अब उपलब्ध नहीं है।"
+  },
+  "campaignRejectionInsufficientTime": {
+    "message": "$1 समय सीमा से पहले पूरा नहीं हो सकता।"
+  },
+  "campaignRejectionSubscriptionRequired": {
+    "message": "$1 के लिए योग्य सब्सक्रिप्शन चाहिए।"
+  },
+  "campaignRejectionActionRequired": {
+    "message": "$1 के लिए देखने के अलावा दूसरी कार्रवाई चाहिए।"
+  },
+  "campaignRejectionNoFarmableReward": {
+    "message": "इस कैंपेन का कोई रिवॉर्ड अभी फ़ार्म नहीं किया जा सकता।"
+  },
   "automationSectionTitle": {
     "message": "ऑटोमेशन"
   },
@@ -650,11 +701,26 @@
   "settingsGroupCategories": {
     "message": "श्रेणियाँ"
   },
-  "farmAllCategoriesTitle": {
-    "message": "सभी श्रेणियाँ फ़ार्म करें"
+  "categoryModeTitle": {
+    "message": "श्रेणी फ़िल्टर"
   },
-  "farmAllCategoriesDescription": {
-    "message": "$1 की हर श्रेणी में drops फ़ार्म करें। केवल चुने हुए सेट के लिए बंद करें।"
+  "categoryModeDescription": {
+    "message": "$1 की सभी श्रेणियाँ फ़ार्म करें, केवल चयनित श्रेणियाँ शामिल करें, या उन्हें बाहर रखें।"
+  },
+  "categoryModeAll": {
+    "message": "सभी श्रेणियाँ"
+  },
+  "categoryModeInclude": {
+    "message": "केवल चयनित"
+  },
+  "categoryModeExclude": {
+    "message": "चयनित को छोड़कर सभी"
+  },
+  "includeCategoriesInstruction": {
+    "message": "$1 पर केवल ये श्रेणियाँ फ़ार्म की जाती हैं।"
+  },
+  "excludeCategoriesInstruction": {
+    "message": "$1 पर इन्हें छोड़कर सभी श्रेणियाँ फ़ार्म की जाती हैं।"
   },
   "categoriesToFarm": {
     "message": "फ़ार्म करने की श्रेणियाँ"
@@ -664,6 +730,9 @@
   },
   "noCategoriesSelected": {
     "message": "कोई श्रेणी चयनित नहीं: $1 पर कुछ फ़ार्म नहीं होगा। नीचे श्रेणियाँ जोड़ें।"
+  },
+  "noCategoriesExcluded": {
+    "message": "कोई श्रेणी बाहर नहीं की गई: $1 की सभी श्रेणियाँ फ़ार्म होंगी। उन्हें छोड़ने के लिए नीचे श्रेणियाँ जोड़ें।"
   },
   "hasActiveDrops": {
     "message": "सक्रिय drops हैं"
@@ -771,7 +840,7 @@
     "message": "सिर्फ़ drops नहीं।"
   },
   "screenshotExtrasSubcopy": {
-    "message": "चैनल पॉइंट्स और Kick चैलेंज भी तुम्हारे लिए क्लेम। जब फार्म करने को कुछ न हो, idle watchlist।"
+    "message": "चैनल पॉइंट्स, Kick चैलेंज और 2-मिनट ड्रॉप्स भी तुम्हारे लिए क्लेम। जब फार्म करने को कुछ न हो, idle watchlist।"
   },
   "screenshotExtrasPointsName": {
     "message": "चैनल पॉइंट्स"
@@ -790,6 +859,12 @@
   },
   "screenshotExtrasWatchlistMeta": {
     "message": "कैंपेन के बीच तुम्हारे स्ट्रीमर देखे जाते हैं"
+  },
+  "screenshotExtrasFlashName": {
+    "message": "2-मिनट ड्रॉप्स"
+  },
+  "screenshotExtrasFlashMeta": {
+    "message": "Kick · जैसे ही आएं"
   },
   "screenshotEasyEyebrow": {
     "message": "आसान"
@@ -839,6 +914,33 @@
   "screenshotUpdatedSubcopy": {
     "message": "Twitch और Kick बदलें तो रिलीज़ आती रहें — और सुझाव खुले हैं।"
   },
+  "screenshotUpdatedBrowsersTitle": {
+    "message": "Chromium-आधारित ब्राउज़र"
+  },
+  "screenshotUpdatedBrowsersSub": {
+    "message": "Chrome Web Store लिस्टिंग। वही एक्सटेंशन।"
+  },
+  "screenshotUpdatedHeadlessTitle": {
+    "message": "CLI"
+  },
+  "screenshotUpdatedHeadlessSub": {
+    "message": "हेडलेस। वही इंजन।"
+  },
+  "screenshotUpdatedDockerTitle": {
+    "message": "Docker"
+  },
+  "screenshotUpdatedDockerSub": {
+    "message": "वही इंजन। कंटेनर में।"
+  },
+  "screenshotUpdatedLicense": {
+    "message": "Apache-2.0"
+  },
+  "screenshotUpdatedRating": {
+    "message": "4.9"
+  },
+  "screenshotUpdatedUsers": {
+    "message": "1,000+ उपयोगकर्ता"
+  },
   "autoClaimReady": {
     "message": "ऑटो-क्लेम तैयार"
   },
@@ -886,6 +988,15 @@
   },
   "rateNudgeDismiss": {
     "message": "अभी नहीं"
+  },
+  "githubStarNudgeTitle": {
+    "message": "Lurkloot ओपन सोर्स है"
+  },
+  "githubStarNudgeBody": {
+    "message": "अगर यह उपयोगी रहा, तो GitHub पर एक स्टार दूसरों को इसे खोजने में मदद करता है। योगदान स्वागत योग्य हैं, खासकर फीचर्स और अनुवाद।"
+  },
+  "githubStarNudgeAction": {
+    "message": "GitHub पर स्टार दें"
   },
   "removeItem": {
     "message": "$1 हटाएँ"
@@ -1133,9 +1244,6 @@
   "diagnosticsViewTab": {
     "message": "डायग्नोस्टिक"
   },
-  "settingsGroupCompatibility": {
-    "message": "संगतता"
-  },
   "compatibilityAutomatic": {
     "message": "स्वचालित"
   },
@@ -1294,5 +1402,14 @@
   },
   "manualWatchPauseDetail": {
     "message": "आपके खुद कोई स्ट्रीम देखने के दौरान फ़ार्मिंग रुकी हुई है। अगली जाँच पर फ़ार्मिंग अपने आप फिर शुरू करने के लिए उसे रोकें, बंद करें या उस टैब से हट जाएँ।"
+  },
+  "reorderItem": {
+    "message": "$1 का क्रम बदलें"
+  },
+  "scrollRewardsLeft": {
+    "message": "पुरस्कारों को बाईं ओर स्क्रॉल करें"
+  },
+  "scrollRewardsRight": {
+    "message": "पुरस्कारों को दाईं ओर स्क्रॉल करें"
   }
 }

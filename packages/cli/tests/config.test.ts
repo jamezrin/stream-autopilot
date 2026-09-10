@@ -246,6 +246,16 @@ describe("loadConfig", () => {
     expect(parseJsonc(defaultConfigJsonc()).settings.farmingEligibility).toEqual(DEFAULT_CLI_SETTINGS.farmingEligibility);
   });
 
+  it("documents the category mode and its three values in the template", () => {
+    // The round-trip merges defaults, so an omitted key would still pass there.
+    // Assert the template renders the key and explains every mode, since the
+    // template doubles as the CLI settings reference.
+    const template = defaultConfigJsonc();
+    expect(template).toContain(`"categoryMode": "${DEFAULT_CLI_SETTINGS.platform.twitch.categoryMode}"`);
+    expect(template).not.toContain("farmAllCategories");
+    for (const mode of ["all", "include", "exclude"]) expect(template).toContain(`"${mode}"`);
+  });
+
   it("documents the post-claim handoff settings in the template", () => {
     // The round-trip above merges defaults, so an omitted key would still pass
     // there. Assert the template itself carries them, with the rendered values.

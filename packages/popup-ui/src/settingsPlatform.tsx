@@ -3,7 +3,7 @@ import { arrayMove } from "@dnd-kit/helpers";
 import { DragDropProvider } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { AlertTriangle, Plus, Search } from "lucide-react";
-import type { CategorySelection, ExtensionSettings, Platform } from "@lurkloot/shared/models";
+import type { CategoryMode, CategorySelection, ExtensionSettings, Platform } from "@lurkloot/shared/models";
 import { GAME_ACCENTS, PLATFORMS } from "./constants";
 import { useT } from "./context";
 import { initials } from "./format";
@@ -13,17 +13,21 @@ import {
   DragHandle,
   Pill,
   RemoveRowButton,
-  Toggle,
   reorderFromDragEnd,
   preventNativeDrag,
   type SortableDragEndEvent,
 } from "./primitives";
+import { SelectSettingRow } from "./settingsControls";
 
-export function PlatformCategorySettings({ platform, suggestions, settings, onFarmAllCategoriesChange, onCategoriesChange, onSearchCategories }: {
+// The three category modes share ONE stored list, so switching mode only
+// changes how that list is read — it never rewrites or reorders the array.
+// Switching to exclude and back therefore restores the include priority order
+// the user had set.
+export function PlatformCategorySettings({ platform, suggestions, settings, onCategoryModeChange, onCategoriesChange, onSearchCategories }: {
   platform: Platform;
   suggestions: GameItem[];
   settings: ExtensionSettings;
-  onFarmAllCategoriesChange(farmAll: boolean): void | Promise<void>;
+  onCategoryModeChange(mode: CategoryMode): void | Promise<void>;
   onCategoriesChange(categories: CategorySelection[]): void | Promise<void>;
   onSearchCategories(query: string): Promise<CategorySelection[]>;
 }) {
@@ -33,17 +37,22 @@ export function PlatformCategorySettings({ platform, suggestions, settings, onFa
 
   return (
     <>
-      <div className="flex items-center gap-3 py-2.5">
-        <div className="min-w-0 flex-1">
-          <div className="text-[13px] font-medium text-zinc-800 dark:text-zinc-100">{t("farmAllCategoriesTitle")}</div>
-          <div className="mt-0.5 text-[11px] leading-snug text-zinc-500 dark:text-zinc-400">{t("farmAllCategoriesDescription", details.label)}</div>
-        </div>
-        <Toggle checked={platformSettings.farmAllCategories} onChange={onFarmAllCategoriesChange} label={t("farmAllCategoriesTitle")} />
-      </div>
-      {platformSettings.farmAllCategories ? null : (
+      <SelectSettingRow<CategoryMode>
+        title={t("categoryModeTitle")}
+        description={t("categoryModeDescription", details.label)}
+        value={platformSettings.categoryMode}
+        options={[
+          { value: "all", label: t("categoryModeAll") },
+          { value: "include", label: t("categoryModeInclude") },
+          { value: "exclude", label: t("categoryModeExclude") },
+        ]}
+        onChange={onCategoryModeChange}
+      />
+      {platformSettings.categoryMode === "all" ? null : (
         <div className="py-2">
           <CategoryFilterEditor
             platform={platform}
+            mode={platformSettings.categoryMode}
             categories={platformSettings.categories}
             suggestions={suggestions}
             onChange={onCategoriesChange}
@@ -125,17 +134,22 @@ function ChannelListEditor({ empty, channels, onChange }: {
   );
 }
 
-// The category allowlist editor shown when "Farm all categories" is off. The
-// list is reorderable (order = farming priority); categories are added via
-// drop-aware quick suggestions (no network) or a debounced live search.
-function CategoryFilterEditor({ platform, categories, suggestions, onChange, onSearch }: {
+// The category list editor, shown in both filtered modes. In "include" the list
+// is an ordered allowlist (order = farming priority), so rows are reorderable.
+// In "exclude" it is an unordered denylist: reordering is removed entirely
+// rather than left as a control that quietly does nothing. Categories are added
+// the same way in both: drop-aware quick suggestions (no network) or a
+// debounced live search.
+function CategoryFilterEditor({ platform, mode, categories, suggestions, onChange, onSearch }: {
   platform: Platform;
+  mode: Exclude<CategoryMode, "all">;
   categories: CategorySelection[];
   suggestions: GameItem[];
   onChange(categories: CategorySelection[]): void | Promise<void>;
   onSearch(query: string): Promise<CategorySelection[]>;
 }) {
   const t = useT();
+  const reorderable = mode === "include";
 
   const selectedIds = useMemo(() => new Set(categories.map((category) => category.id.toLowerCase())), [categories]);
 
@@ -151,35 +165,54 @@ function CategoryFilterEditor({ platform, categories, suggestions, onChange, onS
   }
 
   const accentFor = (index: number): string => GAME_ACCENTS[index % GAME_ACCENTS.length];
+  const label = PLATFORMS[platform].label;
+
+  const rows = categories.map((category, index) => (
+    <CategoryRow
+      key={category.id}
+      category={category}
+      index={index}
+      count={categories.length}
+      accent={accentFor(index)}
+      reorderable={reorderable}
+      onRemove={() => void onChange(categories.filter((entry) => entry.id !== category.id))}
+      onMove={(toIndex) => void onChange(arrayMove(categories, index, toIndex))}
+    />
+  ));
 
   return (
     <div className="space-y-2.5">
-      {/* The group header carries the label and the count; only the reordering
-          hint is left, and it only means anything once there is a list. */}
-      {categories.length > 0 ? (
-        <div className="flex justify-end"><Pill tone="accent">{t("dragToPrioritize")}</Pill></div>
-      ) : null}
+      {/* The group header carries the label and the count; what is left is the
+          mode-specific instruction, plus the reordering hint that only means
+          anything in include mode with a non-empty list. */}
+      <div className="flex items-start justify-between gap-2">
+        <span className="text-[11px] leading-snug text-zinc-500 dark:text-zinc-400">
+          {t(reorderable ? "includeCategoriesInstruction" : "excludeCategoriesInstruction", label)}
+        </span>
+        {reorderable && categories.length > 0 ? <Pill tone="accent">{t("dragToPrioritize")}</Pill> : null}
+      </div>
       {categories.length === 0 ? (
-        <div className="flex items-start gap-2 rounded-lg border border-amber-300/70 bg-amber-50 px-2.5 py-2 text-[11px] leading-snug text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
-          <AlertTriangle size={13} className="mt-0.5 shrink-0" />
-          <span>{t("noCategoriesSelected", PLATFORMS[platform].label)}</span>
-        </div>
-      ) : (
-        <DragDropProvider onDragEnd={endDrag}>
-          <div className="space-y-1.5">
-            {categories.map((category, index) => (
-              <SortableCategoryRow
-                key={category.id}
-                category={category}
-                index={index}
-                count={categories.length}
-                accent={accentFor(index)}
-                onRemove={() => void onChange(categories.filter((entry) => entry.id !== category.id))}
-                onMove={(toIndex) => void onChange(arrayMove(categories, index, toIndex))}
-              />
-            ))}
+        reorderable ? (
+          // Include with an empty list farms nothing, which is almost never
+          // what the user meant: warn.
+          <div className="flex items-start gap-2 rounded-lg border border-amber-300/70 bg-amber-50 px-2.5 py-2 text-[11px] leading-snug text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
+            <AlertTriangle size={13} className="mt-0.5 shrink-0" />
+            <span>{t("noCategoriesSelected", label)}</span>
           </div>
+        ) : (
+          // Exclude with an empty list is exactly "all categories" — a valid
+          // state on the way to picking something, so it states the effect
+          // instead of raising an alarm.
+          <div className="rounded-lg border border-zinc-200 px-2.5 py-2 text-[11px] leading-snug text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+            {t("noCategoriesExcluded", label)}
+          </div>
+        )
+      ) : reorderable ? (
+        <DragDropProvider onDragEnd={endDrag}>
+          <div className="space-y-1.5">{rows}</div>
         </DragDropProvider>
+      ) : (
+        <div className="space-y-1.5">{rows}</div>
       )}
 
       <CategoryPickerCombobox platform={platform} suggestions={suggestions} selectedIds={selectedIds} onSearch={onSearch} onSelect={addCategory} />
@@ -324,11 +357,25 @@ function CategoryPickerGroup({ label, items, onSelect }: {
   );
 }
 
+// Reorderable rows must call useSortable, which is only valid inside the
+// DragDropProvider the include branch renders, so the exclude branch gets a
+// plain row rather than a sortable one with its drag affordances disabled.
+function CategoryRow({ category, index, count, accent, reorderable, onRemove, onMove }: { category: CategorySelection; index: number; count: number; accent: string; reorderable: boolean; onRemove(): void; onMove(toIndex: number): void }) {
+  const t = useT();
+  if (!reorderable) {
+    return (
+      <CompactRow avatar={initials(category.name)} avatarImageUrl={category.imageUrl} avatarStyle={{ backgroundColor: accent, color: "#fff" }} title={category.name} trailing={<RemoveRowButton label={t("removeItem", category.name)} onClick={onRemove} />} />
+    );
+  }
+  return <SortableCategoryRow category={category} index={index} count={count} accent={accent} onRemove={onRemove} onMove={onMove} />;
+}
+
 function SortableCategoryRow({ category, index, count, accent, onRemove, onMove }: { category: CategorySelection; index: number; count: number; accent: string; onRemove(): void; onMove(toIndex: number): void }) {
+  const t = useT();
   const { ref, handleRef, isDragging } = useSortable({ id: category.id, index });
   return (
     <div ref={ref} onDragStart={preventNativeDrag}>
-      <CompactRow index={index} rankCount={count} rankLabel={category.name} onRankMove={onMove} avatar={initials(category.name)} avatarImageUrl={category.imageUrl} avatarStyle={{ backgroundColor: accent, color: "#fff" }} title={category.name} dimmed={isDragging} dragHandle={<DragHandle handleRef={handleRef} label={`Reorder ${category.name}`} />} trailing={<RemoveRowButton label={`Remove ${category.name}`} onClick={onRemove} />} />
+      <CompactRow index={index} rankCount={count} rankLabel={category.name} onRankMove={onMove} avatar={initials(category.name)} avatarImageUrl={category.imageUrl} avatarStyle={{ backgroundColor: accent, color: "#fff" }} title={category.name} dimmed={isDragging} dragHandle={<DragHandle handleRef={handleRef} label={t("reorderItem", category.name)} />} trailing={<RemoveRowButton label={t("removeItem", category.name)} onClick={onRemove} />} />
     </div>
   );
 }

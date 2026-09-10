@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Ban, ChevronDown, Lock, type LucideIcon } from "lucide-react";
+import { Ban, ChevronDown, Lock } from "lucide-react";
 import type { ExtensionSettings } from "@lurkloot/shared/models";
 import {
   COLLAPSED_SETTINGS_SECTIONS_KEY,
@@ -8,14 +8,12 @@ import {
 import { usePopupRuntime, useT } from "./context";
 import { SearchBox, Toggle, cn } from "./primitives";
 
-export function SettingsSection({ id, title, description, icon: Icon, iconNode, badge, forceExpanded, children }: {
+export function SettingsSection({ id, title, description, badge, forceExpanded, children }: {
   // Stable, locale-independent identity. Collapse state is keyed by this, not by
   // the translated title, so changing language does not reset the accordion.
   id: string;
   title: string;
   description?: string;
-  icon?: LucideIcon;
-  iconNode?: React.ReactNode;
   badge?: React.ReactNode;
   // While searching, sections holding matches are opened regardless of the
   // persisted state, and the persisted state is left untouched.
@@ -62,7 +60,6 @@ export function SettingsSection({ id, title, description, icon: Icon, iconNode, 
         >
           <span className="min-w-0">
             <span className="flex items-center gap-1.5">
-              {iconNode ?? (Icon ? <Icon size={13} className="text-zinc-400 dark:text-zinc-500" /> : null)}
               <span className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{title}</span>
               {badge}
             </span>

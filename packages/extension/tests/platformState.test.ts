@@ -40,6 +40,10 @@ function state(label: string, lastTickAt: string): SchedulerState {
       twitch: [`${label}-twitch`],
       kick: [`${label}-kick`],
     },
+    campaignSearchBackoffs: {
+      twitch: { campaignId: `${label}-twitch`, retryAt: "2099-01-01T00:00:00.000Z", fingerprint: label },
+      kick: { campaignId: `${label}-kick`, retryAt: "2099-01-01T00:00:00.000Z", fingerprint: label },
+    },
     installedAt: `${label}-installed`,
     lastTickAt,
   };
@@ -62,6 +66,8 @@ describe("mergePlatformState", () => {
     expect(merged.deadlineInfeasibleRewardIds?.kick).toEqual(
       destination.deadlineInfeasibleRewardIds?.kick,
     );
+    expect(merged.campaignSearchBackoffs?.twitch).toEqual(source.campaignSearchBackoffs?.twitch);
+    expect(merged.campaignSearchBackoffs?.kick).toEqual(destination.campaignSearchBackoffs?.kick);
     expect(merged.installedAt).toBe(destination.installedAt);
     expect(merged.lastTickAt).toBe("2026-07-29T12:00:00.000Z");
   });

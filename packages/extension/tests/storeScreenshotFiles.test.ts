@@ -52,6 +52,9 @@ describe("store screenshot manifest", () => {
       "lurkloot-04-settings-1280x800.png",
       "lurkloot-05-updated-1280x800.png",
     ]);
+    expect(STORE_SCREENSHOT_VARIANTS.map((variant: { popup: boolean }) => variant.popup)).toEqual([
+      true, true, true, true, false,
+    ]);
   });
 
   it("parses locale filters without accepting unknown or duplicate work", () => {

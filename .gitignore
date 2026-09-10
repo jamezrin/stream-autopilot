@@ -54,6 +54,10 @@ lerna-debug.log*
 !.env.example
 *.pem
 
+# Network captures. A HAR records live session cookies, bearer tokens and
+# extension JWTs verbatim, so it must never be committed.
+*.har
+
 # CLI local runtime (config + credential/state stores)
 /config.json
 /auth/

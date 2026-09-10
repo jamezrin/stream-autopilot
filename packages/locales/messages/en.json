@@ -62,9 +62,6 @@
   "settingsSearchNoResults": {
     "message": "No settings match “$1”."
   },
-  "settingsPlatformSettingsTitle": {
-    "message": "Platform & Categories/Games"
-  },
   "settingsPlatformSettings": {
     "message": "$1 settings"
   },
@@ -154,6 +151,12 @@
   },
   "hideTipsDescription": {
     "message": "Remove helpful tips from the main popup."
+  },
+  "inPagePanelTitle": {
+    "message": "Show panel on Twitch and Kick"
+  },
+  "inPagePanelDescription": {
+    "message": "Adds a Lurkloot button to twitch.tv and kick.com that opens this popup in a panel on the page."
   },
   "tipCampaignPriority": {
     "message": "Drops take priority over the Idle Watchlist. Drag campaigns by the grip to set their farming order."
@@ -464,9 +467,6 @@
   "platformSettingsTitle": {
     "message": "Platform settings"
   },
-  "platformSettingsDescription": {
-    "message": "Automation and channels for one provider. Switch between Twitch and Kick."
-  },
   "farmingTabsTitle": {
     "message": "Farming tabs"
   },
@@ -539,6 +539,21 @@
   "settingsGroupAdvanced": {
     "message": "Advanced"
   },
+  "settingsGroupPlatformAdvanced": {
+    "message": "Advanced & compatibility"
+  },
+  "twitchSectionDescription": {
+    "message": "Channel points, category filter, excluded channels, and Twitch compatibility."
+  },
+  "kickSectionDescription": {
+    "message": "Daily challenges, category filter, excluded channels, and Kick compatibility."
+  },
+  "twitchAdvancedDescription": {
+    "message": "Campaign availability, plus the heartbeat and inventory transports Lurkloot uses. Change these only when Twitch stops working."
+  },
+  "kickAdvancedDescription": {
+    "message": "How Lurkloot opens Kick claim links, and the behavior profile behind it. Change these only when Kick stops working."
+  },
   "schedulerIntervalTitle": {
     "message": "Scheduler interval"
   },
@@ -587,24 +602,60 @@
   "insufficientTimeRemaining": {
     "message": "Insufficient time remaining"
   },
-  "campaignRejectionExcluded": { "message": "This campaign is excluded from farming." },
-  "campaignRejectionUpcoming": { "message": "This campaign has not started yet." },
-  "campaignRejectionExpired": { "message": "This campaign has ended." },
-  "campaignRejectionCompleted": { "message": "All rewards in this campaign are complete." },
-  "campaignRejectionUnlinkedDisabled": { "message": "Farming campaigns without a linked account is disabled." },
-  "campaignRejectionTwitchLinkRequired": { "message": "Account linking is required for this Twitch campaign." },
-  "campaignRejectionSubscriptionDisabled": { "message": "Farming subscription campaigns is disabled." },
-  "campaignRejectionCategoryFiltered": { "message": "This campaign does not match the selected categories." },
-  "campaignRejectionPriorityNotSelected": { "message": "This campaign is not in the priority list." },
-  "campaignRejectionNoRewards": { "message": "This campaign has no farmable rewards." },
-  "campaignRejectionNoUnclaimedRewards": { "message": "This campaign has no unclaimed rewards." },
-  "campaignRejectionPrerequisites": { "message": "$1 is waiting for an earlier reward or requirement." },
-  "campaignRejectionRewardNotStarted": { "message": "$1 is not available yet." },
-  "campaignRejectionRewardWindowEnded": { "message": "$1 is no longer available." },
-  "campaignRejectionInsufficientTime": { "message": "$1 cannot be completed before its deadline." },
-  "campaignRejectionSubscriptionRequired": { "message": "$1 requires a qualifying subscription." },
-  "campaignRejectionActionRequired": { "message": "$1 requires an action other than watching." },
-  "campaignRejectionNoFarmableReward": { "message": "No reward in this campaign can currently be farmed." },
+  "campaignRejectionExcluded": {
+    "message": "This campaign is excluded from farming."
+  },
+  "campaignRejectionUpcoming": {
+    "message": "This campaign has not started yet."
+  },
+  "campaignRejectionExpired": {
+    "message": "This campaign has ended."
+  },
+  "campaignRejectionCompleted": {
+    "message": "All rewards in this campaign are complete."
+  },
+  "campaignRejectionUnlinkedDisabled": {
+    "message": "Farming campaigns without a linked account is disabled."
+  },
+  "campaignRejectionTwitchLinkRequired": {
+    "message": "Account linking is required for this Twitch campaign."
+  },
+  "campaignRejectionSubscriptionDisabled": {
+    "message": "Farming subscription campaigns is disabled."
+  },
+  "campaignRejectionCategoryFiltered": {
+    "message": "This campaign does not match the selected categories."
+  },
+  "campaignRejectionPriorityNotSelected": {
+    "message": "This campaign is not in the priority list."
+  },
+  "campaignRejectionNoRewards": {
+    "message": "This campaign has no farmable rewards."
+  },
+  "campaignRejectionNoUnclaimedRewards": {
+    "message": "This campaign has no unclaimed rewards."
+  },
+  "campaignRejectionPrerequisites": {
+    "message": "$1 is waiting for an earlier reward or requirement."
+  },
+  "campaignRejectionRewardNotStarted": {
+    "message": "$1 is not available yet."
+  },
+  "campaignRejectionRewardWindowEnded": {
+    "message": "$1 is no longer available."
+  },
+  "campaignRejectionInsufficientTime": {
+    "message": "$1 cannot be completed before its deadline."
+  },
+  "campaignRejectionSubscriptionRequired": {
+    "message": "$1 requires a qualifying subscription."
+  },
+  "campaignRejectionActionRequired": {
+    "message": "$1 requires an action other than watching."
+  },
+  "campaignRejectionNoFarmableReward": {
+    "message": "No reward in this campaign can currently be farmed."
+  },
   "automationSectionTitle": {
     "message": "Automation"
   },
@@ -650,11 +701,26 @@
   "settingsGroupCategories": {
     "message": "Categories"
   },
-  "farmAllCategoriesTitle": {
-    "message": "Farm all categories"
+  "categoryModeTitle": {
+    "message": "Category filter"
   },
-  "farmAllCategoriesDescription": {
-    "message": "Farm drops in every $1 category. Turn off to farm only a chosen set."
+  "categoryModeDescription": {
+    "message": "Farm every $1 category, include only the categories you select, or exclude them."
+  },
+  "categoryModeAll": {
+    "message": "All categories"
+  },
+  "categoryModeInclude": {
+    "message": "Only selected"
+  },
+  "categoryModeExclude": {
+    "message": "All except selected"
+  },
+  "includeCategoriesInstruction": {
+    "message": "Only these categories are farmed on $1."
+  },
+  "excludeCategoriesInstruction": {
+    "message": "Every $1 category is farmed except these."
   },
   "categoriesToFarm": {
     "message": "Categories to farm"
@@ -664,6 +730,9 @@
   },
   "noCategoriesSelected": {
     "message": "No categories selected — nothing will be farmed on $1. Add categories below."
+  },
+  "noCategoriesExcluded": {
+    "message": "No categories excluded — every $1 category will be farmed. Add categories below to skip them."
   },
   "hasActiveDrops": {
     "message": "Has active drops"
@@ -771,7 +840,7 @@
     "message": "More than drops."
   },
   "screenshotExtrasSubcopy": {
-    "message": "Channel points and Kick challenges, also claimed for you. An idle watchlist when nothing is left to farm."
+    "message": "Channel points, Kick challenges, and 2-minute drops — also claimed for you. An idle watchlist when nothing is left to farm."
   },
   "screenshotExtrasPointsName": {
     "message": "Channel points"
@@ -790,6 +859,12 @@
   },
   "screenshotExtrasWatchlistMeta": {
     "message": "Watches your streamers between campaigns"
+  },
+  "screenshotExtrasFlashName": {
+    "message": "2-minute drops"
+  },
+  "screenshotExtrasFlashMeta": {
+    "message": "Kick · picked up as they land"
   },
   "screenshotEasyEyebrow": {
     "message": "Easy to use"
@@ -839,6 +914,33 @@
   "screenshotUpdatedSubcopy": {
     "message": "Frequent releases as Twitch and Kick change — and open to ideas and improvements."
   },
+  "screenshotUpdatedBrowsersTitle": {
+    "message": "Chromium-based browsers"
+  },
+  "screenshotUpdatedBrowsersSub": {
+    "message": "Chrome Web Store listing. Same extension."
+  },
+  "screenshotUpdatedHeadlessTitle": {
+    "message": "CLI"
+  },
+  "screenshotUpdatedHeadlessSub": {
+    "message": "Headless. Same engine."
+  },
+  "screenshotUpdatedDockerTitle": {
+    "message": "Docker"
+  },
+  "screenshotUpdatedDockerSub": {
+    "message": "Same engine. In a container."
+  },
+  "screenshotUpdatedLicense": {
+    "message": "Apache-2.0"
+  },
+  "screenshotUpdatedRating": {
+    "message": "4.9"
+  },
+  "screenshotUpdatedUsers": {
+    "message": "1,000+ users"
+  },
   "autoClaimReady": {
     "message": "Auto-claim ready"
   },
@@ -886,6 +988,15 @@
   },
   "rateNudgeDismiss": {
     "message": "Not now"
+  },
+  "githubStarNudgeTitle": {
+    "message": "Lurkloot is open source"
+  },
+  "githubStarNudgeBody": {
+    "message": "If it's been useful, a GitHub star helps others find it. Contributions are welcome, especially features and translations."
+  },
+  "githubStarNudgeAction": {
+    "message": "Star on GitHub"
   },
   "removeItem": {
     "message": "Remove $1"
@@ -1133,9 +1244,6 @@
   "diagnosticsViewTab": {
     "message": "Diagnostics"
   },
-  "settingsGroupCompatibility": {
-    "message": "Compatibility"
-  },
   "compatibilityAutomatic": {
     "message": "Automatic"
   },
@@ -1294,5 +1402,14 @@
   },
   "manualWatchPauseDetail": {
     "message": "Farming is paused while you’re watching a stream yourself. Pause it, close it, or switch away from that tab to resume automatically on the next check."
+  },
+  "reorderItem": {
+    "message": "Reorder $1"
+  },
+  "scrollRewardsLeft": {
+    "message": "Scroll rewards left"
+  },
+  "scrollRewardsRight": {
+    "message": "Scroll rewards right"
   }
 }

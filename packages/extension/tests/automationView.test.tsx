@@ -24,6 +24,7 @@ const messages: Record<string, string> = {
   signInToKick: "Sign in to Kick",
   watchingLabel: "Watching",
   farmingLabel: "Farming",
+  waitingEligibleStream: "No eligible live stream is currently available for this campaign",
   automationPausedTabClosed: "Paused — tab closed",
   watchTabClosedPauseDetail: "You closed the farming tab, so Lurkloot stopped farming here.",
   resumeFarming: "Resume farming",
@@ -172,6 +173,30 @@ describe("automation authentication status UI", () => {
 
     expect(container.querySelector('[data-platform-status="twitch"]')?.getAttribute("data-state")).toBe("running");
     expect(container.querySelector('[data-platform-status="kick"]')?.getAttribute("data-state")).toBe("unavailable");
+  });
+
+  it("shows localized eligibility status instead of internal scheduler detail", () => {
+    const internalMessage = "Keeping already committed snapshot selection";
+    const { container } = mountHeader({
+      platform: "twitch",
+      presentation: automationPresentation({
+        platform: "twitch",
+        enabled: true,
+        pending: false,
+        authHealth: { status: "healthy" },
+        session: {
+          platform: "twitch",
+          status: "idle",
+          offlineChecks: 0,
+          reasonCode: "keeping_current_watch",
+          message: internalMessage,
+        },
+      }),
+    });
+
+    const status = container.querySelector('[data-automation-state="running"]');
+    expect(status?.textContent).toContain("No eligible live stream is currently available for this campaign");
+    expect(status?.textContent).not.toContain(internalMessage);
   });
 
   it("hides stale farming detail while authentication is degraded", () => {

@@ -39,8 +39,15 @@ Supported `settings` keys: `autoClaim`, `autoClaimChannelPoints`, `priorityMode`
 `campaignPriorities`, `excludedCampaignIds`, `idleWatchlistFallbackOnly`,
 `preferKnownChannels`, `offlineRetryLimit`, `pollIntervalMinutes`,
 `notifyRewardEarned`, `notifyNoDropsLeft`, `farmingEligibility`, and per-platform
-`enabled`, `idleWatchlistChannels`, `excludedChannels`, `farmAllCategories`,
+`enabled`, `idleWatchlistChannels`, `excludedChannels`, `categoryMode`,
 `categories`.
+
+`categoryMode` is `"all"` (farm every category), `"include"` (farm only the
+categories in `categories`, whose order also sets category priority) or
+`"exclude"` (farm everything except them; an empty list then behaves like
+`"all"`). An unknown value is rejected rather than defaulted. A config still
+using the old `farmAllCategories` boolean is migrated automatically — `false`
+becomes `"include"`, anything else becomes `"all"` — with a startup warning.
 
 `farmingEligibility` gates what the engine may farm. Its two keys both default
 `true`: set `farmUnlinkedCampaigns` to `false` to skip campaigns that need an
@@ -54,7 +61,7 @@ rejected.
 Rejected (extension-only, no effect headlessly): `running`, `tablessMode`,
 `muteFarmingTabs`, `keepFarmingVideosUnmuted`, `pauseOnManualWatch`,
 `adFocusMode`, `autoCloseFinishedDrops`, `autoStartDropFarming`,
-`languageOverride`, `rateNudgeStatus`, `diagnosticLogging`, `dropsListFilter`.
+`languageOverride`, `rateNudgeStatus`, `githubStarNudgeStatus`, `diagnosticLogging`, `dropsListFilter`.
 
 ```jsonc
 {

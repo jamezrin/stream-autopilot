@@ -62,15 +62,35 @@ describe("evaluateCampaignFarming", () => {
       .toMatchObject({ farmable: false, code: "unlinked_campaigns_disabled" });
   });
 
-  it("returns category_filtered before inspecting rewards", () => {
+  it("returns category_filtered before inspecting rewards in include mode", () => {
     const currentSettings = settings();
     currentSettings.platform.twitch = {
       ...currentSettings.platform.twitch,
-      farmAllCategories: false,
+      categoryMode: "include",
       categories: [{ id: "other", name: "Other" }],
     };
     expect(evaluateCampaignFarming(campaign({ categoryId: "game" }), currentSettings, { now: NOW }))
       .toMatchObject({ farmable: false, code: "category_filtered" });
+  });
+
+  it("returns category_filtered for a listed category in exclude mode", () => {
+    const currentSettings = settings();
+    currentSettings.platform.twitch = {
+      ...currentSettings.platform.twitch,
+      categoryMode: "exclude",
+      categories: [{ id: "game", name: "Game" }],
+    };
+    expect(evaluateCampaignFarming(campaign({ categoryId: "game" }), currentSettings, { now: NOW }))
+      .toMatchObject({ farmable: false, code: "category_filtered" });
+    expect(evaluateCampaignFarming(campaign({ categoryId: "other" }), currentSettings, { now: NOW }))
+      .toEqual({ farmable: true });
+  });
+
+  it("farms everything when the exclude list is empty", () => {
+    const currentSettings = settings();
+    currentSettings.platform.twitch = { ...currentSettings.platform.twitch, categoryMode: "exclude", categories: [] };
+    expect(evaluateCampaignFarming(campaign({ categoryId: "game" }), currentSettings, { now: NOW }))
+      .toEqual({ farmable: true });
   });
 
   it("returns priority_not_selected only when priority-list-only evaluation is requested", () => {

@@ -13,8 +13,8 @@ const ELIGIBLE_ALL: EngineSettings["farmingEligibility"] = {
   farmSubscriptionCampaigns: true,
 };
 
-const FARM_ALL_CATEGORIES: Pick<PlatformSettings, "farmAllCategories" | "categories"> = {
-  farmAllCategories: true,
+const FARM_ALL_CATEGORIES: Pick<PlatformSettings, "categoryMode" | "categories"> = {
+  categoryMode: "all",
   categories: [],
 };
 
@@ -45,7 +45,7 @@ function settings(overrides: {
   dropsListFilter?: ExtensionSettings["dropsListFilter"];
   farmingEligibility?: EngineSettings["farmingEligibility"];
   excludedCampaignIds?: string[];
-  categorySelection?: Pick<PlatformSettings, "farmAllCategories" | "categories">;
+  categorySelection?: Pick<PlatformSettings, "categoryMode" | "categories">;
 } = {}): ExtensionSettings {
   const base = mergeSettings(undefined);
   const categorySelection = overrides.categorySelection ?? FARM_ALL_CATEGORIES;
@@ -159,9 +159,9 @@ describe("campaignFarmable", () => {
     expect(campaignFarmable(subscriptionCampaign(), settings({ farmingEligibility: { ...ELIGIBLE_ALL, farmSubscriptionCampaigns: false } }))).toBe(false);
   });
 
-  it("is false outside the selected categories when farmAllCategories is off", () => {
+  it("is false outside the selected categories in include mode", () => {
     const c = campaign({ gameName: "Other Game" });
-    const s = settings({ categorySelection: { farmAllCategories: false, categories: [{ id: "selected-game", name: "Selected Game" }] } });
+    const s = settings({ categorySelection: { categoryMode: "include", categories: [{ id: "selected-game", name: "Selected Game" }] } });
     expect(campaignFarmable(c, s)).toBe(false);
   });
 
@@ -408,12 +408,16 @@ describe("visibility invariant: every farmable campaign stays visible", () => {
 });
 
 describe("isCampaignVisible category selection", () => {
-  const selectedOnly = {
-    farmAllCategories: false,
+  const selectedOnly: Pick<PlatformSettings, "categoryMode" | "categories"> = {
+    categoryMode: "include",
+    categories: [{ id: "selected-game", name: "Selected Game" }],
+  };
+  const allButSelected: Pick<PlatformSettings, "categoryMode" | "categories"> = {
+    categoryMode: "exclude",
     categories: [{ id: "selected-game", name: "Selected Game" }],
   };
 
-  it("hides a campaign outside the selected categories when farmAllCategories is off", () => {
+  it("hides a campaign outside the selected categories in include mode", () => {
     const c = campaign({ gameName: "Other Game" });
     expect(visible(c, { categorySelection: selectedOnly })).toBe(false);
   });
@@ -423,9 +427,27 @@ describe("isCampaignVisible category selection", () => {
     expect(visible(c, { categorySelection: selectedOnly })).toBe(true);
   });
 
-  it("shows every campaign when farmAllCategories is on regardless of the list", () => {
+  it("shows every campaign in all mode regardless of the list", () => {
     const c = campaign({ gameName: "Other Game" });
-    expect(visible(c, { categorySelection: { farmAllCategories: true, categories: [] } })).toBe(true);
+    expect(visible(c, { categorySelection: { categoryMode: "all", categories: [] } })).toBe(true);
+  });
+
+  it("inverts the same list in exclude mode", () => {
+    expect(visible(campaign({ gameName: "Selected Game" }), { categorySelection: allButSelected })).toBe(false);
+    expect(visible(campaign({ gameName: "Other Game" }), { categorySelection: allButSelected })).toBe(true);
+  });
+
+  it("shows every campaign when the exclude list is empty", () => {
+    const c = campaign({ gameName: "Other Game" });
+    expect(visible(c, { categorySelection: { categoryMode: "exclude", categories: [] } })).toBe(true);
+  });
+
+  it("keeps a claimable reward visible even when its category is excluded", () => {
+    const c = campaign({
+      gameName: "Selected Game",
+      rewards: [{ id: "reward", name: "Reward", requiredMinutes: 30, requirement: "watch", isWatchBased: true, watchedMinutes: 30, status: "claimable" }],
+    });
+    expect(visible(c, { dropsListFilter: ALL_OFF, categorySelection: allButSelected })).toBe(true);
   });
 
   it("keeps a claimable reward visible even outside the selected categories", () => {

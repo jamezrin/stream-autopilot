@@ -160,6 +160,7 @@ describe("parseCliSettings", () => {
     expect(() => parseCliSettings({ adFocusMode: "window" })).toThrow(/"adFocusMode" is an extension-only setting/);
     expect(() => parseCliSettings({ tablessMode: true })).toThrow(/"tablessMode" is an extension-only setting/);
     expect(() => parseCliSettings({ diagnosticLogging: true })).toThrow(/"diagnosticLogging" is an extension-only setting/);
+    expect(() => parseCliSettings({ githubStarNudgeStatus: "pending" })).toThrow(/"githubStarNudgeStatus" is an extension-only setting/);
   });
 
   it("accepts farmingEligibility now that it gates farming", () => {
@@ -344,5 +345,54 @@ describe("CLI settings export/import", () => {
       settings: { autoClaim: true, muteFarmingTabs: true },
     };
     expect(() => parseCliSettingsImportPayload(payload)).toThrow(/"muteFarmingTabs" is an extension-only setting/);
+  });
+});
+
+describe("category modes", () => {
+  it("accepts every valid mode and normalizes the list", () => {
+    for (const categoryMode of ["all", "include", "exclude"] as const) {
+      const settings = parseCliSettings({
+        platform: { twitch: { categoryMode, categories: [{ id: " 13 ", name: "Rust" }, { id: "13", name: "Dupe" }] } },
+      });
+      expect(settings.platform.twitch.categoryMode).toBe(categoryMode);
+      expect(settings.platform.twitch.categories).toEqual([{ id: "13", name: "Rust" }]);
+    }
+  });
+
+  it("defaults an absent mode to all", () => {
+    expect(parseCliSettings({}).platform.kick.categoryMode).toBe("all");
+    expect(DEFAULT_CLI_SETTINGS.platform.twitch.categoryMode).toBe("all");
+  });
+
+  // A typo must be an error, not a silent fall back to "all" — that would farm
+  // the whole directory instead of the subset the user configured.
+  it("rejects an unknown mode instead of defaulting it", () => {
+    expect(() => parseCliSettings({ platform: { twitch: { categoryMode: "exclude_all" } } }))
+      .toThrow(/platform\.twitch\.categoryMode/);
+    expect(() => parseCliSettings({ platform: { kick: { categoryMode: false } } }))
+      .toThrow(/platform\.kick\.categoryMode/);
+  });
+
+  it("migrates the legacy farmAllCategories boolean through the shared migration path", () => {
+    const { settings, diagnostics } = parseCliSettingsWithDiagnostics({
+      platform: {
+        twitch: { farmAllCategories: false, categories: [{ id: "13", name: "Rust" }] },
+        kick: { farmAllCategories: true },
+      },
+    });
+
+    expect(settings.platform.twitch.categoryMode).toBe("include");
+    expect(settings.platform.twitch.categories).toEqual([{ id: "13", name: "Rust" }]);
+    expect(settings.platform.kick.categoryMode).toBe("all");
+    expect(settings.platform.twitch).not.toHaveProperty("farmAllCategories");
+    expect(diagnostics.map((diagnostic) => diagnostic.path))
+      .toContain("platform.twitch.farmAllCategories");
+  });
+
+  it("rejects the legacy key as unknown once it is not the migrated shape", () => {
+    // Post-migration the key is gone, so a document that still declares it at
+    // the current schema version is a genuine unknown-key error.
+    expect(() => parseCliSettings({ schemaVersion: 5, platform: { twitch: { farmAllCategories: false } } }))
+      .toThrow(/farmAllCategories/);
   });
 });

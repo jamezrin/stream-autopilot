@@ -82,6 +82,10 @@ jobs:
       packages: write
       pull-requests: write
       statuses: write
+      # The candidate's attest job emits build provenance; a reusable workflow's permission
+      # ceiling is validated against the caller.
+      id-token: write
+      attestations: write
     uses: ./.github/workflows/build-release-candidate.yml
     with:
       ref: ${{ github.event.pull_request.head.sha }}

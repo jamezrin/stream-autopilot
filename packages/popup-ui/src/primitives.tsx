@@ -272,22 +272,25 @@ export function CompactRow({
   avatar: string;
   avatarImageUrl?: string;
   avatarStyle: React.CSSProperties;
-  index: number;
-  rankLabel: string;
-  rankCount: number;
-  onRankMove(toIndex: number): void;
+  // The rank/drag affordances are optional together: a list whose order carries
+  // no meaning (the exclude-mode category denylist) renders neither, rather than
+  // showing a rank box and a drag handle that reorder nothing.
+  index?: number;
+  rankLabel?: string;
+  rankCount?: number;
+  onRankMove?(toIndex: number): void;
   title: string;
   titleHref?: string;
   subtitle?: string;
   trailing: React.ReactNode;
-  dragHandle: React.ReactNode;
+  dragHandle?: React.ReactNode;
   isOverlay?: boolean;
   dimmed?: boolean;
 }) {
   return (
     <div className={cn("flex items-center gap-2 rounded-xl border bg-white px-2 py-2 dark:bg-zinc-900", isOverlay ? "border-transparent shadow-2xl shadow-black/25" : "border-zinc-200 shadow-sm dark:border-zinc-800", dimmed && "opacity-40")}>
       {dragHandle}
-      <RankInput index={index} count={rankCount} label={rankLabel} onMove={onRankMove} size="row" />
+      {index === undefined ? null : <RankInput index={index} count={rankCount ?? 0} label={rankLabel ?? title} onMove={onRankMove} size="row" />}
       <span
         className={cn(
           "flex h-8 w-8 shrink-0 items-center justify-center text-[11px] font-bold",

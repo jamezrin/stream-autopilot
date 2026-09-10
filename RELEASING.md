@@ -2,8 +2,8 @@
 
 Label a pull request into `main`, inspect the candidate, and merge that pull request normally. A
 generated release pull request carrying the version bump then opens against `main`; merging it starts
-publication automatically, pausing once for approval on the `production` environment. Do not create
-or move tags by hand.
+publication automatically, pausing for approval on the `production` environment. Do not create or
+move tags by hand.
 
 ## Before you start: write the changelog
 
@@ -36,10 +36,15 @@ empty entry. That intentionally permits build-only releases, but produces an emp
    generated pull request's diff is only the version bump and changelog date.
 6. Review and merge the generated `release/X.Y.Z` pull request with a **merge commit**. Squash and
    rebase are blocked on `main`; the original `develop` commit SHAs remain in `main` history.
-7. Release runs from the merged `main` commit. Approve its single `production` job. It promotes the
-   `vX.Y.Z` prerelease to the latest release, publishing the extension artifacts it already carries
-   rather than rebuilding them, then publishes GHCR, Chrome Web Store, and the production site, and
-   merges `main` directly into `develop` with the dedicated synchronization App.
+7. Release runs from the merged `main` commit. Approve its `production` publication job. It promotes
+   the `vX.Y.Z` prerelease to the latest release, publishing the extension artifacts it already
+   carries rather than rebuilding them, retags the verified `candidate-X.Y.Z` GHCR manifest by
+   digest, then publishes the Chrome Web Store and the production site.
+8. A separate `sync` job then merges `main` directly into `develop` with the dedicated
+   synchronization App, after verifying the merged tree. It is also gated on `production`, so it
+   asks for a second approval. That separation is deliberate: it verifies a tree that is not the one
+   being released, and a failure there must leave a completed release plus one retryable job rather
+   than wedge publication.
 
 `workflow_dispatch` remains on **Release** only for idempotent recovery. A successful release does
 not require a manual dispatch.
@@ -69,10 +74,11 @@ Candidate pointers are deliberately mutable:
 Every push to a labelled head rebuilds and refreshes those targets, as does every generated
 release-branch push, so the candidate always describes the commit that would be released rather
 than whichever commit was current when the label went on. Ownership metadata binds
-the candidate release to its pull request. An exact-SHA tag left behind by interrupted initial
-creation is recovered; a tag at any other SHA is rejected. Automation never modifies a stable
-release through the candidate path: promotion clears the prerelease flag, and every later candidate
-build against that tag fails.
+the candidate release to its pull request. While the candidate release object still exists, its tag
+is moved to the commit being built — that is what makes the candidate mutable. A tag left behind
+with no release object is recovered only when it points at the exact commit being published; at any
+other commit it is rejected. Automation never modifies a stable release through the candidate path:
+promotion clears the prerelease flag, and every later candidate build against that tag fails.
 
 The candidate and the stable release are the same object. `vX.Y.Z` is created during candidacy at the
 release branch head and is never moved; merging the release pull request flips it from prerelease to
@@ -114,14 +120,23 @@ Stable publication operates on the exact merged commit and is idempotent:
 - `vX.Y.Z` is created once and is never moved.
 - The signed CRX, Chrome ZIP, Firefox ZIP, Firefox source ZIP, and checksums are uploaded to the
   stable GitHub release.
-- Docker architectures are exported as checksummed OCI archives before approval. GHCR receives
-  `X.Y.Z`, `X.Y`, `X`, and `latest` only inside the approved production job; an existing `X.Y.Z`
-  digest is never replaced.
+- The GHCR `candidate-X.Y.Z` manifest built during candidacy is promoted by digest: the approved
+  production job retags that exact manifest as `X.Y.Z`, `X.Y`, `X`, and `latest`, so the published
+  image is the one the required checks passed against. Nothing is rebuilt on the normal path, and an
+  existing `X.Y.Z` digest is never replaced.
+- If that candidate image no longer exists, the approved job falls back to rebuilding checksummed
+  OCI archives from the merged commit. A rebuild is not bit-identical, so when `X.Y.Z` is already
+  published the published digest stays authoritative and only the moving aliases are re-pointed.
+- Build provenance is attested during candidacy, for the signed extension assets and for the CLI
+  image digest, and stable publication ships those same bytes. Verify a downloaded asset with
+  `gh attestation verify <file> --repo jamezrin/lurkloot`, and the image with
+  `gh attestation verify oci://ghcr.io/jamezrin/lurkloot-cli:X.Y.Z --repo jamezrin/lurkloot`.
 - Chrome Web Store receives the Chrome ZIP with `DEFAULT_PUBLISH`; Google publishes it automatically
   after review approval.
 - The production site deploys to `https://lurkloot.jamezrin.com`.
 - The owned mutable candidate release and tag are removed after the stable release exists.
-- `main` is merged directly into `develop` after local `pnpm verify` succeeds.
+- `main` is merged directly into `develop` after local `pnpm verify` succeeds, in the separate
+  `sync` job. The release is complete before it runs; nothing it does can unpublish anything.
 
 Firefox Add-ons publication remains manual. Upload the Firefox and source ZIPs from the GitHub
 release to AMO.
@@ -147,7 +162,7 @@ There are exactly two environments:
 | Environment | Approval | Credentials and purpose |
 | --- | --- | --- |
 | `preview` | none | `CRX_PRIVATE_KEY`; candidate signing, candidate GHCR, preview site |
-| `production` | `jamezrin` | CWS credentials and sync App credentials; all stable publication |
+| `production` | `jamezrin` | CWS credentials and sync App credentials; stable publication and the `develop` synchronization, approved separately |
 
 Repository secrets used from both channels remain `CLOUDFLARE_API_TOKEN` and
 `CLOUDFLARE_ACCOUNT_ID`. Variables are `CWS_PUBLISHER_ID` and `CWS_EXTENSION_ID`.
@@ -210,18 +225,29 @@ only then removes the conflicting classic protections. It refuses to run without
 
 The repository default workflow token remains read-only.
 
+Third-party actions (`pnpm/*`, `docker/*`, `cloudflare/*`) are pinned to a commit SHA with the
+version in a trailing comment. GitHub-owned `actions/*` stay tag-pinned. Renovate updates the pinned
+SHAs; do not replace one with a floating tag.
+
 ## Recovery
 
 - Preparation failure: fix the cause and remove/reapply the release label.
 - Candidate failure: re-run the failed workflow or push the corrected release branch.
 - Stable failure after merge: fix the external/configuration problem and manually dispatch
   **Release** on `main`. Matching completed steps are no-ops.
+- Release merged but never approved, then re-cut: dispatch **Release**, do not re-apply a release
+  label. `main` already carries the bump, so preparation has an empty commit and no pull request to
+  open; it detects that and comments with this instruction. The tag is fine — a still-prerelease tag
+  is moved rather than rejected — and a dispatch resolves the merged release commit and publishes
+  from it.
 - Existing stable tag at another SHA: stop and prepare a new version. Never move it.
+- Sync failure, including a `develop` tree that no longer passes `pnpm verify`: the release itself
+  is complete. Fix `develop`, then rerun the failed `sync` job alone; publication is not repeated.
 - Sync conflict: merge `main` into `develop` locally, run `pnpm verify`, and push with the dedicated
   App credential; alternatively use a one-off reviewed synchronization PR. Do not disable branch
   protection.
-- Missing App configuration: publication reports the completed stable steps and fails at sync. Add
-  the two production secrets and rerun Release.
+- Missing App configuration: the credential check is the first step of publication, so the job
+  fails before anything is published. Add the two production secrets and rerun Release.
 
 The Chrome Web Store intentionally trails the GitHub release while Google reviews the submission.
 There is no polling, cancellation, or rollback workflow.

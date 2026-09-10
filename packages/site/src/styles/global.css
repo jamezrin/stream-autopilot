@@ -364,3 +364,201 @@ hr.rule {
   background: linear-gradient(90deg, transparent, var(--line-strong), transparent);
   margin: 0;
 }
+
+/* ============================================================
+   Landing-page shell (/twitch-drops-farmer, /kick-drops-farmer,
+   and any future /twitch-drops/<game>/ page).
+
+   Deliberately the *shell* only — spacing, headings, card and
+   step chrome. Every page writes its own sections and its own
+   copy; nothing here templates content, so two pages built on
+   it do not read as the same page with the nouns swapped.
+   `--accent` is set per page (Twitch purple, Kick lime).
+   ============================================================ */
+.lp {
+  --accent: var(--purple-soft);
+  --accent-glow: var(--glow-purple);
+}
+
+.lp-hero {
+  position: relative;
+  padding: clamp(3.5rem, 9vw, 7rem) 0 clamp(2.5rem, 6vw, 4.5rem);
+  overflow: clip;
+}
+.lp-hero::before {
+  content: "";
+  position: absolute;
+  inset: -30% -10% auto -10%;
+  height: 70vh;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(60% 60% at 50% 40%, var(--accent-glow), transparent 70%);
+  opacity: 0.35;
+}
+.lp-hero h1 {
+  font-size: clamp(2.5rem, 6.4vw, 4.6rem);
+  letter-spacing: -0.045em;
+  margin: 0.7rem 0 0;
+  max-width: 18ch;
+}
+.lp-hero__lede {
+  margin-top: 1.4rem;
+  max-width: 62ch;
+  color: var(--muted);
+  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+}
+.lp-hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 2rem;
+}
+.lp-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.6rem;
+}
+
+/* A section of the page. `.act` supplies the cinematic rhythm. */
+.lp-sec {
+  border-top: 1px solid var(--line);
+  padding-block: clamp(3rem, 7vw, 5.5rem);
+  scroll-margin-top: 84px;
+}
+.lp-sec h2 {
+  font-size: clamp(1.9rem, 4vw, 2.9rem);
+  margin: 0.55rem 0 1rem;
+  max-width: 22ch;
+}
+.lp-sec h3 {
+  font-size: 1.18rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+.lp-sec p {
+  color: var(--muted);
+  max-width: 68ch;
+}
+.lp-sec p + p {
+  margin-top: 1rem;
+}
+.lp-sec a:not(.btn) {
+  color: var(--lime);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.lp-grid {
+  display: grid;
+  gap: 1rem;
+  margin-top: clamp(1.8rem, 4vw, 2.8rem);
+}
+@media (min-width: 720px) {
+  .lp-grid { grid-template-columns: repeat(2, 1fr); }
+  .lp-grid--3 { grid-template-columns: repeat(3, 1fr); }
+}
+.lp-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--ink-1), var(--ink-0));
+  padding: 1.5rem;
+}
+.lp-card p {
+  font-size: 0.97rem;
+  max-width: none;
+}
+
+.lp-steps {
+  list-style: none;
+  padding: 0;
+  margin: clamp(1.8rem, 4vw, 2.8rem) 0 0;
+  display: grid;
+  gap: 1.6rem;
+  counter-reset: lp-step;
+}
+@media (min-width: 820px) {
+  .lp-steps { grid-template-columns: repeat(3, 1fr); gap: 2.2rem; }
+}
+.lp-steps li {
+  counter-increment: lp-step;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--line-strong);
+}
+.lp-steps li::before {
+  content: counter(lp-step, decimal-leading-zero);
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--accent);
+  margin-bottom: 0.6rem;
+}
+.lp-steps p { font-size: 0.97rem; max-width: 38ch; }
+
+/* Checklist of concrete behaviors — reads faster than prose for "what it does". */
+.lp-list {
+  list-style: none;
+  padding: 0;
+  margin: 1.2rem 0 0;
+  display: grid;
+  gap: 0.65rem;
+  color: var(--muted);
+  max-width: 68ch;
+}
+.lp-list li {
+  position: relative;
+  padding-left: 1.6rem;
+}
+.lp-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+/* Sibling-platform cross-link band. */
+.lp-cross {
+  border-top: 1px solid var(--line);
+  padding-block: clamp(2.5rem, 6vw, 4rem);
+}
+.lp-cross__inner {
+  display: grid;
+  gap: 1.2rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: clamp(1.5rem, 4vw, 2.4rem);
+  background: linear-gradient(120deg, var(--ink-1), var(--ink-0));
+}
+@media (min-width: 760px) {
+  .lp-cross__inner {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+}
+.lp-cross h2 {
+  font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+  margin-bottom: 0.5rem;
+}
+.lp-cross p { color: var(--muted); max-width: 60ch; }
+
+/* Inline path/command literals inside a landing-page section. */
+.lp-code {
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+  padding: 0.35em 0.7em;
+  border-radius: 8px;
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+
+/* BrowserPills centers itself; left-align it under the section copy. */
+.lp-browsers {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 1.8rem;
+}

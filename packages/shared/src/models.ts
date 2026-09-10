@@ -35,6 +35,10 @@ export interface ClaimGuidance {
 // the user either rates or dismisses it, after which it never shows again.
 export type RateNudgeStatus = "pending" | "rated" | "dismissed";
 
+// Lifecycle of the one-time GitHub star nudge. "pending" until the user either
+// stars or dismisses it, after which it never shows again.
+export type GithubStarNudgeStatus = "pending" | "starred" | "dismissed";
+
 export interface DropReward {
   id: string;
   name: string;
@@ -153,6 +157,13 @@ export interface WatchSession {
   lastHeartbeatAt?: string;
   lastHeartbeatOk?: boolean;
   heartbeatChecks?: number;
+  tablessHeartbeat?: TablessHeartbeatCadence;
+}
+
+export interface TablessHeartbeatCadence {
+  generation: number;
+  contextKey: string;
+  nextDueAt: string;
 }
 
 export type WatchReasonCode =
@@ -215,6 +226,7 @@ export interface ManualWatchState {
   tabId: number;
   checkedAt: string;
   active: boolean;
+  channel?: ChannelCandidate;
 }
 
 export type PriorityMode = "ending_soonest" | "lowest_availability" | "priority_list_only";
@@ -263,14 +275,20 @@ export interface CategorySelection {
   imageUrl?: string;
 }
 
+// How `categories` is interpreted. One list serves all three modes, so the
+// user's selection survives every mode switch untouched:
+// - "all": every category is farmable; the list is retained but inactive.
+// - "include": only listed categories are farmed (an empty list farms nothing).
+//   List order sets farming priority (see categoryPriorityScore).
+// - "exclude": every category except the listed ones is farmed (an empty list
+//   is equivalent to "all"). List order has no scheduling effect.
+export type CategoryMode = "all" | "include" | "exclude";
+
 export interface PlatformSettings {
   enabled: boolean;
   idleWatchlistChannels: string[];
   excludedChannels?: string[];
-  // When true, every category is farmable. When false, only `categories` are
-  // farmed (an empty list then means nothing is farmed). The list is ordered:
-  // order sets farming priority (see categoryPriorityScore in the scheduler).
-  farmAllCategories: boolean;
+  categoryMode: CategoryMode;
   categories: CategorySelection[];
 }
 
@@ -396,10 +414,18 @@ export interface ExtensionSettings extends EngineSettings {
   adFocusMode: AdFocusMode;
   languageOverride: LanguageOverride;
   rateNudgeStatus: RateNudgeStatus;
+  githubStarNudgeStatus: GithubStarNudgeStatus;
   showTips: boolean;
   // Extension-only persistence policy. Normal farming activity is always
   // recorded; this opt-in adds lower-level technical diagnostics.
   diagnosticLogging: boolean;
+  // Shows a Lurkloot button on twitch.tv/kick.com that opens the popup in a
+  // draggable panel on the page. On by default, despite injecting UI into a
+  // site the user did not ask us to change: the feature exists for people who
+  // do not pin the extension and find the toolbar popup awkward to reach, and
+  // gating it behind a toggle *inside that popup* would only ever reach the
+  // people who already open it comfortably.
+  showInPagePanel: boolean;
 }
 
 export interface SchedulerState {
@@ -418,12 +444,19 @@ export interface SchedulerState {
   // Persisted because adapters are rebuilt every tick, so an in-memory throttle
   // would never survive to the next one.
   gamification?: Partial<Record<Platform, { lastCheckedAt: string }>>;
+  campaignSearchBackoffs?: Partial<Record<Platform, CampaignSearchBackoff>>;
   campaigns: Record<Platform, DropCampaign[]>;
   deadlineInfeasibleRewardIds?: Partial<Record<Platform, string[]>>;
   lastTickAt?: string;
   // ISO timestamp recorded once by the background on install; drives the
   // time-based rate/review nudge. Undefined means "unknown" (pre-feature state).
   installedAt?: string;
+}
+
+export interface CampaignSearchBackoff {
+  campaignId: string;
+  retryAt: string;
+  fingerprint: string;
 }
 
 export interface WatchDecision {

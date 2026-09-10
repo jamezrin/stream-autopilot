@@ -1,16 +1,24 @@
 ---
 import "../styles/global.css";
 import { EXTERNAL_URLS, SITE } from "../consts";
-import { faqItems } from "../faq";
+import type { FaqItem } from "../faq";
 
 interface Props {
   title?: string;
   description?: string;
+  // FAQPage schema is emitted only for pages that actually render these
+  // questions. It used to be layout-global, which put the homepage FAQ into
+  // /privacy and /changelog too — schema describing content not on the page.
+  faq?: FaqItem[];
+  // Trail for BreadcrumbList schema, homepage first, current page last.
+  breadcrumbs?: { name: string; href: string }[];
 }
 
 const {
   title = `${SITE.name} — ${SITE.tagline}`,
   description = SITE.description,
+  faq,
+  breadcrumbs,
 } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site).href.replace(/\/$/, "");
@@ -18,7 +26,10 @@ const ogImage = `${SITE.url}/og.png`;
 // Base-aware prefix for static files in /public (works at "/" or a sub-path).
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-// Structured data: a free browser extension + the FAQ (both eligible for rich results).
+// Structured data: a free browser extension. `softwareVersion` is derived from
+// the released workspace version rather than hardcoded — the release flow keeps
+// the root package.json in step with every published manifest (see
+// `packagePaths` in scripts/release.mjs), so this cannot drift.
 const softwareLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
@@ -28,20 +39,38 @@ const softwareLd = {
   description: SITE.description,
   url: SITE.url,
   downloadUrl: EXTERNAL_URLS.chrome,
-  softwareVersion: "1.0",
+  softwareVersion: SITE.version,
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   author: { "@type": "Person", name: "jamezrin" },
 };
 
-const faqLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: faqItems.map((item) => ({
-    "@type": "Question",
-    name: item.q,
-    acceptedAnswer: { "@type": "Answer", text: item.a },
-  })),
-};
+// FAQPage rarely earns a rich result any more (Google restricted it to
+// authoritative government/health sites), so treat it as semantic markup that
+// describes the questions on this page — not as a SERP feature to chase.
+const faqLd = faq?.length
+  ? {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faq.map((item) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: { "@type": "Answer", text: item.a },
+      })),
+    }
+  : undefined;
+
+const breadcrumbLd = breadcrumbs?.length
+  ? {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: breadcrumbs.map((crumb, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        name: crumb.name,
+        item: new URL(crumb.href, SITE.url).href.replace(/\/$/, ""),
+      })),
+    }
+  : undefined;
 ---
 
 <!doctype html>
@@ -51,7 +80,6 @@ const faqLd = {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="keywords" content={SITE.keywords} />
     <meta name="author" content="jamezrin" />
     <meta name="theme-color" content="#060609" />
     <meta name="color-scheme" content="dark" />
@@ -79,7 +107,8 @@ const faqLd = {
     <link rel="sitemap" href={`${base}/sitemap-index.xml`} />
 
     <script type="application/ld+json" set:html={JSON.stringify(softwareLd)} is:inline />
-    <script type="application/ld+json" set:html={JSON.stringify(faqLd)} is:inline />
+    {breadcrumbLd && <script type="application/ld+json" set:html={JSON.stringify(breadcrumbLd)} is:inline />}
+    {faqLd && <script type="application/ld+json" set:html={JSON.stringify(faqLd)} is:inline />}
   </head>
   <body>
     <slot />

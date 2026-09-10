@@ -1,9 +1,11 @@
-import type { AdFocusMode, CategorySelection, CompatibilitySettings, EngineSettings, ExtensionSettings, KickPlatformSettings, LanguageOverride, Platform, PriorityMode, RateNudgeStatus, SupportedLocale, TwitchPlatformSettings } from "./models";
+import type { AdFocusMode, CategoryMode, CategorySelection, CompatibilitySettings, EngineSettings, ExtensionSettings, GithubStarNudgeStatus, KickPlatformSettings, LanguageOverride, Platform, PriorityMode, RateNudgeStatus, SupportedLocale, TwitchPlatformSettings } from "./models";
 
 const FARMING_PLATFORMS: Platform[] = ["twitch", "kick"];
 const AD_FOCUS_MODES: AdFocusMode[] = ["none", "tab", "window"];
 const PRIORITY_MODES: PriorityMode[] = ["ending_soonest", "lowest_availability", "priority_list_only"];
 const RATE_NUDGE_STATUSES: RateNudgeStatus[] = ["pending", "rated", "dismissed"];
+const GITHUB_STAR_NUDGE_STATUSES: GithubStarNudgeStatus[] = ["pending", "starred", "dismissed"];
+export const CATEGORY_MODES: CategoryMode[] = ["all", "include", "exclude"];
 export const SUPPORTED_LOCALES: SupportedLocale[] = ["en", "es", "fr", "it", "ru", "de", "zh_CN", "hi", "pt_BR", "ar", "tr"];
 const LANGUAGE_OVERRIDES: LanguageOverride[] = ["browser", ...SUPPORTED_LOCALES];
 
@@ -36,7 +38,7 @@ export const DEFAULT_ENGINE_SETTINGS: EngineSettings = {
       enabled: false,
       idleWatchlistChannels: [],
       excludedChannels: [],
-      farmAllCategories: true,
+      categoryMode: "all",
       categories: [],
       autoClaimChannelPoints: true,
       strictCampaignAvailability: false,
@@ -45,7 +47,7 @@ export const DEFAULT_ENGINE_SETTINGS: EngineSettings = {
       enabled: false,
       idleWatchlistChannels: [],
       excludedChannels: [],
-      farmAllCategories: true,
+      categoryMode: "all",
       categories: [],
       autoClaimChallenges: true,
     },
@@ -104,6 +106,7 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   adFocusMode: "window",
   languageOverride: "browser",
   rateNudgeStatus: "pending",
+  githubStarNudgeStatus: "pending",
   showTips: true,
   // On by default: diagnostics only capture after they are enabled, so leaving
   // this off meant the first occurrence of any bug — the one being reported —
@@ -113,6 +116,7 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   // installs are unaffected: they have persisted an explicit value already, and
   // no migration overrides it.
   diagnosticLogging: true,
+  showInPagePanel: true,
 };
 
 // Normalizes the universal engine contract. The engine (packages/core) and any
@@ -140,7 +144,7 @@ export function mergeEngineSettings(value: Partial<EngineSettings> | undefined):
         enabled: booleanOr(platform?.twitch?.enabled, DEFAULT_ENGINE_SETTINGS.platform.twitch.enabled),
         idleWatchlistChannels: normalizeChannelList(platform?.twitch?.idleWatchlistChannels),
         excludedChannels: normalizeChannelList(platform?.twitch?.excludedChannels),
-        farmAllCategories: booleanOr(platform?.twitch?.farmAllCategories, DEFAULT_ENGINE_SETTINGS.platform.twitch.farmAllCategories),
+        categoryMode: normalizeCategoryMode(platform?.twitch?.categoryMode),
         categories: normalizeCategorySelections(platform?.twitch?.categories),
         autoClaimChannelPoints: booleanOr(platform?.twitch?.autoClaimChannelPoints, DEFAULT_ENGINE_SETTINGS.platform.twitch.autoClaimChannelPoints),
         strictCampaignAvailability: booleanOr(platform?.twitch?.strictCampaignAvailability, DEFAULT_ENGINE_SETTINGS.platform.twitch.strictCampaignAvailability),
@@ -149,7 +153,7 @@ export function mergeEngineSettings(value: Partial<EngineSettings> | undefined):
         enabled: booleanOr(platform?.kick?.enabled, DEFAULT_ENGINE_SETTINGS.platform.kick.enabled),
         idleWatchlistChannels: normalizeChannelList(platform?.kick?.idleWatchlistChannels),
         excludedChannels: normalizeChannelList(platform?.kick?.excludedChannels),
-        farmAllCategories: booleanOr(platform?.kick?.farmAllCategories, DEFAULT_ENGINE_SETTINGS.platform.kick.farmAllCategories),
+        categoryMode: normalizeCategoryMode(platform?.kick?.categoryMode),
         categories: normalizeCategorySelections(platform?.kick?.categories),
         autoClaimChallenges: booleanOr(platform?.kick?.autoClaimChallenges, DEFAULT_ENGINE_SETTINGS.platform.kick.autoClaimChallenges),
       },
@@ -207,8 +211,12 @@ export function mergeSettings(value: Partial<ExtensionSettings> | undefined): Ex
     rateNudgeStatus: RATE_NUDGE_STATUSES.includes(value?.rateNudgeStatus as RateNudgeStatus)
       ? (value!.rateNudgeStatus as RateNudgeStatus)
       : DEFAULT_SETTINGS.rateNudgeStatus,
+    githubStarNudgeStatus: GITHUB_STAR_NUDGE_STATUSES.includes(value?.githubStarNudgeStatus as GithubStarNudgeStatus)
+      ? (value!.githubStarNudgeStatus as GithubStarNudgeStatus)
+      : DEFAULT_SETTINGS.githubStarNudgeStatus,
     showTips: booleanOr(value?.showTips, DEFAULT_SETTINGS.showTips),
     diagnosticLogging: booleanOr(value?.diagnosticLogging, DEFAULT_SETTINGS.diagnosticLogging),
+    showInPagePanel: booleanOr(value?.showInPagePanel, DEFAULT_SETTINGS.showInPagePanel),
   };
 }
 
@@ -289,6 +297,13 @@ function httpsUrlOrUndefined(value: unknown): string | undefined {
   } catch {
     return undefined;
   }
+}
+
+// Exported so the CLI validates the mode exactly as the engine does rather than
+// duplicating the allowed values. An absent or invalid mode defaults to "all",
+// which is also what the pre-mode `farmAllCategories: true` default meant.
+export function normalizeCategoryMode(value: unknown): CategoryMode {
+  return CATEGORY_MODES.includes(value as CategoryMode) ? (value as CategoryMode) : "all";
 }
 
 export function normalizeCategorySelections(value: CategorySelection[] | undefined): CategorySelection[] {

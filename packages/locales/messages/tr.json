@@ -62,9 +62,6 @@
   "settingsSearchNoResults": {
     "message": "“$1” ile ilgili ayar bulunamadı."
   },
-  "settingsPlatformSettingsTitle": {
-    "message": "Platform ve kategoriler/oyunlar"
-  },
   "settingsPlatformSettings": {
     "message": "$1 ayarları"
   },
@@ -154,6 +151,12 @@
   },
   "hideTipsDescription": {
     "message": "Ana ekrandaki ipuçlarını gizler."
+  },
+  "inPagePanelTitle": {
+    "message": "Twitch ve Kick'te paneli göster"
+  },
+  "inPagePanelDescription": {
+    "message": "twitch.tv ve kick.com sitelerine, bu açılır pencereyi sayfa üzerinde bir panel olarak açan bir Lurkloot düğmesi ekler."
   },
   "tipCampaignPriority": {
     "message": "Aktif kampanyalar yedek listenizden önceliklidir. Sıralamayı değiştirmek için sürükleyin."
@@ -464,9 +467,6 @@
   "platformSettingsTitle": {
     "message": "Platform Ayarları"
   },
-  "platformSettingsDescription": {
-    "message": "Twitch ve Kick özel ayarları."
-  },
   "farmingTabsTitle": {
     "message": "Sekme Yönetimi"
   },
@@ -539,6 +539,21 @@
   "settingsGroupAdvanced": {
     "message": "Gelişmiş"
   },
+  "settingsGroupPlatformAdvanced": {
+    "message": "Gelişmiş ve uyumluluk"
+  },
+  "twitchSectionDescription": {
+    "message": "Kanal puanları, kategori filtresi, hariç tutulan kanallar ve Twitch uyumluluğu."
+  },
+  "kickSectionDescription": {
+    "message": "Günlük görevler, kategori filtresi, hariç tutulan kanallar ve Kick uyumluluğu."
+  },
+  "twitchAdvancedDescription": {
+    "message": "Kampanya uygunluğu ve Lurkloot'un kullandığı sinyal ile envanter aktarımları. Bunları yalnızca Twitch çalışmayı bıraktığında değiştirin."
+  },
+  "kickAdvancedDescription": {
+    "message": "Lurkloot'un Kick ödül bağlantılarını nasıl açtığı ve bunun ardındaki davranış profili. Bunları yalnızca Kick çalışmayı bıraktığında değiştirin."
+  },
   "schedulerIntervalTitle": {
     "message": "Yenileme sıklığı"
   },
@@ -587,24 +602,60 @@
   "insufficientTimeRemaining": {
     "message": "Yeterli süre kalmadı"
   },
-  "campaignRejectionExcluded": { "message": "Bu kampanya farmlamadan hariç tutuldu." },
-  "campaignRejectionUpcoming": { "message": "Bu kampanya henüz başlamadı." },
-  "campaignRejectionExpired": { "message": "Bu kampanya sona erdi." },
-  "campaignRejectionCompleted": { "message": "Bu kampanyadaki tüm ödüller tamamlandı." },
-  "campaignRejectionUnlinkedDisabled": { "message": "Bağlı hesap olmadan kampanya farmlama kapalı." },
-  "campaignRejectionTwitchLinkRequired": { "message": "Bu Twitch kampanyası için hesap bağlamak gerekir." },
-  "campaignRejectionSubscriptionDisabled": { "message": "Abonelik kampanyalarını farmlama kapalı." },
-  "campaignRejectionCategoryFiltered": { "message": "Bu kampanya seçili kategorilerle eşleşmiyor." },
-  "campaignRejectionPriorityNotSelected": { "message": "Bu kampanya öncelik listesinde değil." },
-  "campaignRejectionNoRewards": { "message": "Bu kampanyada farmlanabilir ödül yok." },
-  "campaignRejectionNoUnclaimedRewards": { "message": "Bu kampanyada alınmamış ödül yok." },
-  "campaignRejectionPrerequisites": { "message": "$1 önceki bir ödülü veya gereksinimi bekliyor." },
-  "campaignRejectionRewardNotStarted": { "message": "$1 henüz kullanılamıyor." },
-  "campaignRejectionRewardWindowEnded": { "message": "$1 artık kullanılamıyor." },
-  "campaignRejectionInsufficientTime": { "message": "$1 son tarihten önce tamamlanamaz." },
-  "campaignRejectionSubscriptionRequired": { "message": "$1 uygun bir abonelik gerektiriyor." },
-  "campaignRejectionActionRequired": { "message": "$1 izlemek dışında bir işlem gerektiriyor." },
-  "campaignRejectionNoFarmableReward": { "message": "Bu kampanyada şu anda farmlanabilecek ödül yok." },
+  "campaignRejectionExcluded": {
+    "message": "Bu kampanya farmlamadan hariç tutuldu."
+  },
+  "campaignRejectionUpcoming": {
+    "message": "Bu kampanya henüz başlamadı."
+  },
+  "campaignRejectionExpired": {
+    "message": "Bu kampanya sona erdi."
+  },
+  "campaignRejectionCompleted": {
+    "message": "Bu kampanyadaki tüm ödüller tamamlandı."
+  },
+  "campaignRejectionUnlinkedDisabled": {
+    "message": "Bağlı hesap olmadan kampanya farmlama kapalı."
+  },
+  "campaignRejectionTwitchLinkRequired": {
+    "message": "Bu Twitch kampanyası için hesap bağlamak gerekir."
+  },
+  "campaignRejectionSubscriptionDisabled": {
+    "message": "Abonelik kampanyalarını farmlama kapalı."
+  },
+  "campaignRejectionCategoryFiltered": {
+    "message": "Bu kampanya seçili kategorilerle eşleşmiyor."
+  },
+  "campaignRejectionPriorityNotSelected": {
+    "message": "Bu kampanya öncelik listesinde değil."
+  },
+  "campaignRejectionNoRewards": {
+    "message": "Bu kampanyada farmlanabilir ödül yok."
+  },
+  "campaignRejectionNoUnclaimedRewards": {
+    "message": "Bu kampanyada alınmamış ödül yok."
+  },
+  "campaignRejectionPrerequisites": {
+    "message": "$1 önceki bir ödülü veya gereksinimi bekliyor."
+  },
+  "campaignRejectionRewardNotStarted": {
+    "message": "$1 henüz kullanılamıyor."
+  },
+  "campaignRejectionRewardWindowEnded": {
+    "message": "$1 artık kullanılamıyor."
+  },
+  "campaignRejectionInsufficientTime": {
+    "message": "$1 son tarihten önce tamamlanamaz."
+  },
+  "campaignRejectionSubscriptionRequired": {
+    "message": "$1 uygun bir abonelik gerektiriyor."
+  },
+  "campaignRejectionActionRequired": {
+    "message": "$1 izlemek dışında bir işlem gerektiriyor."
+  },
+  "campaignRejectionNoFarmableReward": {
+    "message": "Bu kampanyada şu anda farmlanabilecek ödül yok."
+  },
   "automationSectionTitle": {
     "message": "Otomasyon"
   },
@@ -650,11 +701,26 @@
   "settingsGroupCategories": {
     "message": "Kategoriler"
   },
-  "farmAllCategoriesTitle": {
-    "message": "Tüm oyunlarda/kategorilerde topla"
+  "categoryModeTitle": {
+    "message": "Kategori filtresi"
   },
-  "farmAllCategoriesDescription": {
-    "message": "$1 platformundaki tüm kategorilerde çalışır. Sadece belli oyunları seçmek için kapatın."
+  "categoryModeDescription": {
+    "message": "Tüm $1 kategorilerini toplayın, yalnızca seçtiklerinizi dahil edin ya da onları hariç tutun."
+  },
+  "categoryModeAll": {
+    "message": "Tüm kategoriler"
+  },
+  "categoryModeInclude": {
+    "message": "Yalnızca seçilenler"
+  },
+  "categoryModeExclude": {
+    "message": "Seçilenler dışındaki tümü"
+  },
+  "includeCategoriesInstruction": {
+    "message": "$1 üzerinde yalnızca bu kategoriler toplanır."
+  },
+  "excludeCategoriesInstruction": {
+    "message": "$1 üzerinde bunlar dışındaki tüm kategoriler toplanır."
   },
   "categoriesToFarm": {
     "message": "Seçili kategoriler"
@@ -664,6 +730,9 @@
   },
   "noCategoriesSelected": {
     "message": "Kategori seçilmedi. $1 üzerinde işlem yapılmayacak."
+  },
+  "noCategoriesExcluded": {
+    "message": "Hiçbir kategori hariç tutulmadı: tüm $1 kategorileri toplanacak. Atlamak için aşağıdan kategori ekleyin."
   },
   "hasActiveDrops": {
     "message": "Aktif droplar var"
@@ -771,7 +840,7 @@
     "message": "Sadece drop değil."
   },
   "screenshotExtrasSubcopy": {
-    "message": "Kanal puanları ve Kick görevleri de senin için teslim. Kasacak bir şey kalmayınca idle izleme listesi."
+    "message": "Kanal puanları, Kick görevleri ve 2 dakikalık droplar da senin için teslim. Kasacak bir şey kalmayınca idle izleme listesi."
   },
   "screenshotExtrasPointsName": {
     "message": "Kanal puanları"
@@ -790,6 +859,12 @@
   },
   "screenshotExtrasWatchlistMeta": {
     "message": "Kampanyalar arasında yayıncılarını izler"
+  },
+  "screenshotExtrasFlashName": {
+    "message": "2 dakikalık droplar"
+  },
+  "screenshotExtrasFlashMeta": {
+    "message": "Kick · çıkar çıkmaz"
   },
   "screenshotEasyEyebrow": {
     "message": "Kullanması kolay"
@@ -839,6 +914,33 @@
   "screenshotUpdatedSubcopy": {
     "message": "Twitch ve Kick değişince sık sürümler — fikirlere ve iyileştirmelere açık."
   },
+  "screenshotUpdatedBrowsersTitle": {
+    "message": "Chromium tabanlı tarayıcılar"
+  },
+  "screenshotUpdatedBrowsersSub": {
+    "message": "Chrome Web Store kaydı. Aynı eklenti."
+  },
+  "screenshotUpdatedHeadlessTitle": {
+    "message": "CLI"
+  },
+  "screenshotUpdatedHeadlessSub": {
+    "message": "Arayüzsüz. Aynı motor."
+  },
+  "screenshotUpdatedDockerTitle": {
+    "message": "Docker"
+  },
+  "screenshotUpdatedDockerSub": {
+    "message": "Aynı motor. Konteynerde."
+  },
+  "screenshotUpdatedLicense": {
+    "message": "Apache-2.0"
+  },
+  "screenshotUpdatedRating": {
+    "message": "4.9"
+  },
+  "screenshotUpdatedUsers": {
+    "message": "1.000+ kullanıcı"
+  },
   "autoClaimReady": {
     "message": "Otomatik alma aktif"
   },
@@ -886,6 +988,15 @@
   },
   "rateNudgeDismiss": {
     "message": "Daha sonra"
+  },
+  "githubStarNudgeTitle": {
+    "message": "Lurkloot açık kaynaklıdır"
+  },
+  "githubStarNudgeBody": {
+    "message": "İşine yaradıysa GitHub yıldızı, başkalarının onu bulmasına yardımcı olur. Katkılarınız beklenir, özellikle özellikler ve çeviriler için."
+  },
+  "githubStarNudgeAction": {
+    "message": "GitHub'da yıldızla"
   },
   "removeItem": {
     "message": "$1 öğesini sil"
@@ -1133,9 +1244,6 @@
   "diagnosticsViewTab": {
     "message": "Teknik detaylar"
   },
-  "settingsGroupCompatibility": {
-    "message": "Uyumluluk"
-  },
   "compatibilityAutomatic": {
     "message": "Otomatik"
   },
@@ -1294,5 +1402,14 @@
   },
   "manualWatchPauseDetail": {
     "message": "Bir yayını kendiniz izlerken farm duraklatılır. Bir sonraki kontrolde farmın otomatik olarak devam etmesi için yayını duraklatın, kapatın veya bu sekmeden başka bir yere geçin."
+  },
+  "reorderItem": {
+    "message": "$1 sırasını değiştir"
+  },
+  "scrollRewardsLeft": {
+    "message": "Ödülleri sola kaydır"
+  },
+  "scrollRewardsRight": {
+    "message": "Ödülleri sağa kaydır"
   }
 }

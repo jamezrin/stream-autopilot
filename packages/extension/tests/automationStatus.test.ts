@@ -209,36 +209,27 @@ describe("automation authentication presentation", () => {
       });
 
       expect(result.state).toBe("paused");
-      expect(result.statusMessage).toBeUndefined();
+      expect(result).not.toHaveProperty("statusMessage");
     },
   );
 
-  it("does not derive lifecycle from a starting display message", () => {
+  it.each([
+    "Keeping already committed snapshot selection",
+    "Snapshot selection discarded stale lifecycle work (revision=42)",
+  ])("does not expose internal scheduler detail to a running platform: %s", (message) => {
     const result = automationPresentation({
       platform: "twitch",
       enabled: true,
       pending: false,
       authHealth: health("healthy"),
-      session: session("idle", "Starting automation", "no_eligible_channel"),
+      session: session("idle", message, "no_eligible_channel"),
     });
 
     expect(result).toMatchObject({
       state: "running",
       badgeKey: "automationRunning",
-      statusMessage: "Starting automation",
     });
-  });
-
-  it("preserves compatible settled scheduler detail for a running platform", () => {
-    expect(automationPresentation({
-      platform: "twitch",
-      enabled: true,
-      pending: false,
-      authHealth: health("healthy"),
-      session: session("idle", "Waiting for an eligible stream", "no_eligible_channel"),
-    })).toMatchObject({
-      state: "running",
-      statusMessage: "Waiting for an eligible stream",
-    });
+    expect(result).not.toHaveProperty("statusMessage");
+    expect(JSON.stringify(result)).not.toContain(message);
   });
 });
