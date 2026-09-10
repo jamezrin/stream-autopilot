@@ -494,6 +494,10 @@
   "failuresSuffix": {
     "message": "errori"
   },
+  "kickPageContextRecoverySuccessesTitle": { "message": "Ripristino della pagina di riserva Kick" },
+  "kickPageContextRecoverySuccessesDescription": { "message": "Chiude una pagina di riserva Kick aperta dall’estensione dopo questo numero di cicli di aggiornamento riusciti." },
+  "kickPageContextRecoverySuccessesDisabledReason": { "message": "Abilita Kick per modificare questa impostazione." },
+  "cyclesSuffix": { "message": "cicli" },
   "autoCloseTabsTitle": {
     "message": "Chiudi automaticamente le schede di farming"
   },

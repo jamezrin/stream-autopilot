@@ -494,6 +494,10 @@
   "failuresSuffix": {
     "message": "hata"
   },
+  "kickPageContextRecoverySuccessesTitle": { "message": "Kick yedek sayfa kurtarma" },
+  "kickPageContextRecoverySuccessesDescription": { "message": "Uzantının açtığı Kick yedek sayfasını bu sayıda başarılı yenileme döngüsünden sonra kapatır." },
+  "kickPageContextRecoverySuccessesDisabledReason": { "message": "Bu ayarı değiştirmek için Kick’i etkinleştirin." },
+  "cyclesSuffix": { "message": "döngü" },
   "autoCloseTabsTitle": {
     "message": "Gereksiz sekmeleri kapat"
   },

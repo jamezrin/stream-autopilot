@@ -494,6 +494,10 @@
   "failuresSuffix": {
     "message": "сбоев"
   },
+  "kickPageContextRecoverySuccessesTitle": { "message": "Восстановление резервной страницы Kick" },
+  "kickPageContextRecoverySuccessesDescription": { "message": "Закрывать открытую расширением резервную страницу Kick после указанного числа успешных циклов обновления." },
+  "kickPageContextRecoverySuccessesDisabledReason": { "message": "Включите Kick, чтобы изменить эту настройку." },
+  "cyclesSuffix": { "message": "циклов" },
   "autoCloseTabsTitle": {
     "message": "Автозакрытие вкладок фарма"
   },

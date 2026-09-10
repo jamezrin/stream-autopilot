@@ -494,6 +494,10 @@
   "failuresSuffix": {
     "message": "Fehler"
   },
+  "kickPageContextRecoverySuccessesTitle": { "message": "Wiederherstellung der Kick-Ausweichseite" },
+  "kickPageContextRecoverySuccessesDescription": { "message": "Schließt eine von der Erweiterung geöffnete Kick-Ausweichseite nach dieser Anzahl erfolgreicher Aktualisierungszyklen." },
+  "kickPageContextRecoverySuccessesDisabledReason": { "message": "Aktiviere Kick, um diese Einstellung zu ändern." },
+  "cyclesSuffix": { "message": "Zyklen" },
   "autoCloseTabsTitle": {
     "message": "Farming-Tabs automatisch schließen"
   },

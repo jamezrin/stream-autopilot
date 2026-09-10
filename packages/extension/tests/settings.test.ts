@@ -147,6 +147,11 @@ describe("settings", () => {
     expect(mergeSettings({ pollIntervalMinutes: Number.NaN, offlineRetryLimit: Number.NaN }).pollIntervalMinutes)
       .toBe(DEFAULT_SETTINGS.pollIntervalMinutes);
     expect(mergeSettings({ offlineRetryLimit: Number.NaN }).offlineRetryLimit).toBe(DEFAULT_SETTINGS.offlineRetryLimit);
+    expect(mergeSettings({}).kickPageContextRecoverySuccesses).toBe(3);
+    expect(mergeSettings({ kickPageContextRecoverySuccesses: 0 } as never).kickPageContextRecoverySuccesses).toBe(1);
+    expect(mergeSettings({ kickPageContextRecoverySuccesses: 11 } as never).kickPageContextRecoverySuccesses).toBe(10);
+    expect(mergeSettings({ kickPageContextRecoverySuccesses: 4.6 } as never).kickPageContextRecoverySuccesses).toBe(5);
+    expect(mergeSettings({ kickPageContextRecoverySuccesses: Number.NaN } as never).kickPageContextRecoverySuccesses).toBe(3);
 
     expect(DEFAULT_ENGINE_SETTINGS.tablessFallbackFailureLimit).toBe(5);
     expect(mergeEngineSettings({}).tablessFallbackFailureLimit).toBe(5);

@@ -494,6 +494,10 @@
   "failuresSuffix": {
     "message": "fallos"
   },
+  "kickPageContextRecoverySuccessesTitle": { "message": "Recuperación de la página auxiliar de Kick" },
+  "kickPageContextRecoverySuccessesDescription": { "message": "Cierra una página auxiliar de Kick abierta por la extensión tras este número de ciclos de actualización correctos." },
+  "kickPageContextRecoverySuccessesDisabledReason": { "message": "Activa Kick para cambiar este ajuste." },
+  "cyclesSuffix": { "message": "ciclos" },
   "autoCloseTabsTitle": {
     "message": "Cerrar pestañas de farmeo automáticamente"
   },

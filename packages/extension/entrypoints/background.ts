@@ -10,8 +10,7 @@ import {
   fetchKickInBackground,
   fetchTwitchInBackground,
   openPinnedMutedTab,
-  recordManagedPageContextBackgroundSuccess,
-  recordManagedPageContextFallback,
+  reconcileManagedPageContextRecovery,
   stopManagedPageContextTabs,
   stopWatchTab,
 } from "../src/core/tabs";
@@ -121,8 +120,6 @@ function createExtensionAdapter(platform: Platform, emit: EventEmitter, settings
           emit,
           openReason: "background_rejected",
         }),
-        onBackgroundSuccess: (host, operationEmit) => recordManagedPageContextBackgroundSuccess(host, operationEmit),
-        onPageFallback: (host, operationEmit) => recordManagedPageContextFallback(host, operationEmit),
       }),
       watchTabPort,
       createBrowserWebSocket,
@@ -175,6 +172,13 @@ const controller = createBackgroundController<ExtensionSettings>({
   loadTwitchIntegrity,
   saveTwitchIntegrity,
   stopPageContextTabs: (contexts, options) => stopManagedPageContextTabs(contexts, options),
+  reconcilePageContextRecovery: (platform, observation, settings, emit) =>
+    reconcileManagedPageContextRecovery(
+      platform,
+      observation,
+      settings.kickPageContextRecoverySuccesses,
+      emit,
+    ),
   createAdapter: createExtensionAdapter,
   createAdapters: (emit, settings) => {
     const twitch = createExtensionAdapter("twitch", emit, settings);

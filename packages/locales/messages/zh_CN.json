@@ -494,6 +494,10 @@
   "failuresSuffix": {
     "message": "次失败"
   },
+  "kickPageContextRecoverySuccessesTitle": { "message": "Kick 后备页面恢复" },
+  "kickPageContextRecoverySuccessesDescription": { "message": "在达到此成功刷新周期数后，关闭扩展打开的 Kick 后备页面。" },
+  "kickPageContextRecoverySuccessesDisabledReason": { "message": "启用 Kick 后可更改此设置。" },
+  "cyclesSuffix": { "message": "个周期" },
   "autoCloseTabsTitle": {
     "message": "自动关闭挂机标签页"
   },

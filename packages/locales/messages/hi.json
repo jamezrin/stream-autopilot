@@ -494,6 +494,10 @@
   "failuresSuffix": {
     "message": "विफलताएँ"
   },
+  "kickPageContextRecoverySuccessesTitle": { "message": "Kick फ़ॉलबैक पेज रिकवरी" },
+  "kickPageContextRecoverySuccessesDescription": { "message": "इतने सफल रीफ़्रेश चक्रों के बाद एक्सटेंशन द्वारा खोला गया Kick फ़ॉलबैक पेज बंद करें।" },
+  "kickPageContextRecoverySuccessesDisabledReason": { "message": "यह सेटिंग बदलने के लिए Kick चालू करें।" },
+  "cyclesSuffix": { "message": "चक्र" },
   "autoCloseTabsTitle": {
     "message": "फ़ार्मिंग टैब अपने आप बंद करें"
   },

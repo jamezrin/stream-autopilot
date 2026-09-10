@@ -494,6 +494,10 @@
   "failuresSuffix": {
     "message": "falhas"
   },
+  "kickPageContextRecoverySuccessesTitle": { "message": "Recuperação da página alternativa da Kick" },
+  "kickPageContextRecoverySuccessesDescription": { "message": "Fecha uma página alternativa da Kick aberta pela extensão após este número de ciclos de atualização bem-sucedidos." },
+  "kickPageContextRecoverySuccessesDisabledReason": { "message": "Ative a Kick para alterar esta configuração." },
+  "cyclesSuffix": { "message": "ciclos" },
   "autoCloseTabsTitle": {
     "message": "Fechar abas de farming automaticamente"
   },

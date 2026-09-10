@@ -87,6 +87,7 @@ export const DEFAULT_ENGINE_SETTINGS: EngineSettings = {
 // The extension's full defaults: the engine contract plus the host-only knobs.
 export const DEFAULT_SETTINGS: ExtensionSettings = {
   ...DEFAULT_ENGINE_SETTINGS,
+  kickPageContextRecoverySuccesses: 3,
   muteFarmingTabs: true,
   keepFarmingVideosUnmuted: true,
   autoCloseFinishedDrops: true,
@@ -200,6 +201,12 @@ export function mergeEngineSettings(value: Partial<EngineSettings> | undefined):
 export function mergeSettings(value: Partial<ExtensionSettings> | undefined): ExtensionSettings {
   return {
     ...mergeEngineSettings(value),
+    kickPageContextRecoverySuccesses: clampInteger(
+      value?.kickPageContextRecoverySuccesses,
+      1,
+      10,
+      DEFAULT_SETTINGS.kickPageContextRecoverySuccesses,
+    ),
     muteFarmingTabs: booleanOr(value?.muteFarmingTabs, DEFAULT_SETTINGS.muteFarmingTabs),
     keepFarmingVideosUnmuted: booleanOr(value?.keepFarmingVideosUnmuted, DEFAULT_SETTINGS.keepFarmingVideosUnmuted),
     autoCloseFinishedDrops: booleanOr(value?.autoCloseFinishedDrops, DEFAULT_SETTINGS.autoCloseFinishedDrops),

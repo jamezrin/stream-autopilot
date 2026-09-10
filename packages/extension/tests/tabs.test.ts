@@ -21,7 +21,7 @@ import {
   pageFetchJson,
   PLAYBACK_PRIME_BACKOFF_MS,
   PLAYBACK_PRIME_MAX_ATTEMPTS,
-  recordManagedPageContextBackgroundSuccessWithBrowser,
+  reconcileManagedPageContextRecoveryWithBrowser,
   recordManagedPageContextFallback,
   registerManagedPageContextTabs,
   resetTwitchIntegrityRefreshBounds,
@@ -211,6 +211,7 @@ describe("tab manager", () => {
 
   it("releases a retained Kick context only after sustained background recovery", async () => {
     const browser = browserMock();
+    browser.tabs.get.mockResolvedValue({ id: 14, url: "https://kick.com" });
     const events: EngineEvent[] = [];
     const emit = (event: EngineEvent) => events.push(event);
     const startedAt = Date.parse("2026-07-21T12:00:00.000Z");
@@ -219,11 +220,11 @@ describe("tab manager", () => {
     });
     recordManagedPageContextFallback("kick", "web.kick.com", emit, startedAt);
 
-    await recordManagedPageContextBackgroundSuccessWithBrowser(browser, "kick", "web.kick.com", emit, startedAt + 11 * 60_000);
-    await recordManagedPageContextBackgroundSuccessWithBrowser(browser, "kick", "web.kick.com", emit, startedAt + 11 * 60_000 + 1);
+    await reconcileManagedPageContextRecoveryWithBrowser(browser, "kick", { backgroundHosts: ["web.kick.com"], fallbackHosts: [] }, 3, emit);
+    await reconcileManagedPageContextRecoveryWithBrowser(browser, "kick", { backgroundHosts: ["web.kick.com"], fallbackHosts: [] }, 3, emit);
     expect(browser.tabs.remove).not.toHaveBeenCalled();
 
-    await recordManagedPageContextBackgroundSuccessWithBrowser(browser, "kick", "web.kick.com", emit, startedAt + 11 * 60_000 + 2);
+    await reconcileManagedPageContextRecoveryWithBrowser(browser, "kick", { backgroundHosts: ["web.kick.com"], fallbackHosts: [] }, 3, emit);
 
     expect(browser.tabs.remove).toHaveBeenCalledOnce();
     expect(currentManagedPageContextTabs().kick).toBeUndefined();
@@ -243,13 +244,39 @@ describe("tab manager", () => {
       kick: { platform: "kick", tabId: 14, originUrl: "https://kick.com", origin: "https://kick.com", ownedByExtension: true },
     });
     recordManagedPageContextFallback("kick", "web.kick.com", undefined, startedAt);
-    await recordManagedPageContextBackgroundSuccessWithBrowser(browser, "kick", "web.kick.com", undefined, startedAt + 11 * 60_000);
-    await recordManagedPageContextBackgroundSuccessWithBrowser(browser, "kick", "web.kick.com", undefined, startedAt + 11 * 60_000 + 1);
-    recordManagedPageContextFallback("kick", "web.kick.com", undefined, startedAt + 11 * 60_000 + 2);
-    await recordManagedPageContextBackgroundSuccessWithBrowser(browser, "kick", "web.kick.com", undefined, startedAt + 22 * 60_000);
+    await reconcileManagedPageContextRecoveryWithBrowser(browser, "kick", { backgroundHosts: ["web.kick.com"], fallbackHosts: [] }, 3);
+    await reconcileManagedPageContextRecoveryWithBrowser(browser, "kick", { backgroundHosts: ["web.kick.com"], fallbackHosts: [] }, 3);
+    await reconcileManagedPageContextRecoveryWithBrowser(browser, "kick", { backgroundHosts: ["web.kick.com"], fallbackHosts: ["web.kick.com"] }, 3);
+    await reconcileManagedPageContextRecoveryWithBrowser(browser, "kick", { backgroundHosts: ["web.kick.com"], fallbackHosts: [] }, 3);
 
     expect(browser.tabs.remove).not.toHaveBeenCalled();
     expect(currentManagedPageContextTabs().kick).toMatchObject({ backgroundSuccesses: 1 });
+  });
+
+  it("forgets stale recovery ownership without closing a user tab that reused the id", async () => {
+    const browser = browserMock();
+    browser.tabs.get.mockResolvedValue({ id: 14, url: "https://example.com" });
+    registerManagedPageContextTabs({
+      kick: {
+        platform: "kick",
+        tabId: 14,
+        originUrl: "https://kick.com",
+        origin: "https://kick.com",
+        ownedByExtension: true,
+        fallbackHost: "kick.com",
+        backgroundSuccesses: 0,
+      },
+    });
+
+    await reconcileManagedPageContextRecoveryWithBrowser(
+      browser,
+      "kick",
+      { backgroundHosts: ["kick.com"], fallbackHosts: [] },
+      1,
+    );
+
+    expect(browser.tabs.remove).not.toHaveBeenCalled();
+    expect(currentManagedPageContextTabs().kick).toBeUndefined();
   });
 
   it("keeps tab diagnostics scoped to the supplied emitter", async () => {

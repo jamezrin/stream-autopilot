@@ -6,7 +6,7 @@ import { KickWafBlockedError } from "../../core/tabs";
 import { authHealthFromError } from "../../core/fetchError";
 import { StaleWhileRevalidateCache } from "../../core/staleCache";
 import type { WebSocketFactory } from "../../core/webSocket";
-import { diagnostic, ignoreEvent, type AdapterOperationOptions, type ClaimedChallenge, type PageFetcher, type PlatformAdapter, type WatchTabOptions, type WatchTabPort } from "../adapter";
+import { diagnostic, ignoreEvent, type AdapterOperationOptions, type ClaimedChallenge, type KickPageContextCycleObservation, type PageFetcher, type PlatformAdapter, type WatchTabOptions, type WatchTabPort } from "../adapter";
 import { kickCandidatesFromCampaign, mergeKickProgress, parseKickCampaigns } from "./parser";
 import { KICK_CLIENT_TOKEN, KickWatcher } from "./watch";
 import { KickDiscoverySignalController } from "./discoverySignals";
@@ -139,14 +139,21 @@ interface KickChallengeClaimResponse {
 // extension origin. The outcome is logged once per host (then debug) so a
 // real-Chrome run shows exactly which calls are tabless-capable. The fallback
 // makes this risk-free: farming behaves as before regardless of the result.
+export interface KickPageFetcher extends PageFetcher {
+  consumePageContextCycleObservation(): KickPageContextCycleObservation | undefined;
+}
+
 export function createKickFetcher(deps: {
   background: (url: string, init?: RequestInit) => Promise<unknown>;
   pageFetch: (url: string, init?: RequestInit) => Promise<unknown>;
   onBackgroundSuccess?: (host: string, emit: EventEmitter) => Promise<void> | void;
   onPageFallback?: (host: string, emit: EventEmitter) => Promise<void> | void;
-}): PageFetcher {
+}): KickPageFetcher {
   const { background, pageFetch, onBackgroundSuccess, onPageFallback } = deps;
   const announced = new Map<string, "background" | "fallback">();
+  const backgroundHosts = new Set<string>();
+  const fallbackHosts = new Set<string>();
+  let consumed = false;
   const report = (emit: EventEmitter, host: string, outcome: "background" | "fallback", detail: string): void => {
     const repeat = announced.get(host) === outcome;
     announced.set(host, outcome);
@@ -164,6 +171,14 @@ export function createKickFetcher(deps: {
     }
   };
   return {
+    consumePageContextCycleObservation() {
+      if (consumed || (backgroundHosts.size === 0 && fallbackHosts.size === 0)) return undefined;
+      consumed = true;
+      return {
+        backgroundHosts: [...backgroundHosts].sort(),
+        fallbackHosts: [...fallbackHosts].sort(),
+      };
+    },
     fetchJson: async <T,>(url: string, init?: RequestInit, emit: EventEmitter = ignoreEvent): Promise<T> => {
       init?.signal?.throwIfAborted();
       const host = safeHost(url);
@@ -175,12 +190,14 @@ export function createKickFetcher(deps: {
         report(emit, host, "fallback", error instanceof KickWafBlockedError
           ? "→ WAF-blocked from service worker, using page tab"
           : "→ service worker error, using page tab");
+        fallbackHosts.add(host);
         await notifyLifecycle(onPageFallback, host, emit);
         init?.signal?.throwIfAborted();
         result = await pageFetch(url, init);
         return result as T;
       }
       report(emit, host, "background", "→ service worker OK (tabless-capable)");
+      backgroundHosts.add(host);
       await notifyLifecycle(onBackgroundSuccess, host, emit);
       return result as T;
     },
@@ -228,6 +245,12 @@ export class KickAdapter implements PlatformAdapter {
   private readonly claimCapability: KickClaimCapability;
   private readonly discoveryState: KickDiscoveryState;
   readonly createDiscoverySignalController?: () => DiscoverySignalController;
+
+  consumePageContextCycleObservation(): KickPageContextCycleObservation | undefined {
+    return "consumePageContextCycleObservation" in this.fetcher
+      ? (this.fetcher as KickPageFetcher).consumePageContextCycleObservation()
+      : undefined;
+  }
 
   async checkAuthHealth(signal?: AbortSignal): Promise<PlatformAuthHealth> {
     const checkedAt = new Date().toISOString();
